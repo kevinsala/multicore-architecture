@@ -1,0 +1,6 @@
+*.bak
+*.qws
+output_files/
+incremental_db/
+db/
+work/
