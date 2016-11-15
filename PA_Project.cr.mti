@@ -1,0 +1,988 @@
+C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/BReg.vhd {2 {vcom -work work -2002 -explicit -stats=none C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/BReg.vhd
+Model Technology ModelSim - Intel FPGA Edition vcom 10.5b Compiler 2016.10 Oct  5 2016
+-- Loading package STANDARD
+-- Loading package TEXTIO
+-- Loading package std_logic_1164
+-- Loading package std_logic_arith
+-- Loading package STD_LOGIC_UNSIGNED
+-- Compiling entity BReg
+-- Compiling architecture Behavioral of BReg
+** Warning: (vcom-31) Unable to unlink file "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+Permission denied. (errno = EACCES)
+
+} {} {}} C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/Switch_UD.vhd {1 {vcom -work work -2002 -explicit -stats=none C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/Switch_UD.vhd
+Model Technology ModelSim - Intel FPGA Edition vcom 10.5b Compiler 2016.10 Oct  5 2016
+-- Loading package STANDARD
+-- Loading package TEXTIO
+-- Loading package std_logic_1164
+-- Compiling entity Switch_UD
+-- Compiling architecture Behavioral of Switch_UD
+
+} {} {}} C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/memoriaRAM.vhd {0 {vcom -work work -2002 -explicit -stats=none C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/memoriaRAM.vhd
+Model Technology ModelSim - Intel FPGA Edition vcom 10.5b Compiler 2016.10 Oct  5 2016
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+-- Giving up waiting on lock. Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Error: VHDL Compiler exiting
+
+} {406.0 407.0} {}} C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/memoriaRAM_I.vhd {1 {vcom -work work -2002 -explicit -stats=none C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/memoriaRAM_I.vhd
+Model Technology ModelSim - Intel FPGA Edition vcom 10.5b Compiler 2016.10 Oct  5 2016
+-- Loading package STANDARD
+-- Loading package TEXTIO
+-- Loading package std_logic_1164
+-- Loading package std_logic_arith
+-- Loading package STD_LOGIC_UNSIGNED
+-- Compiling entity memoriaRAM_I
+-- Compiling architecture Behavioral of memoriaRAM_I
+
+} {} {}} C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/Banco_WB.vhd {1 {vcom -work work -2002 -explicit -stats=none C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/Banco_WB.vhd
+Model Technology ModelSim - Intel FPGA Edition vcom 10.5b Compiler 2016.10 Oct  5 2016
+-- Loading package STANDARD
+-- Loading package TEXTIO
+-- Loading package std_logic_1164
+-- Compiling entity Banco_WB
+-- Compiling architecture Behavioral of Banco_WB
+
+} {} {}} C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/mux2_1.vhd {1 {vcom -work work -2002 -explicit -stats=none C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/mux2_1.vhd
+Model Technology ModelSim - Intel FPGA Edition vcom 10.5b Compiler 2016.10 Oct  5 2016
+-- Loading package STANDARD
+-- Loading package TEXTIO
+-- Loading package std_logic_1164
+-- Compiling entity mux2_1
+-- Compiling architecture Behavioral of mux2_1
+
+} {} {}} C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/UA.vhd {1 {vcom -work work -2002 -explicit -stats=none C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/UA.vhd
+Model Technology ModelSim - Intel FPGA Edition vcom 10.5b Compiler 2016.10 Oct  5 2016
+-- Loading package STANDARD
+-- Loading package TEXTIO
+-- Loading package std_logic_1164
+-- Compiling entity UA
+-- Compiling architecture Behavioral of UA
+
+} {} {}} C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/Banco_EX.vhd {1 {vcom -work work -2002 -explicit -stats=none C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/Banco_EX.vhd
+Model Technology ModelSim - Intel FPGA Edition vcom 10.5b Compiler 2016.10 Oct  5 2016
+-- Loading package STANDARD
+-- Loading package TEXTIO
+-- Loading package std_logic_1164
+-- Compiling entity Banco_EX
+-- Compiling architecture Behavioral of Banco_EX
+
+} {} {}} C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/Banco_ID.vhd {1 {vcom -work work -2002 -explicit -stats=none C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/Banco_ID.vhd
+Model Technology ModelSim - Intel FPGA Edition vcom 10.5b Compiler 2016.10 Oct  5 2016
+-- Loading package STANDARD
+-- Loading package TEXTIO
+-- Loading package std_logic_1164
+-- Compiling entity Banco_ID
+-- Compiling architecture Behavioral of Banco_ID
+
+} {} {}} C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/UC.vhd {1 {vcom -work work -2002 -explicit -stats=none C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/UC.vhd
+Model Technology ModelSim - Intel FPGA Edition vcom 10.5b Compiler 2016.10 Oct  5 2016
+-- Loading package STANDARD
+-- Loading package TEXTIO
+-- Loading package std_logic_1164
+-- Compiling entity UC
+-- Compiling architecture Behavioral of UC
+
+} {} {}} C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/mips_test.vhd {1 {vcom -work work -2002 -explicit -stats=none C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/mips_test.vhd
+Model Technology ModelSim - Intel FPGA Edition vcom 10.5b Compiler 2016.10 Oct  5 2016
+-- Loading package STANDARD
+-- Loading package TEXTIO
+-- Loading package std_logic_1164
+-- Loading package NUMERIC_STD
+-- Compiling entity testbench
+-- Compiling architecture behavior of testbench
+
+} {} {}} C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/Ext_signo.vhd {0 {vcom -work work -2002 -explicit -stats=none C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/Ext_signo.vhd
+Model Technology ModelSim - Intel FPGA Edition vcom 10.5b Compiler 2016.10 Oct  5 2016
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Warning: (vcom-6) -- Waiting for lock by "cescuinblasco@CESCUINBLASCO-P, pid = 972
+". Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+-- Giving up waiting on lock. Lockfile is "C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/work/_lock".
+** Error: VHDL Compiler exiting
+
+} {406.0 407.0} {}} C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/Banco_MEM.vhd {1 {vcom -work work -2002 -explicit -stats=none C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/Banco_MEM.vhd
+Model Technology ModelSim - Intel FPGA Edition vcom 10.5b Compiler 2016.10 Oct  5 2016
+-- Loading package STANDARD
+-- Loading package TEXTIO
+-- Loading package std_logic_1164
+-- Compiling entity Banco_MEM
+-- Compiling architecture Behavioral of Banco_MEM
+
+} {} {}} C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/UD.vhd {1 {vcom -work work -2002 -explicit -stats=none C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/UD.vhd
+Model Technology ModelSim - Intel FPGA Edition vcom 10.5b Compiler 2016.10 Oct  5 2016
+-- Loading package STANDARD
+-- Loading package TEXTIO
+-- Loading package std_logic_1164
+-- Compiling entity UD
+-- Compiling architecture Behavioral of UD
+
+} {} {}} C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/ALU.vhd {1 {vcom -work work -2002 -explicit -stats=none C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/ALU.vhd
+Model Technology ModelSim - Intel FPGA Edition vcom 10.5b Compiler 2016.10 Oct  5 2016
+-- Loading package STANDARD
+-- Loading package TEXTIO
+-- Loading package std_logic_1164
+-- Loading package std_logic_arith
+-- Loading package STD_LOGIC_UNSIGNED
+-- Loading package NUMERIC_STD
+-- Compiling entity ALU
+-- Compiling architecture Behavioral of ALU
+
+} {} {}} C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/mux2_6bits.vhd {1 {vcom -work work -2002 -explicit -stats=none C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/mux2_6bits.vhd
+Model Technology ModelSim - Intel FPGA Edition vcom 10.5b Compiler 2016.10 Oct  5 2016
+-- Loading package STANDARD
+-- Loading package TEXTIO
+-- Loading package std_logic_1164
+-- Compiling entity mux2_5bits
+-- Compiling architecture Behavioral of mux2_5bits
+
+} {} {}} C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/reg32.vhd {1 {vcom -work work -2002 -explicit -stats=none C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/reg32.vhd
+Model Technology ModelSim - Intel FPGA Edition vcom 10.5b Compiler 2016.10 Oct  5 2016
+-- Loading package STANDARD
+-- Loading package TEXTIO
+-- Loading package std_logic_1164
+-- Compiling entity reg32
+-- Compiling architecture Behavioral of reg32
+
+} {} {}} C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/mux4_32bits.vhd {1 {vcom -work work -2002 -explicit -stats=none C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/mux4_32bits.vhd
+Model Technology ModelSim - Intel FPGA Edition vcom 10.5b Compiler 2016.10 Oct  5 2016
+-- Loading package STANDARD
+-- Loading package TEXTIO
+-- Loading package std_logic_1164
+-- Compiling entity mux4_32bits
+-- Compiling architecture Behavioral of mux4_32bits
+
+} {} {}} C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/adder32.vhd {1 {vcom -work work -2002 -explicit -stats=none C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/adder32.vhd
+Model Technology ModelSim - Intel FPGA Edition vcom 10.5b Compiler 2016.10 Oct  5 2016
+-- Loading package STANDARD
+-- Loading package TEXTIO
+-- Loading package std_logic_1164
+-- Loading package std_logic_arith
+-- Loading package STD_LOGIC_UNSIGNED
+-- Loading package NUMERIC_STD
+-- Compiling entity adder32
+-- Compiling architecture Behavioral of adder32
+
+} {} {}} C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/bits_shifter.vhd {1 {vcom -work work -2002 -explicit -stats=none C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/bits_shifter.vhd
+Model Technology ModelSim - Intel FPGA Edition vcom 10.5b Compiler 2016.10 Oct  5 2016
+-- Loading package STANDARD
+-- Loading package TEXTIO
+-- Loading package std_logic_1164
+-- Compiling entity two_bits_shifter
+-- Compiling architecture Behavioral of two_bits_shifter
+
+} {} {}} C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/MIPs_segmentado.vhd {1 {vcom -work work -2002 -explicit -stats=none C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/MIPs_segmentado.vhd
+Model Technology ModelSim - Intel FPGA Edition vcom 10.5b Compiler 2016.10 Oct  5 2016
+-- Loading package STANDARD
+-- Loading package TEXTIO
+-- Loading package std_logic_1164
+-- Compiling entity MIPs_segmentado
+-- Compiling architecture Behavioral of MIPs_segmentado
+
+} {} {}} C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/Mux_2_3bits.vhd {1 {vcom -work work -2002 -explicit -stats=none C:/Users/cescuinblasco/Dropbox/MIRI/S1/PA/Project/Mux_2_3bits.vhd
+Model Technology ModelSim - Intel FPGA Edition vcom 10.5b Compiler 2016.10 Oct  5 2016
+-- Loading package STANDARD
+-- Loading package TEXTIO
+-- Loading package std_logic_1164
+-- Compiling entity Mux_2_3bits
+-- Compiling architecture Behavioral of Mux_2_3bits
+
+} {} {}}
