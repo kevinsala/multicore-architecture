@@ -4,3 +4,7 @@ output_files/
 incremental_db/
 db/
 work/
+*.wlf
+*.mpf
+*.mti
+transcript
