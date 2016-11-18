@@ -4,3 +4,9 @@ output_files/
 incremental_db/
 db/
 work/
+.DS_Store
+*.wlf
+*.mpf
+*.mti
+*.do
+transcript
