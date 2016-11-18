@@ -71,12 +71,12 @@ end component;
 
 component Banco_ID is
     Port(
-        IR_in : in  STD_LOGIC_VECTOR (31 downto 0); -- instrucción leida en IF
+        IR_in : in  STD_LOGIC_VECTOR (31 downto 0); -- instruccion leida en IF
         PC4_in:  in  STD_LOGIC_VECTOR (31 downto 0); -- PC+4 sumado en IF
 	clk : in  STD_LOGIC;
 	reset : in  STD_LOGIC;
         load : in  STD_LOGIC;
-        IR_ID : out  STD_LOGIC_VECTOR (31 downto 0); -- instrucción en la etapa ID
+        IR_ID : out  STD_LOGIC_VECTOR (31 downto 0); -- instruccion en la etapa ID
         PC4_ID:  out  STD_LOGIC_VECTOR (31 downto 0) -- PC+4 en la etapa ID
     ); 
 end component;
@@ -114,8 +114,8 @@ component UC is
         IR_op_code : in  STD_LOGIC_VECTOR (5 downto 0);
         Branch : out  STD_LOGIC;
         RegDst : out  STD_LOGIC;
-        ALUSrc_A : out  STD_LOGIC;
-        ALUSrc_B : out  STD_LOGIC;
+        ALU_Src_A : out  STD_LOGIC;
+        ALU_Src_B : out  STD_LOGIC;
         MemWrite : out  STD_LOGIC;
         MemRead : out  STD_LOGIC;
         MemtoReg : out  STD_LOGIC;
@@ -129,8 +129,8 @@ component UA is
         ExMem_Rd : in  STD_LOGIC_VECTOR (4 downto 0);
         MemWB_Rd : in STD_LOGIC_VECTOR (4 downto 0);
         Rs : in  STD_LOGIC_VECTOR (4 downto 0);
-        ALUSrc_A : in STD_LOGIC;
-        ALUSrc_B : in STD_LOGIC;
+        ALU_Src_A : in STD_LOGIC;
+        ALU_Src_B : in STD_LOGIC;
         MemWrite_EX : in STD_LOGIC;
         RegWrite_Mem : in STD_LOGIC;
         RegWrite_WB : in STD_LOGIC;
@@ -165,15 +165,15 @@ COMPONENT Banco_EX
 	inm_ext: IN  std_logic_vector(31 downto 0);
 	inm_ext_EX: OUT  std_logic_vector(31 downto 0);
         RegDst_ID : IN  std_logic;
-	ALUSrc_A_ID : IN  std_logic;
-        ALUSrc_B_ID : IN  std_logic;
+	ALU_Src_A_ID : IN  std_logic;
+        ALU_Src_B_ID : IN  std_logic;
         MemWrite_ID : IN  std_logic;
         MemRead_ID : IN  std_logic;
         MemtoReg_ID : IN  std_logic;
         RegWrite_ID : IN  std_logic;
         RegDst_EX : OUT  std_logic;
-        ALUSrc_A_EX : OUT  std_logic;
-	ALUSrc_B_EX : OUT  std_logic;
+        ALU_Src_A_EX : OUT  std_logic;
+	ALU_Src_B_EX : OUT  std_logic;
         MemWrite_EX : OUT  std_logic;
         MemRead_EX : OUT  std_logic;
         MemtoReg_EX : OUT  std_logic;
@@ -289,10 +289,10 @@ signal Z: std_logic;
 signal Branch: std_logic;
 signal RegDst_ID: std_logic;
 signal RegDst_EX: std_logic;
-signal ALUSrc_A_ID: std_logic;
-signal ALUSrc_B_ID: std_logic;
-signal ALUSrc_A_EX: std_logic;
-signal ALUSrc_B_EX: std_logic;
+signal ALU_Src_A_ID: std_logic;
+signal ALU_Src_B_ID: std_logic;
+signal ALU_Src_A_EX: std_logic;
+signal ALU_Src_B_EX: std_logic;
 signal MemtoReg_ID: std_logic;
 signal MemtoReg_EX: std_logic;
 signal MemtoReg_MEM: std_logic;
@@ -415,11 +415,11 @@ UD_seg: UD PORT MAP(
 Switch_det: Switch_UD PORT MAP(
    	Reg_Dst => RegDst_ID, 
     	Reg_Write => RegWrite_ID,
-    	Mem_Read => MemRead_ID,
+    	Mem_Read => MemRead_ID
     	Mem_Write => MemWrite_ID,
     	MemtoReg => MemtoReg_ID,
-    	ALU_Src_A => ALUSrc_A_ID,
-	ALU_Src_B => ALUSrc_B_ID,
+    	ALU_Src_A => ALU_Src_A_ID,
+	ALU_Src_B => ALU_Src_B_ID,
     	ctrl => switch_ctrl,
     	Reg_Dst_out => Reg_Dst_UD,
     	Reg_Write_out => Reg_Write_UD,
@@ -464,15 +464,15 @@ UC_seg: UC port map(
     	IR_op_code => IR_ID(31 downto 26),
     	Branch => Branch,
     	RegDst => RegDst_ID, 
-    	ALUSrc_A => ALUSrc_A_ID,
-    	ALUSrc_B => ALUSrc_B_ID,
+    	ALU_Src_A => ALU_Src_A_ID,
+    	ALU_Src_B => ALU_Src_B_ID,
     	MemWrite => MemWrite_ID,
 	MemRead => MemRead_ID,
     	MemtoReg => MemtoReg_ID,
     	RegWrite => RegWrite_ID
 );
 							
--- si la operacio?n es aritmetica (es decir: IR_ID(31 downto 26)= "000001") se mira el campo funct
+-- si la operacion es aritmetica (es decir: IR_ID(31 downto 26)= "000001") se mira el campo funct
 -- como solo hay 4 operaciones en la alu, basta con los bits menos significativos del campo func 
 -- de la instruccion
 -- si no es aritmetica le damos el valor de la suma (000)
@@ -487,15 +487,15 @@ Banco_ID_EX: Banco_EX PORT MAP(
 	busA_EX => busA_EX,
 	busB_EX => busB_EX,
 	RegDst_ID => Reg_Dst_UD,
-	ALUSrc_A_ID => ALU_Src_A_UD,
-	ALUSrc_B_ID => ALU_Src_B_UD,
+	ALU_Src_A_ID => ALU_Src_A_UD,
+	ALU_Src_B_ID => ALU_Src_B_UD,
 	MemWrite_ID => Mem_Write_UD,
 	MemRead_ID => Mem_Read_UD,
 	MemtoReg_ID => MemtoReg_UD,
 	RegWrite_ID => Reg_Write_UD,
 	RegDst_EX => RegDst_EX,
-	ALUSrc_A_EX => ALUSrc_A_EX,
-	ALUSrc_B_EX => ALUSrc_B_EX,
+	ALU_Src_A_EX => ALU_Src_A_EX,
+	ALU_Src_B_EX => ALU_Src_B_EX,
 	MemWrite_EX => MemWrite_EX,
 	MemRead_EX => MemRead_EX,
 	MemtoReg_EX => MemtoReg_EX,
@@ -521,8 +521,8 @@ UA_seg: UA port map(
 	ExMem_Rd => RW_MEM,
 	MemWB_Rd => RW_WB,
 	Rs => Reg_Rs_EX,
-	ALUSrc_A => ALUSrc_A_EX,
-	ALUSrc_B => ALUSrc_B_EX,
+	ALU_Src_A => ALU_Src_A_EX,
+	ALU_Src_B => ALU_Src_B_EX,
 	MemWrite_EX => MemWrite_EX,
 	RegWrite_Mem => RegWrite_MEM,
 	RegWrite_WB => RegWrite_WB,
