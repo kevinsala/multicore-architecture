@@ -151,8 +151,7 @@ ARCHITECTURE structure OF inkel_pentiun IS
 		    Rt_EX	: IN STD_LOGIC_VECTOR (4 DOWNTO 0);
 		    Sout : OUT STD_LOGIC;
 		    PC_Write : OUT STD_LOGIC;
-		    ID_Write : OUT STD_LOGIC;
-		    ID_branch : OUT STD_LOGIC
+		    ID_Write : OUT STD_LOGIC
         	);
     END COMPONENT;
 
@@ -316,7 +315,6 @@ ARCHITECTURE structure OF inkel_pentiun IS
     SIGNAL switch_ctrl: STD_LOGIC;
     SIGNAL ID_Write: STD_LOGIC;
     SIGNAL done_i : STD_LOGIC;
-    SIGNAL ID_branch : STD_LOGIC;
     SIGNAL Banco_ID_reset : STD_LOGIC;
     -- 32 bits signals
     SIGNAL PC_in: STD_LOGIC_VECTOR(31 DOWNTO 0);
@@ -428,8 +426,7 @@ BEGIN
         	Rt_EX => Reg_Rt_EX,
         	Sout => switch_ctrl,
         	PC_Write => load_PC,
-        	ID_Write => ID_Write,
-        	ID_branch => ID_branch
+        	ID_Write => ID_Write
     );
 
     Switch_det: Switch_UD PORT MAP(
@@ -647,7 +644,7 @@ BEGIN
     );
 
     output <= IR_ID;
-    Banco_ID_reset <= reset OR ID_branch;
+    Banco_ID_reset <= reset OR Branch;
 
 END structure;
 
