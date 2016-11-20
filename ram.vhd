@@ -27,9 +27,9 @@ ARCHITECTURE structure OF ram IS
 
     TYPE ram_type IS ARRAY(depth - 1 DOWNTO 0) OF STD_LOGIC_VECTOR(data_bits - 1 DOWNTO 0);
     SIGNAL ram : ram_type;
-    
+
     SIGNAL mem_line : INTEGER := 0;
-    SIGNAL cycle : INTEGER := op_delay;
+    SIGNAL cycle : INTEGER RANGE 0 TO op_delay - 1;
     SIGNAL done_int : STD_LOGIC := '0';
 
     PROCEDURE load_file(CONSTANT filename : IN STRING;
@@ -62,30 +62,29 @@ BEGIN
                 load_file("memory_boot", 0, ram);
                 -- 2048: memory line for position 0x2000 in decimal
                 load_file("memory_exc", 2048, ram);
+                cycle <= op_delay - 1;
             ELSE
-                --IF rising_edge(req) THEN
-                --    done_int <= '0';
-                --    cycle <= op_delay;
-                --ELSIF cycle = 0 THEN
-                --    IF we = '1' THEN
-                --        ram(mem_line) <= data_in;
-                --    END IF;
-                --    done_int <= '1';
-                --    mem_line <= to_integer(unsigned(addr(depth_bits + mem_line_bits DOWNTO mem_line_bits)));
-                --ELSE
-                --    done_int <= '0';
-                --    cycle <= cycle - 1;
-                --END IF;
+                IF rising_edge(req) THEN
+                    -- If some transaction stopped at the middle, restart the memory state machine
+                    cycle <= cycle - 1;
+                    done_int <= '0';
+                ELSIF req = '1' THEN
+                    IF cycle = 0 THEN
+                        done_int <= '1';
+                        cycle <= op_delay - 1;
+                        mem_line <= to_integer(unsigned(addr(depth_bits + mem_line_bits DOWNTO mem_line_bits)));
+                        IF we = '1' THEN
+                            ram(mem_line) <= data_in;
+                        END IF;
+                    ELSE
+                        cycle <= cycle - 1;
+                        done_int <= '0';
+                    END IF;
+                END IF;
             END IF;
         END IF;
     END PROCESS p;
 
-    -- Stub until the processor can wait for memory
-    mem_line <= to_integer(unsigned(addr(depth_bits + mem_line_bits DOWNTO mem_line_bits)));
     data_out <= ram(mem_line);
-    done <= '1';
-    -- End stub
-    
-    --data_out <= ram(mem_line);
-    --done <= done_int;
+    done <= done_int;
 END structure;

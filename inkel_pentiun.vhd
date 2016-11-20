@@ -37,6 +37,16 @@ ARCHITECTURE structure OF inkel_pentiun IS
         );
     END COMPONENT;
 
+    COMPONENT fetch IS
+        PORT (clk : IN STD_LOGIC;
+            reset : IN STD_LOGIC;
+            pc : IN STD_LOGIC_VECTOR(31 DOWNTO 0);
+            branch_D : IN STD_LOGIC;
+            inst : OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
+            load_PC : OUT STD_LOGIC
+        );
+    END COMPONENT;
+
     COMPONENT memoriaRAM_D IS
         PORT(
 	        CLK : IN STD_LOGIC;
@@ -45,29 +55,6 @@ ARCHITECTURE structure OF inkel_pentiun IS
             WE : IN STD_LOGIC;		-- write enable
 	        RE : IN STD_LOGIC;		-- read enable
 	        Dout : OUT STD_LOGIC_VECTOR (31 DOWNTO 0)
-        );
-    END COMPONENT;
-
-    --COMPONENT memoriaRAM_I IS
-    --    PORT(
-	--        CLK : IN STD_LOGIC;
-	--        ADDR : IN STD_LOGIC_VECTOR (31 DOWNTO 0); --Dir
-    --        Din : IN STD_LOGIC_VECTOR (31 DOWNTO 0);--entrada de datos para el puerto de escritura
-    --        WE : IN STD_LOGIC;		-- write enable
-	--        RE : IN STD_LOGIC;		-- read enable
-	--        Dout : OUT STD_LOGIC_VECTOR (31 DOWNTO 0)
-	--    );
-    --END COMPONENT;
-
-    COMPONENT ram IS
-        PORT (clk : IN STD_LOGIC;
-            reset : IN STD_LOGIC;
-            req : IN STD_LOGIC;
-            we : IN STD_LOGIC;
-            done : OUT STD_LOGIC;
-            addr : IN STD_LOGIC_VECTOR(31 DOWNTO 0);
-            data_in : IN STD_LOGIC_VECTOR(31 DOWNTO 0);
-            data_out : OUT STD_LOGIC_VECTOR(31 DOWNTO 0)
         );
     END COMPONENT;
 
@@ -281,8 +268,8 @@ ARCHITECTURE structure OF inkel_pentiun IS
     END COMPONENT;
 
     -- 1 bit signals
-    SIGNAL load_PC: STD_LOGIC;
-    SIGNAL PCSrc: STD_LOGIC;
+    SIGNAL load_PC_F : STD_LOGIC;
+    SIGNAL load_PC_UD: STD_LOGIC;
     SIGNAL RegWrite_ID: STD_LOGIC;
     SIGNAL RegWrite_EX: STD_LOGIC;
     SIGNAL RegWrite_MEM: STD_LOGIC;
@@ -343,6 +330,7 @@ ARCHITECTURE structure OF inkel_pentiun IS
     SIGNAL Mux_ant_A_out: STD_LOGIC_VECTOR(31 DOWNTO 0);
     SIGNAL Mux_ant_B_out: STD_LOGIC_VECTOR(31 DOWNTO 0);
     SIGNAL Mux_ant_C_out: STD_LOGIC_VECTOR(31 DOWNTO 0);
+    SIGNAL PC_next : STD_LOGIC_VECTOR(31 DOWNTO 0);
     -- 5 bits signals
     SIGNAL RW_EX: STD_LOGIC_VECTOR(4 DOWNTO 0);
     SIGNAL RW_MEM: STD_LOGIC_VECTOR(4 DOWNTO 0);
@@ -357,15 +345,16 @@ ARCHITECTURE structure OF inkel_pentiun IS
     SIGNAL Mux_ant_A: STD_LOGIC_VECTOR(1 DOWNTO 0);
     SIGNAL Mux_ant_B: STD_LOGIC_VECTOR(1 DOWNTO 0);
     SIGNAL Mux_ant_C: STD_LOGIC_VECTOR(1 DOWNTO 0);
+
 BEGIN
 
     ----------------------------- Fetch -------------------------------
 
     pc: reg32 PORT map(
-        Din => PC_in,
+        Din => PC_next,
         clk => clk,
         reset => reset,
-        load => load_PC,
+        load => '1',
         Dout => PC_out
     );
 
@@ -377,35 +366,14 @@ BEGIN
         Dout => PC4
     );
 
-    muxPC: mux2_1 PORT map(
-        Din0 => PC4,
-        DIn1 => DirSalto,
-        ctrl => PCSrc,
-        Dout => PC_in
-    );
-
-
-    --Mem_I: memoriaRAM_I PORT MAP(
-    --    CLK => CLK,
-    --    ADDR => PC_out,
-    --    Din => "00000000000000000000000000000000",
-    --    WE => '0',
-    --    RE => '1',
-    --    Dout => IR_in
-    --);
-
-    Mem_I: ram PORT MAP(
+    f : fetch PORT MAP(
         clk => clk,
         reset => reset,
-        req => '1',
-        we => '0',
-        data_in => (others => 'Z'),
-        done => done_i,
-        addr => pc_out,
-        data_out => IR_in
+        pc => PC_out,
+        branch_D => Branch,
+        inst => IR_in,
+        load_PC => load_PC_F
     );
-
-
 
     Banco_IF_ID: Banco_ID PORT map(
         IR_in => IR_in,
@@ -425,7 +393,7 @@ BEGIN
         	Rt_ID => IR_ID(20 DOWNTO 16),
         	Rt_EX => Reg_Rt_EX,
         	Sout => switch_ctrl,
-        	PC_Write => load_PC,
+        	PC_Write => load_PC_UD,
         	ID_Write => ID_Write
     );
 
@@ -529,7 +497,11 @@ BEGIN
 	    Reg_Rs_EX => Reg_Rs_EX
     );
 
-    PCSrc <= Branch AND Z; -- Ahora mismo solo esta implementada la instruccion de salto BEQ.
+    Banco_ID_reset <= reset OR Branch;
+    PC_next <= DirSalto WHEN (Z AND Branch) = '1'
+                ELSE PC4 WHEN load_PC_F = '1' AND load_PC_UD = '1'
+                ELSE PC_out;
+
 
     --------------------------------- Execution ------------------------------------------
 
@@ -644,7 +616,6 @@ BEGIN
     );
 
     output <= IR_ID;
-    Banco_ID_reset <= reset OR Branch;
 
 END structure;
 
