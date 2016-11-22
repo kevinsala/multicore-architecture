@@ -11,44 +11,25 @@ ENTITY fetch IS
         pc : IN STD_LOGIC_VECTOR(31 DOWNTO 0);
         branch_D : IN STD_LOGIC;
         inst : OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
-        load_PC : OUT STD_LOGIC
+        load_PC : OUT STD_LOGIC;
+        mem_req : OUT STD_LOGIC;
+        mem_addr : OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
+        mem_done : IN STD_LOGIC;
+        mem_data_in : IN STD_LOGIC_VECTOR(31 DOWNTO 0)
     );
 END fetch;
 
 ARCHITECTURE structure OF fetch IS
-    COMPONENT ram IS
-        PORT (clk : IN STD_LOGIC;
-            reset : IN STD_LOGIC;
-            req : IN STD_LOGIC;
-            we : IN STD_LOGIC;
-            done : OUT STD_LOGIC;
-            addr : IN STD_LOGIC_VECTOR(31 DOWNTO 0);
-            data_in : IN STD_LOGIC_VECTOR(31 DOWNTO 0);
-            data_out : OUT STD_LOGIC_VECTOR(31 DOWNTO 0)
-        );
-    END COMPONENT;
-
-    SIGNAL done_int: STD_LOGIC;
     SIGNAL request: STD_LOGIC := '1';
-    SIGNAL mem_out: STD_LOGIC_VECTOR(31 DOWNTO 0);
 BEGIN
-    r: ram PORT MAP(
-        clk => clk,
-        reset => reset,
-        req => request,
-        we => '0',
-        data_in => (OTHERS => 'Z'),
-        done => done_int,
-        addr => pc,
-        data_out => mem_out
-    );
-
     -- When there is a branch in the D stage, abort and restart the request
     request <= NOT branch_D;
 
-    WITH done_int SELECT inst <=
-        mem_out WHEN '1',
+    WITH mem_done SELECT inst <=
+        mem_data_in WHEN '1',
         (OTHERS => '0') WHEN OTHERS;
 
-    load_PC <= done_int;
+    load_PC <= mem_done;
+    mem_req <= request;
+    mem_addr <= pc;
 END structure;

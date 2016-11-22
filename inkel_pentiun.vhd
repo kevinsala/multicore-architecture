@@ -37,13 +37,29 @@ ARCHITECTURE structure OF inkel_pentiun IS
         );
     END COMPONENT;
 
+    COMPONENT ram IS
+        PORT (clk : IN STD_LOGIC;
+            reset : IN STD_LOGIC;
+            req : IN STD_LOGIC;
+            we : IN STD_LOGIC;
+            done : OUT STD_LOGIC;
+            addr : IN STD_LOGIC_VECTOR(31 DOWNTO 0);
+            data_in : IN STD_LOGIC_VECTOR(31 DOWNTO 0);
+            data_out : OUT STD_LOGIC_VECTOR(31 DOWNTO 0)
+        );
+    END COMPONENT;
+
     COMPONENT fetch IS
         PORT (clk : IN STD_LOGIC;
             reset : IN STD_LOGIC;
             pc : IN STD_LOGIC_VECTOR(31 DOWNTO 0);
             branch_D : IN STD_LOGIC;
             inst : OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
-            load_PC : OUT STD_LOGIC
+            load_PC : OUT STD_LOGIC;
+            mem_req : OUT STD_LOGIC;
+            mem_addr : OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
+            mem_done : IN STD_LOGIC;
+            mem_data_in : IN STD_LOGIC_VECTOR(31 DOWNTO 0)
         );
     END COMPONENT;
 
@@ -303,6 +319,8 @@ ARCHITECTURE structure OF inkel_pentiun IS
     SIGNAL ID_Write: STD_LOGIC;
     SIGNAL done_i : STD_LOGIC;
     SIGNAL Banco_ID_reset : STD_LOGIC;
+    SIGNAL mem_req_F : STD_LOGIC;
+    SIGNAL mem_done_F : STD_LOGIC;
     -- 32 bits signals
     SIGNAL PC_in: STD_LOGIC_VECTOR(31 DOWNTO 0);
     SIGNAL PC_out: STD_LOGIC_VECTOR(31 DOWNTO 0);
@@ -331,6 +349,8 @@ ARCHITECTURE structure OF inkel_pentiun IS
     SIGNAL Mux_ant_B_out: STD_LOGIC_VECTOR(31 DOWNTO 0);
     SIGNAL Mux_ant_C_out: STD_LOGIC_VECTOR(31 DOWNTO 0);
     SIGNAL PC_next : STD_LOGIC_VECTOR(31 DOWNTO 0);
+    SIGNAL mem_addr_F : STD_LOGIC_VECTOR(31 DOWNTO 0);
+    SIGNAL mem_data_in_F : STD_LOGIC_VECTOR(31 DOWNTO 0);
     -- 5 bits signals
     SIGNAL RW_EX: STD_LOGIC_VECTOR(4 DOWNTO 0);
     SIGNAL RW_MEM: STD_LOGIC_VECTOR(4 DOWNTO 0);
@@ -345,12 +365,11 @@ ARCHITECTURE structure OF inkel_pentiun IS
     SIGNAL Mux_ant_A: STD_LOGIC_VECTOR(1 DOWNTO 0);
     SIGNAL Mux_ant_B: STD_LOGIC_VECTOR(1 DOWNTO 0);
     SIGNAL Mux_ant_C: STD_LOGIC_VECTOR(1 DOWNTO 0);
-
 BEGIN
 
     ----------------------------- Fetch -------------------------------
 
-    pc: reg32 PORT map(
+    pc: reg32 PORT MAP(
         Din => PC_next,
         clk => clk,
         reset => reset,
@@ -360,10 +379,21 @@ BEGIN
 
     four <= "00000000000000000000000000000100";
 
-    adder_4: adder32 PORT map (
+    adder_4: adder32 PORT MAP(
         Din0 => PC_out,
         Din1 => four,
         Dout => PC4
+    );
+
+    r: ram PORT MAP(
+        clk => clk,
+        reset => reset,
+        req => mem_req_F,
+        we => '0',
+        data_in => (OTHERS => 'Z'),
+        done => mem_done_F,
+        addr => mem_addr_F,
+        data_out => mem_data_in_F
     );
 
     f : fetch PORT MAP(
@@ -372,10 +402,14 @@ BEGIN
         pc => PC_out,
         branch_D => Branch,
         inst => IR_in,
-        load_PC => load_PC_F
+        load_PC => load_PC_F,
+        mem_req => mem_req_F,
+        mem_addr => mem_addr_F,
+        mem_done => mem_done_F,
+        mem_data_in => mem_data_in_F
     );
 
-    Banco_IF_ID: Banco_ID PORT map(
+    Banco_IF_ID: Banco_ID PORT MAP(
         IR_in => IR_in,
         PC4_in => PC4,
         clk => clk,
