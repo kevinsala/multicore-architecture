@@ -4,36 +4,36 @@ USE ieee.numeric_std.all;
 
 ENTITY cache_data IS
 	PORT(
-		clk		 : IN STD_LOGIC;
-		reset	 : IN STD_LOGIC;
-		addr	 : IN STD_LOGIC_VECTOR(31 DOWNTO 0);
-		data_in	 : IN STD_LOGIC_VECTOR(31 DOWNTO 0);
+		clk      : IN STD_LOGIC;
+		reset    : IN STD_LOGIC;
+		addr     : IN STD_LOGIC_VECTOR(31 DOWNTO 0);
+		data_in  : IN STD_LOGIC_VECTOR(31 DOWNTO 0);
 		data_out : OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
-		we		 : IN STD_LOGIC;
-		done	 : OUT STD_LOGIC;
-		mem_req	 : OUT STD_LOGIC;
+		we       : IN STD_LOGIC;
+		done     : OUT STD_LOGIC;
+		mem_req  : OUT STD_LOGIC;
 		mem_addr : OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
-		mem_we	 : OUT STD_LOGIC;
+		mem_we   : OUT STD_LOGIC;
 		mem_busy : IN STD_LOGIC;
 		mem_done : IN STD_LOGIC;
-		mem_data_in	 : IN STD_LOGIC_VECTOR(127 DOWNTO 0);
+		mem_data_in  : IN STD_LOGIC_VECTOR(127 DOWNTO 0);
 		mem_data_out : OUT STD_LOGIC_VECTOR(127 DOWNTO 0)
 	);
 END cache_data;
 
 ARCHITECTURE cache_data_behavior OF cache_data IS
-	CONSTANT ADDR_BITS	 : INTEGER := 32;
-	CONSTANT TAG_BITS	 : INTEGER := 28;
-	CONSTANT DATA_BITS	 : INTEGER := 128;
+	CONSTANT ADDR_BITS   : INTEGER := 32;
+	CONSTANT TAG_BITS    : INTEGER := 28;
+	CONSTANT DATA_BITS   : INTEGER := 128;
 	CONSTANT CACHE_LINES : INTEGER := 4;
 
 	TYPE state_t IS (READY, LINEREQ, LINEREPL);
 
-	TYPE lru_fields_t	IS ARRAY(CACHE_LINES-1 DOWNTO 0) OF INTEGER RANGE 0 to 3;
+	TYPE lru_fields_t   IS ARRAY(CACHE_LINES-1 DOWNTO 0) OF INTEGER RANGE 0 to 3;
 	TYPE valid_fields_t IS ARRAY(CACHE_LINES-1 DOWNTO 0) OF STD_LOGIC;
 	TYPE dirty_fields_t IS ARRAY(CACHE_LINES-1 DOWNTO 0) OF STD_LOGIC;
-	TYPE tag_fields_t	IS ARRAY(CACHE_LINES-1 DOWNTO 0) OF STD_LOGIC_VECTOR(TAG_BITS-1 DOWNTO 0);
-	TYPE data_fields_t	IS ARRAY(CACHE_LINES-1 DOWNTO 0) OF STD_LOGIC_VECTOR(DATA_BITS-1 DOWNTO 0);
+	TYPE tag_fields_t   IS ARRAY(CACHE_LINES-1 DOWNTO 0) OF STD_LOGIC_VECTOR(TAG_BITS-1 DOWNTO 0);
+	TYPE data_fields_t  IS ARRAY(CACHE_LINES-1 DOWNTO 0) OF STD_LOGIC_VECTOR(DATA_BITS-1 DOWNTO 0);
 
 	TYPE hit_t IS ARRAY(CACHE_LINES-1 DOWNTO 0) OF STD_LOGIC;
 
@@ -57,11 +57,11 @@ ARCHITECTURE cache_data_behavior OF cache_data IS
 	SIGNAL state : state_t;
 
 	-- Fields of the cache
-	SIGNAL lru_fields	: lru_fields_t;
-	SIGNAL valid_fields	: valid_fields_t;
-	SIGNAL dirty_fields	: dirty_fields_t;
-	SIGNAL tag_fields	: tag_fields_t;
-	SIGNAL data_fields	: data_fields_t;
+	SIGNAL lru_fields   : lru_fields_t;
+	SIGNAL valid_fields : valid_fields_t;
+	SIGNAL dirty_fields : dirty_fields_t;
+	SIGNAL tag_fields   : tag_fields_t;
+	SIGNAL data_fields  : data_fields_t;
 
 	-- Determine for each line whether hits or not
 	SIGNAL hit_line : hit_t;
@@ -118,11 +118,11 @@ END GENERATE;
 hit <= hit_line(0) OR hit_line(1) OR hit_line(2) OR hit_line(3);
 
 -- Conditional assignment to know which line has hit
-hit_line_number <=	"00" WHEN (hit_line(0) = '1')
-					ELSE "01" WHEN (hit_line(1) = '1')
-					ELSE "10" WHEN (hit_line(2) = '1')
-					ELSE "11" WHEN (hit_line(3) = '1')
-					ELSE "00";
+hit_line_number <= "00" WHEN (hit_line(0) = '1')
+				ELSE "01" WHEN (hit_line(1) = '1')
+				ELSE "10" WHEN (hit_line(2) = '1')
+				ELSE "11" WHEN (hit_line(3) = '1')
+				ELSE "00";
 
 -- Get the line which has hit
 line_out <= data_fields(to_integer(unsigned(hit_line_number)));
