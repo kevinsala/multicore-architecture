@@ -12,16 +12,16 @@ ENTITY ram IS
         we : IN STD_LOGIC;
         done : OUT STD_LOGIC;
         addr : IN STD_LOGIC_VECTOR(31 DOWNTO 0);
-        data_in : IN STD_LOGIC_VECTOR(31 DOWNTO 0);
-        data_out : OUT STD_LOGIC_VECTOR(31 DOWNTO 0)
+        data_in : IN STD_LOGIC_VECTOR(127 DOWNTO 0);
+        data_out : OUT STD_LOGIC_VECTOR(127 DOWNTO 0)
     );
 END ram;
 
 ARCHITECTURE structure OF ram IS
     CONSTANT addr_bits : INTEGER := 32;
-    CONSTANT data_bits : INTEGER := 32;
-    CONSTANT mem_line_bits: INTEGER := 2;
-    CONSTANT depth : INTEGER := 65536;
+    CONSTANT data_bits : INTEGER := 128;
+    CONSTANT mem_line_bits: INTEGER := 4;
+    CONSTANT depth : INTEGER := 16384;
     CONSTANT depth_bits : INTEGER := 16;
     CONSTANT op_delay : INTEGER := 5; -- In cycles
 
@@ -35,10 +35,11 @@ ARCHITECTURE structure OF ram IS
     PROCEDURE load_file(CONSTANT filename : IN STRING;
                         CONSTANT mem_line : IN INTEGER;
                         SIGNAL ram : INOUT ram_type) IS
-        file romfile : TEXT open read_mode is filename;
+        file romfile : TEXT OPEN read_mode IS filename;
         VARIABLE lbuf : LINE;
-        VARIABLE fdata : STD_LOGIC_VECTOR(data_bits - 1 downto 0);
+        VARIABLE fdata : STD_LOGIC_VECTOR(31 DOWNTO 0);
         VARIABLE cur_mem_line : INTEGER := mem_line;
+        VARIABLE cur_line_pos : INTEGER := 0;
     BEGIN
         WHILE NOT endfile(romfile) LOOP
             -- Read line
@@ -46,8 +47,12 @@ ARCHITECTURE structure OF ram IS
             -- Hex convert
             hread(lbuf, fdata);
             -- Write to memory
-            ram(cur_mem_line) <= fdata;
-            cur_mem_line := cur_mem_line + 1;
+            ram(cur_mem_line)(cur_line_pos + 31 DOWNTO cur_line_pos) <= fdata;
+            cur_line_pos := cur_line_pos + 32;
+            IF cur_line_pos = 128 THEN
+                cur_mem_line := cur_mem_line + 1;
+                cur_line_pos := 0;
+            END IF;
         END LOOP;
     END PROCEDURE;
 BEGIN
