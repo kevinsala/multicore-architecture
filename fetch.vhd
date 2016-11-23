@@ -21,7 +21,7 @@ END fetch;
 
 ARCHITECTURE structure OF fetch IS
     COMPONENT cache_inst IS
-        PORT(clk : IN STD_LOGIC;
+        PORT (clk : IN STD_LOGIC;
 			reset : IN STD_LOGIC;
 			addr : IN STD_LOGIC_VECTOR(31 DOWNTO 0);
 			data_out : OUT STD_LOGIC_VECTOR(31 DOWNTO 0);

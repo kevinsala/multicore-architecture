@@ -37,15 +37,19 @@ ARCHITECTURE structure OF inkel_pentiun IS
         );
     END COMPONENT;
 
-    COMPONENT ram IS
+    COMPONENT memory IS
         PORT (clk : IN STD_LOGIC;
-            reset : IN STD_LOGIC;
-            req : IN STD_LOGIC;
-            we : IN STD_LOGIC;
-            done : OUT STD_LOGIC;
-            addr : IN STD_LOGIC_VECTOR(31 DOWNTO 0);
-            data_in : IN STD_LOGIC_VECTOR(127 DOWNTO 0);
-            data_out : OUT STD_LOGIC_VECTOR(127 DOWNTO 0)
+              reset : IN STD_LOGIC;
+              f_req : IN STD_LOGIC;
+              d_req : IN STD_LOGIC;
+              d_we : IN STD_LOGIC;
+              f_done : OUT STD_LOGIC;
+              d_done : OUT STD_LOGIC;
+              f_addr : IN STD_LOGIC_VECTOR(31 DOWNTO 0);
+              d_addr : IN STD_LOGIC_VECTOR(31 DOWNTO 0);
+              d_data_in : IN STD_LOGIC_VECTOR(127 DOWNTO 0);
+              f_data_out : OUT STD_LOGIC_VECTOR(127 DOWNTO 0);
+              d_data_out : OUT STD_LOGIC_VECTOR(127 DOWNTO 0)
         );
     END COMPONENT;
 
@@ -386,18 +390,22 @@ BEGIN
         Dout => PC4
     );
 
-    r: ram PORT MAP(
+    mem: memory PORT MAP (
         clk => clk,
         reset => reset,
-        req => mem_req_F,
-        we => '0',
-        data_in => (OTHERS => 'Z'),
-        done => mem_done_F,
-        addr => mem_addr_F,
-        data_out => mem_data_in_F
+        f_req => mem_req_F,
+        d_req => '0',
+        d_we => '0',
+        f_done => mem_done_F,
+        d_done => open, -- Unused output
+        f_addr => mem_addr_F,
+        d_addr => (OTHERS => 'Z'),
+        d_data_in => (OTHERS => 'Z'),
+        f_data_out => mem_data_in_F,
+        d_data_out => open -- Unusued output
     );
 
-    f : fetch PORT MAP(
+    f: fetch PORT MAP (
         clk => clk,
         reset => reset,
         pc => PC_out,
@@ -410,14 +418,15 @@ BEGIN
         mem_data_in => mem_data_in_F
     );
 
-    Banco_IF_ID: Banco_ID PORT MAP(
+    Banco_IF_ID: Banco_ID PORT MAP (
         IR_in => IR_in,
         PC4_in => PC4,
         clk => clk,
         reset => Banco_ID_reset,
         load => ID_Write,
         IR_ID => IR_ID,
-        PC4_ID => PC4_ID);
+        PC4_ID => PC4_ID
+    );
 
     ----------------------------- Decode -------------------------------
 
