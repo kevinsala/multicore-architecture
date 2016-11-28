@@ -31,11 +31,11 @@ use IEEE.STD_LOGIC_1164.ALL;
 
 entity UD is
 	Port(
-		Codigo_OP : in STD_LOGIC_VECTOR(5 downto 0);
+		Codigo_OP : in STD_LOGIC_VECTOR(6 downto 0);
 		ReadMem_EX : in STD_LOGIC;
-		Rs_ID : in STD_LOGIC_VECTOR (4 downto 0);
-		Rt_ID	: in STD_LOGIC_VECTOR (4 downto 0);
-		Rt_EX	: in STD_LOGIC_VECTOR (4 downto 0);
+		Rs1_ID : in STD_LOGIC_VECTOR (4 downto 0);
+		Rs2_ID	: in STD_LOGIC_VECTOR (4 downto 0);
+		Rd_EX	: in STD_LOGIC_VECTOR (4 downto 0);
 		Sout : out STD_LOGIC;
 		PC_Write : out STD_LOGIC;
 		ID_Write : out STD_LOGIC
@@ -44,10 +44,10 @@ end UD;
 
 architecture Behavioral of UD is
 begin
-	Sout <= '0' when (ReadMem_EX='1' AND (Rs_ID=Rt_EX OR Rt_ID=Rt_EX) AND (Codigo_OP="000001" OR Codigo_OP="000011"))
+	Sout <= '0' when (ReadMem_EX='1' AND (Rs1_ID=Rd_EX OR Rs2_ID=Rd_EX) AND (Codigo_OP="0000000" OR Codigo_OP="0010011"))
 	else '1';
-	PC_Write <= '0' when (ReadMem_EX='1' AND (Rs_ID=Rt_EX OR Rt_ID=Rt_EX) AND (Codigo_OP="000001" OR Codigo_OP="000011"))
+	PC_Write <= '0' when (ReadMem_EX='1' AND (Rs1_ID=Rd_EX OR Rs2_ID=Rd_EX) AND (Codigo_OP="0000000" OR Codigo_OP="0010011"))
 	else '1';
-	ID_Write <= '0' when (ReadMem_EX='1' AND (Rs_ID=Rt_EX OR Rt_ID=Rt_EX) AND (Codigo_OP="000001" OR Codigo_OP="000011"))
+	ID_Write <= '0' when (ReadMem_EX='1' AND (Rs1_ID=Rd_EX OR Rs2_ID=Rd_EX) AND (Codigo_OP="0000000" OR Codigo_OP="0010011"))
 	else '1';
 end Behavioral;

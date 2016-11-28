@@ -31,10 +31,9 @@ use IEEE.STD_LOGIC_1164.ALL;
 
 entity UC is
     Port(
-	 IR_op_code : in  STD_LOGIC_VECTOR (5 downto 0);
+	 IR_op_code : in  STD_LOGIC_VECTOR (6 downto 0);
          Branch : out  STD_LOGIC;
-         RegDst : out  STD_LOGIC;
-	 ALUSrc_A : out STD_LOGIC;
+     	 ALUSrc_A : out STD_LOGIC;
 	 ALUSrc_B : out STD_LOGIC;
          MemWrite : out  STD_LOGIC;
          MemRead : out  STD_LOGIC;
@@ -51,13 +50,15 @@ begin
 UC_mux : process (IR_op_code)
 begin 
 	CASE IR_op_code IS
-		 WHEN  "000000"  =>  Branch <= '0'; RegDst <= '0'; ALUSrc_A <= '0'; ALUSrc_B <= '0'; MemWrite <= '0'; MemRead <= '0'; MemtoReg <= '0'; RegWrite <= '0';
-		 WHEN  "000001"  =>  Branch <= '0'; RegDst <= '1'; ALUSrc_A <= '0'; ALUSrc_B <= '0'; MemWrite <= '0'; MemRead <= '0'; MemtoReg <= '0'; RegWrite <= '1';
-		 WHEN  "000010"  =>  Branch <= '0'; RegDst <= '0'; ALUSrc_A <= '0'; ALUSrc_B <= '1'; MemWrite <= '0'; MemRead <= '1'; MemtoReg <= '1'; RegWrite <= '1';
-		 WHEN  "000011"  =>  Branch <= '0'; RegDst <= '0'; ALUSrc_A <= '0'; ALUSrc_B <= '1'; MemWrite <= '1'; MemRead <= '0'; MemtoReg <= '0'; RegWrite <= '0';
-		 WHEN  "000100"  =>  Branch <= '1'; RegDst <= '0'; ALUSrc_A <= '0'; ALUSrc_B <= '1'; MemWrite <= '0'; MemRead <= '0'; MemtoReg <= '0'; RegWrite <= '0';
-		 WHEN  "000101"  =>  Branch <= '0'; RegDst <= '0'; ALUSrc_A <= '1'; ALUSrc_B <= '1'; MemWrite <= '0'; MemRead <= '1'; MemtoReg <= '1'; RegWrite <= '1';
-		 WHEN  OTHERS 	 =>  Branch <= '0'; RegDst <= '0'; ALUSrc_A <= '0'; ALUSrc_B <= '0'; MemWrite <= '0'; MemRead <= '0'; MemtoReg <= '0'; RegWrite <= '0';
+		-- ADD
+		WHEN  "0000000"  =>  Branch <= '0'; ALUSrc_A <= '0'; ALUSrc_B <= '0'; MemWrite <= '0'; MemRead <= '0'; MemtoReg <= '0'; RegWrite <= '1';
+		-- LDW
+		WHEN  "0010001"  =>  Branch <= '0'; ALUSrc_A <= '0'; ALUSrc_B <= '1'; MemWrite <= '0'; MemRead <= '1'; MemtoReg <= '1'; RegWrite <= '1';
+		-- STW
+		WHEN  "0010011"  =>  Branch <= '0'; ALUSrc_A <= '0'; ALUSrc_B <= '1'; MemWrite <= '1'; MemRead <= '0'; MemtoReg <= '0'; RegWrite <= '0';
+		-- BEQ
+		WHEN  "0110000"  =>  Branch <= '1'; ALUSrc_A <= '0'; ALUSrc_B <= '1'; MemWrite <= '0'; MemRead <= '0'; MemtoReg <= '0'; RegWrite <= '0';
+		WHEN  OTHERS 	 =>  Branch <= '0'; ALUSrc_A <= '0'; ALUSrc_B <= '0'; MemWrite <= '0'; MemRead <= '0'; MemtoReg <= '0'; RegWrite <= '0';
 	  END CASE;
 end process;
 end Behavioral;
