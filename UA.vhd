@@ -3,18 +3,18 @@ use IEEE.STD_LOGIC_1164.ALL;
 
 entity UA is
     Port(
-	 Rs2 : in  STD_LOGIC_VECTOR (4 downto 0);
-	 RW_MEM : in  STD_LOGIC_VECTOR (4 downto 0);
-	 RW_WB: in STD_LOGIC_VECTOR (4 downto 0);
-	 Rs1 : in  STD_LOGIC_VECTOR (4 downto 0);
-	 ALUSrc_A : in STD_LOGIC;
-	 ALUSrc_B : in STD_LOGIC;
-	 MemWrite_EX : in STD_LOGIC;
-	 RegWrite_Mem : in STD_LOGIC;
-	 RegWrite_WB : in STD_LOGIC;
-	 Mux_ant_A : out  STD_LOGIC_VECTOR (1 downto 0);
-         Mux_ant_B : out  STD_LOGIC_VECTOR (1 downto 0);
-	 Mux_ant_C : out  STD_LOGIC_VECTOR (1 downto 0));
+		 Rs2 : in  STD_LOGIC_VECTOR (4 downto 0);
+		 RW_MEM : in  STD_LOGIC_VECTOR (4 downto 0);
+		 RW_WB: in STD_LOGIC_VECTOR (4 downto 0);
+		 Rs1 : in  STD_LOGIC_VECTOR (4 downto 0);
+		 ALUSrc_A : in STD_LOGIC;
+		 ALUSrc_B : in STD_LOGIC;
+		 MemWrite_EX : in STD_LOGIC;
+		 RegWrite_Mem : in STD_LOGIC;
+		 RegWrite_WB : in STD_LOGIC;
+		 Mux_ant_A : out  STD_LOGIC_VECTOR (1 downto 0);
+		 Mux_ant_B : out  STD_LOGIC_VECTOR (1 downto 0);
+		 Mux_ant_C : out  STD_LOGIC_VECTOR (1 downto 0));
 end UA;
 
 architecture Behavioral of UA is
