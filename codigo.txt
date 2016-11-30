@@ -16,7 +16,7 @@ separado por campos:
 000000	00000	00000	0000000000000000		nop
 000001	00001	00010  	00011  	00000	000000  	ADD R3, R1, R2	       dir 16		
 000000	00000	00000	0000000000000000		nop
-000100	00000	00000	1111111111111001		beq r0, r0, dir0 dir 24; queremos saltar a la posición 0, y el procesador calcula la dirección haciendo PC+4+ 4*Ëxt(inm) por eso ponemos fff9: 4*fff9+001C=0000		
+000100	00000	00000	1111111111111001		beq r0, r0, dir0 dir 24; queremos saltar a la posicion 0, y el procesador calcula la direccion haciendo PC+4+ 4*Ext(inm) por eso ponemos fff9: 4*fff9+001C=0000		
 000011 	00000	00011 	0000000000001000 		SW  R3, 8(R0)
 
 EN hexadecimal:
