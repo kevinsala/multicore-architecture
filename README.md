@@ -1,4 +1,6 @@
 # Inkel Pentiun processor
+"Blocking is for cowards, but it always works" - Developers Team, 2016
+
 ## Etapas de implementación
 1. Set completo de instrucciones sin caché (directamente memoria)
 2. Caché
