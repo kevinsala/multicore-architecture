@@ -131,6 +131,7 @@ ARCHITECTURE structure OF inkel_pentiun IS
             ALUSrc_A : OUT  STD_LOGIC;
             ALUSrc_B : OUT  STD_LOGIC;
             MemWrite : OUT  STD_LOGIC;
+            Byte : OUT STD_LOGIC;
             MemRead : OUT  STD_LOGIC;
             MemtoReg : OUT  STD_LOGIC;
             RegWrite : OUT  STD_LOGIC
@@ -182,12 +183,14 @@ ARCHITECTURE structure OF inkel_pentiun IS
             ALUSrc_A_ID : IN  STD_LOGIC;
             ALUSrc_B_ID : IN  STD_LOGIC;
             MemWrite_ID : IN  STD_LOGIC;
+            Byte_ID : IN STD_LOGIC;
             MemRead_ID : IN  STD_LOGIC;
             MemtoReg_ID : IN  STD_LOGIC;
             RegWrite_ID : IN  STD_LOGIC;
             ALUSrc_A_EX : OUT  STD_LOGIC;
             ALUSrc_B_EX : OUT  STD_LOGIC;
             MemWrite_EX : OUT  STD_LOGIC;
+            Byte_EX : OUT STD_LOGIC;
             MemRead_EX : OUT  STD_LOGIC;
             MemtoReg_EX : OUT  STD_LOGIC;
             RegWrite_EX : OUT  STD_LOGIC;
@@ -226,6 +229,7 @@ ARCHITECTURE structure OF inkel_pentiun IS
 	    PORT(
 		    Reg_Write : IN STD_LOGIC;
 		    Mem_Read : IN STD_LOGIC;
+            Byte : IN STD_LOGIC;
 		    Mem_Write : IN STD_LOGIC;
 		    MemtoReg : IN STD_LOGIC;
 		    ALU_Src_A : IN STD_LOGIC;
@@ -233,6 +237,7 @@ ARCHITECTURE structure OF inkel_pentiun IS
 		    ctrl : IN STD_LOGIC;
 		    Reg_Write_out : OUT STD_LOGIC;
 		    Mem_Read_out : OUT STD_LOGIC;
+            Byte_out : OUT STD_LOGIC;
 		    Mem_Write_out : OUT STD_LOGIC;
 		    MemtoReg_out : OUT STD_LOGIC;
 		    ALU_Src_A_out : OUT STD_LOGIC;
@@ -248,10 +253,12 @@ ARCHITECTURE structure OF inkel_pentiun IS
             reset : IN  STD_LOGIC;
             load : IN  STD_LOGIC;
             MemWrite_EX : IN  STD_LOGIC;
+            Byte_EX : IN STD_LOGIC;
             MemRead_EX : IN  STD_LOGIC;
             MemtoReg_EX : IN  STD_LOGIC;
             RegWrite_EX : IN  STD_LOGIC;
             MemWrite_MEM : OUT  STD_LOGIC;
+            Byte_MEM : OUT STD_LOGIC;
             MemRead_MEM : OUT  STD_LOGIC;
             MemtoReg_MEM : OUT  STD_LOGIC;
             RegWrite_MEM : OUT  STD_LOGIC;
@@ -297,6 +304,9 @@ ARCHITECTURE structure OF inkel_pentiun IS
     SIGNAL MemtoReg_EX: STD_LOGIC;
     SIGNAL MemtoReg_MEM: STD_LOGIC;
     SIGNAL MemtoReg_WB: STD_LOGIC;
+    SIGNAL Byte_ID: STD_LOGIC;
+    SIGNAL Byte_EX: STD_LOGIC;
+    SIGNAL Byte_MEM: STD_LOGIC;
     SIGNAL MemWrite_ID: STD_LOGIC;
     SIGNAL MemWrite_EX: STD_LOGIC;
     SIGNAL MemWrite_MEM: STD_LOGIC;
@@ -305,6 +315,7 @@ ARCHITECTURE structure OF inkel_pentiun IS
     SIGNAL MemRead_MEM: STD_LOGIC;
     SIGNAL Reg_Write_UD: STD_LOGIC;
     SIGNAL Mem_Read_UD: STD_LOGIC;
+    SIGNAL Byte_UD: STD_LOGIC;
     SIGNAL Mem_Write_UD: STD_LOGIC;
     SIGNAL MemtoReg_UD: STD_LOGIC;
     SIGNAL ALU_Src_A_UD: STD_LOGIC;
@@ -424,6 +435,7 @@ BEGIN
     Switch_det: Switch_UD PORT MAP(
     	Reg_Write => RegWrite_ID,
     	Mem_Read => MemRead_ID,
+        Byte => Byte_ID,
     	Mem_Write => MemWrite_ID,
     	MemtoReg => MemtoReg_ID,
     	ALU_Src_A => ALUSrc_A_ID,
@@ -431,6 +443,7 @@ BEGIN
     	ctrl => switch_ctrl,
     	Reg_Write_out => Reg_Write_UD,
     	Mem_Read_out => Mem_Read_UD,
+        Byte_out => Byte_UD,
         Mem_Write_out => Mem_Write_UD,
     	MemtoReg_out => MemtoReg_UD,
     	ALU_Src_A_out => ALU_Src_A_UD,
@@ -484,6 +497,7 @@ BEGIN
     	ALUSrc_A => ALUSrc_A_ID,
     	ALUSrc_B => ALUSrc_B_ID,
     	MemWrite => MemWrite_ID,
+        Byte => Byte_ID,
         MemRead => MemRead_ID,
     	MemtoReg => MemtoReg_ID,
     	RegWrite => RegWrite_ID
@@ -507,12 +521,14 @@ BEGIN
 	    ALUSrc_A_ID => ALU_Src_A_UD,
 	    ALUSrc_B_ID => ALU_Src_B_UD,
 	    MemWrite_ID => Mem_Write_UD,
+        Byte_ID => Byte_UD,
 	    MemRead_ID => Mem_Read_UD,
 	    MemtoReg_ID => MemtoReg_UD,
 	    RegWrite_ID => Reg_Write_UD,
 	    ALUSrc_A_EX => ALUSrc_A_EX,
 	    ALUSrc_B_EX => ALUSrc_B_EX,
 	    MemWrite_EX => MemWrite_EX,
+        Byte_EX => Byte_EX,
 	    MemRead_EX => MemRead_EX,
 	    MemtoReg_EX => MemtoReg_EX,
 	    RegWrite_EX => RegWrite_EX,
@@ -589,10 +605,12 @@ BEGIN
 	    reset => reset,
 	    load => '1',
 	    MemWrite_EX => MemWrite_EX,
+        Byte_EX => Byte_EX,
 	    MemRead_EX => MemRead_EX,
 	    MemtoReg_EX => MemtoReg_EX,
 	    RegWrite_EX => RegWrite_EX,
 	    MemWrite_MEM => MemWrite_MEM,
+        Byte_MEM => Byte_MEM,
 	    MemRead_MEM => MemRead_MEM,
 	    MemtoReg_MEM => MemtoReg_MEM,
 	    RegWrite_MEM => RegWrite_MEM,

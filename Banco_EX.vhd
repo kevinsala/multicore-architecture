@@ -13,6 +13,7 @@ ENTITY Banco_EX IS
 		ALUSrc_A_ID : IN  STD_LOGIC;
 		ALUSrc_B_ID : IN  STD_LOGIC;
 		MemWrite_ID : IN  STD_LOGIC;
+		Byte_ID : IN STD_LOGIC;
 		MemRead_ID : IN  STD_LOGIC;
 		MemtoReg_ID : IN  STD_LOGIC;
 		RegWrite_ID : IN  STD_LOGIC;
@@ -21,6 +22,7 @@ ENTITY Banco_EX IS
 		ALUSrc_A_EX : OUT STD_LOGIC;
 		ALUSrc_B_EX : OUT STD_LOGIC;
 		MemWrite_EX : OUT STD_LOGIC;
+		Byte_EX : OUT STD_LOGIC;
 		MemRead_EX : OUT STD_LOGIC;
 		MemtoReg_EX : OUT STD_LOGIC;
 		RegWrite_EX : OUT STD_LOGIC;
@@ -47,6 +49,7 @@ SYNC_PROC: PROCESS (clk)
 				ALUSrc_A_EX <= '0';
 				ALUSrc_B_EX <= '0';
 				MemWrite_EX <= '0';
+				Byte_EX <= '0';
 				MemRead_EX <= '0';
 				MemtoReg_EX <= '0';
 				RegWrite_EX <= '0';
@@ -61,6 +64,7 @@ SYNC_PROC: PROCESS (clk)
             		ALUSrc_A_EX <= ALUSrc_A_ID;
             		ALUSrc_B_EX <= ALUSrc_B_ID;
             		MemWrite_EX <= MemWrite_ID;
+            		Byte_EX <= Byte_ID;
             		MemRead_EX <= MemRead_ID;
             		MemtoReg_EX <= MemtoReg_ID;
             		RegWrite_EX <= RegWrite_ID;
