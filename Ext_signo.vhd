@@ -23,13 +23,13 @@ END Ext_signo;
 ARCHITECTURE Behavioral OF Ext_signo IS
 BEGIN
 	inm_ext(9 downto 0) <= offsetlo;
-	inm_ext(14 downto 10) <= offsetm when (opcode(6 downto 2)="00100" OR opcode(6 downto 0)="0110001") 
+	inm_ext(14 downto 10) <= offsetm when (opcode(6 downto 3)="0010" OR opcode(6 downto 0)="0110001") 
 		else offsethi;
 	inm_ext(19 downto 15) <= offsethi when opcode(6 downto 0)="0110001"
-		else "00000" when (offsetm(4)='0' AND opcode(6 downto 2)="00100")
+		else "00000" when (offsetm(4)='0' AND opcode(6 downto 3)="0010")
 		else "00000" when (offsethi(4)='0' AND opcode(6 downto 0)="0110000")
 		else "11111";
-	inm_ext(31 downto 20) <= "000000000000" when (offsetm(4)='0' AND opcode(6 downto 2)="00100")
+	inm_ext(31 downto 20) <= "000000000000" when (offsetm(4)='0' AND opcode(6 downto 3)="0010")
 		else "000000000000" when (offsethi(4)='0' AND opcode(6 downto 1)="011000")
 		else "111111111111";
 END Behavioral;

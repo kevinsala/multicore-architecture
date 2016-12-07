@@ -46,6 +46,8 @@ begin
 			WHEN "0010010" => Branch <= '0'; Jump <= '0'; ALUSrc_A <= '0'; ALUSrc_B <= '1'; MemWrite <= '1'; Byte <= '1'; MemRead <= '0'; MemtoReg <= '0'; RegWrite <= '0';
 			-- STW
 			WHEN "0010011" => Branch <= '0'; Jump <= '0'; ALUSrc_A <= '0'; ALUSrc_B <= '1'; MemWrite <= '1'; Byte <= '0'; MemRead <= '0'; MemtoReg <= '0'; RegWrite <= '0';
+			-- MOV
+			WHEN "0010100" => Branch <= '0'; Jump <= '0'; ALUSrc_A <= '0'; ALUSrc_B <= '1'; MemWrite <= '0'; Byte <= '0'; MemRead <= '0'; MemtoReg <= '0'; RegWrite <= '1';
 			-- BEQ
 			WHEN "0110000" => Branch <= '1'; Jump <= '0'; ALUSrc_A <= '0'; ALUSrc_B <= '1'; MemWrite <= '0'; Byte <= '0'; MemRead <= '0'; MemtoReg <= '0'; RegWrite <= '0';
 			-- JUMP
