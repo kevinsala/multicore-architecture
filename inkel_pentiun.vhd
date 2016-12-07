@@ -128,6 +128,7 @@ ARCHITECTURE structure OF inkel_pentiun IS
             reset : IN STD_LOGIC;
             IR_op_code : IN  STD_LOGIC_VECTOR (6 DOWNTO 0);
             Branch : OUT  STD_LOGIC;
+            Jump : OUT STD_LOGIC;
             ALUSrc_A : OUT  STD_LOGIC;
             ALUSrc_B : OUT  STD_LOGIC;
             MemWrite : OUT  STD_LOGIC;
@@ -296,6 +297,7 @@ ARCHITECTURE structure OF inkel_pentiun IS
     SIGNAL RegWrite_WB: STD_LOGIC;
     SIGNAL Z: STD_LOGIC;
     SIGNAL Branch: STD_LOGIC;
+    SIGNAL Jump: STD_LOGIC;
     SIGNAL ALUSrc_A_ID: STD_LOGIC;
     SIGNAL ALUSrc_B_ID: STD_LOGIC;
     SIGNAL ALUSrc_A_EX: STD_LOGIC;
@@ -494,6 +496,7 @@ BEGIN
         reset => reset,
     	IR_op_code => IR_ID(31 DOWNTO 25),
     	Branch => Branch,
+        Jump => Jump,
     	ALUSrc_A => ALUSrc_A_ID,
     	ALUSrc_B => ALUSrc_B_ID,
     	MemWrite => MemWrite_ID,
@@ -502,11 +505,6 @@ BEGIN
     	MemtoReg => MemtoReg_ID,
     	RegWrite => RegWrite_ID
     );
-
-    -- si la operacio?n es aritmetica (es decir: IR_ID(31 DOWNTO 26)= "000001") se mira el campo funct
-    -- como solo hay 4 operaciones en la alu, basta con los bits menos significativos del campo func
-    -- de la instruccion
-    -- si no es aritmetica le damos el valor de la suma (000)
 
     ALUctrl_ID <= IR_ID(27 DOWNTO 25) when IR_ID(31 DOWNTO 28)= "0000" else "000"; 
 
@@ -544,7 +542,7 @@ BEGIN
 	    Reg_Rs1_EX => Reg_Rs1_EX
     );
 
-    PCSrc <= Branch AND Z; -- Ahora mismo solo esta implementada la instruccion de salto BEQ.
+    PCSrc <= (Branch AND Z) OR Jump;
     Banco_ID_reset <= reset OR Branch;
 
     --------------------------------- Execution ------------------------------------------
@@ -599,25 +597,25 @@ BEGIN
     );
 
     Banco_EX_MEM: Banco_MEM PORT MAP(
-	    ALU_out_EX => ALU_out_EX,
-	    ALU_out_MEM => ALU_out_MEM,
-	    clk => clk,
-	    reset => reset,
-	    load => '1',
-	    MemWrite_EX => MemWrite_EX,
+        ALU_out_EX => ALU_out_EX,
+        ALU_out_MEM => ALU_out_MEM,
+        clk => clk,
+        reset => reset,
+        load => '1',
+        MemWrite_EX => MemWrite_EX,
         Byte_EX => Byte_EX,
-	    MemRead_EX => MemRead_EX,
-	    MemtoReg_EX => MemtoReg_EX,
-	    RegWrite_EX => RegWrite_EX,
-	    MemWrite_MEM => MemWrite_MEM,
+        MemRead_EX => MemRead_EX,
+        MemtoReg_EX => MemtoReg_EX,
+        RegWrite_EX => RegWrite_EX,
+        MemWrite_MEM => MemWrite_MEM,
         Byte_MEM => Byte_MEM,
-	    MemRead_MEM => MemRead_MEM,
-	    MemtoReg_MEM => MemtoReg_MEM,
-	    RegWrite_MEM => RegWrite_MEM,
-	    BusB_EX => Mux_ant_C_out,
-	    BusB_MEM => BusB_MEM,
-	    RW_EX => RW_EX,
-	    RW_MEM => RW_MEM
+        MemRead_MEM => MemRead_MEM,
+        MemtoReg_MEM => MemtoReg_MEM,
+        RegWrite_MEM => RegWrite_MEM,
+        BusB_EX => Mux_ant_C_out,
+        BusB_MEM => BusB_MEM,
+        RW_EX => RW_EX,
+        RW_MEM => RW_MEM
     );
 
     -------------------------------- Memory  ----------------------------------------------
@@ -632,19 +630,19 @@ BEGIN
     );
 
     Banco_MEM_WB: Banco_WB PORT MAP(
-	    ALU_out_MEM => ALU_out_MEM,
-	    ALU_out_WB => ALU_out_WB,
-	    Mem_out => Mem_out,
-	    MDR => MDR,
-	    clk => clk,
-	    reset => reset,
-	    load => '1',
-	    MemtoReg_MEM => MemtoReg_MEM,
-	    RegWrite_MEM => RegWrite_MEM,
-	    MemtoReg_WB => MemtoReg_WB,
-	    RegWrite_WB => RegWrite_WB,
-	    RW_MEM => RW_MEM,
-	    RW_WB => RW_WB
+        ALU_out_MEM => ALU_out_MEM,
+        ALU_out_WB => ALU_out_WB,
+        Mem_out => Mem_out,
+        MDR => MDR,
+        clk => clk,
+        reset => reset,
+        load => '1',
+        MemtoReg_MEM => MemtoReg_MEM,
+        RegWrite_MEM => RegWrite_MEM,
+        MemtoReg_WB => MemtoReg_WB,
+        RegWrite_WB => RegWrite_WB,
+        RW_MEM => RW_MEM,
+        RW_WB => RW_WB
     );
 
     mux_busW: mux2_1 PORT map(
