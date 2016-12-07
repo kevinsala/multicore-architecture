@@ -7,11 +7,11 @@ END testbench;
 
 ARCHITECTURE structure OF testbench IS 
     COMPONENT inkel_pentiun is
-    PORT(
-		clk     : IN  STD_LOGIC;
-		reset   : IN  STD_LOGIC;
-		output  : OUT STD_LOGIC_VECTOR(31 DOWNTO 0)
-	   );
+        PORT(
+    		clk     : IN  STD_LOGIC;
+    		reset   : IN  STD_LOGIC;
+    		output  : OUT STD_LOGIC_VECTOR(31 DOWNTO 0)
+    	);
 	END COMPONENT;
 
     SIGNAL clk, reset :  STD_LOGIC;

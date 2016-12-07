@@ -31,17 +31,17 @@ use IEEE.STD_LOGIC_1164.ALL;
 
 entity Switch_UD is
 Port(
-	Reg_Dst : in STD_LOGIC;
 	Reg_Write : in STD_LOGIC;
 	Mem_Read : in STD_LOGIC;
+	Byte : in STD_LOGIC;
 	Mem_Write : in STD_LOGIC;
 	MemtoReg : in STD_LOGIC;
 	ALU_Src_A : in STD_LOGIC;
 	ALU_Src_B : in STD_LOGIC;
 	ctrl : in STD_LOGIC;
-	Reg_Dst_out : out STD_LOGIC;
 	Reg_Write_out : out STD_LOGIC;
 	Mem_Read_out : out STD_LOGIC;
+	Byte_out : out STD_LOGIC;
 	Mem_Write_out : out STD_LOGIC;
 	MemtoReg_out : out STD_LOGIC;
 	ALU_Src_A_out : out STD_LOGIC;
@@ -52,8 +52,8 @@ architecture Behavioral of Switch_UD is
 
 begin	
 	Reg_Write_out <= Reg_Write when (ctrl ='1') else '0';
-	Reg_Dst_out <= Reg_Dst when (ctrl ='1') else '0';
 	Mem_Read_out <= Mem_Read when (ctrl ='1') else '0';
+	Byte_out <= Byte when (ctrl ='1') else '0';
 	Mem_Write_out <= Mem_Write when (ctrl ='1') else '0';
 	MemtoReg_out <= MemtoReg when (ctrl ='1') else '0';
 	ALU_Src_A_out <= ALU_Src_A when (ctrl ='1') else '0';
