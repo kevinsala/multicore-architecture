@@ -11,6 +11,7 @@ ENTITY cache_data IS
 		data_in  : IN STD_LOGIC_VECTOR(31 DOWNTO 0);
 		data_out : OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
 		we       : IN STD_LOGIC;
+		is_byte     : IN STD_LOGIC;
 		done     : OUT STD_LOGIC;
 		mem_req  : OUT STD_LOGIC;
 		mem_addr : OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
@@ -25,6 +26,7 @@ ARCHITECTURE cache_data_behavior OF cache_data IS
 	CONSTANT ADDR_BITS   : INTEGER := 32;
 	CONSTANT TAG_BITS    : INTEGER := 28;
 	CONSTANT DATA_BITS   : INTEGER := 128;
+	CONSTANT BYTE_BITS   : INTEGER := 8;
 	CONSTANT WORD_BITS   : INTEGER := 32;
 	CONSTANT CACHE_LINES : INTEGER := 4;
 
@@ -59,9 +61,13 @@ ARCHITECTURE cache_data_behavior OF cache_data IS
 	-- Determine the target line of the access
 	SIGNAL target_line : INTEGER RANGE 0 TO 3 := 0;
 
-	-- Determine the target word of the line
+	-- Determine the target word of the access
 	SIGNAL target_word : INTEGER RANGE 0 TO 3 := 0;
+	SIGNAL target_word_data : STD_LOGIC_VECTOR(WORD_BITS-1 DOWNTO 0);
 
+	-- Determine the target byte of the access
+	SIGNAL target_byte : INTEGER RANGE 0 TO 16 := 0;
+	SIGNAL target_byte_data : STD_LOGIC_VECTOR(WORD_BITS-1 DOWNTO 0);
 
 	-- Procedure to reset and initialize the cache
 	PROCEDURE reset_cache(
@@ -145,18 +151,14 @@ ARCHITECTURE cache_data_behavior OF cache_data IS
 		replacement := NOT hit AND dirty_fields(lru_line_id) AND valid_fields(0) AND valid_fields(1) AND valid_fields(2) AND valid_fields(3);
 	END PROCEDURE;
 
-	PROCEDURE get_target_word(
+	PROCEDURE get_target_word_and_byte(
 			SIGNAL addr : IN STD_LOGIC_VECTOR(31 DOWNTO 0);
-			VARIABLE word : OUT INTEGER RANGE 0 TO 3
+			VARIABLE word : OUT INTEGER RANGE 0 TO 3;
+			VARIABLE byte : INOUT INTEGER RANGE 0 TO 15
 		) IS
 	BEGIN
-		CASE addr(3 DOWNTO 0) IS
-			WHEN x"0" => word := 0;
-			WHEN x"4" => word := 1;
-			WHEN x"8" => word := 2;
-			WHEN x"C" => word := 3;
-			WHEN OTHERS => word := 0;
-		END CASE;
+		byte := to_integer(unsigned(addr(3 DOWNTO 0)));
+		word := byte / 4;
 	END PROCEDURE;
 BEGIN
 
@@ -165,8 +167,9 @@ execution : PROCESS(clk)
 	VARIABLE replacement_i : STD_LOGIC;
 	VARIABLE target_line_i : INTEGER RANGE 0 TO 3;
 	VARIABLE target_word_i : INTEGER RANGE 0 TO 3;
-	VARIABLE msb_pos : INTEGER RANGE 0 TO 127;
-	VARIABLE lsb_pos : INTEGER RANGE 0 TO 127;
+	VARIABLE target_byte_i : INTEGER RANGE 0 TO 15;
+	VARIABLE msb : INTEGER RANGE 0 TO 127;
+	VARIABLE lsb : INTEGER RANGE 0 TO 127;
 	VARIABLE serve_access : BOOLEAN;
 BEGIN
 	serve_access := FALSE;
@@ -185,7 +188,6 @@ BEGIN
 					IF replacement_i = '1' THEN
 						state <= LINEREPL;
 						mem_addr <= tag_fields(target_line_i) & "0000";
-						mem_data_out <= data_fields(target_line_i);
 						mem_we <= '1';
 					ELSE
 						state <= LINEREQ;
@@ -223,19 +225,26 @@ BEGIN
 
 			-- It can serve the access
 			IF serve_access THEN
-				get_target_word(addr, target_word_i);
+				get_target_word_and_byte(addr, target_word_i, target_byte_i);
 
 				IF we = '1' THEN
-					msb_pos := (target_word_i + 1) * WORD_BITS - 1;
-					lsb_pos := target_word_i * WORD_BITS;
+					IF is_byte = '1' THEN
+						msb := (target_byte_i + 1) * BYTE_BITS - 1;
+						lsb := target_byte_i * BYTE_BITS;
+						data_fields(target_line_i)(msb DOWNTO lsb) <= data_in(BYTE_BITS-1 DOWNTO 0);
+					ELSE
+						msb := (target_word_i + 1) * WORD_BITS - 1;
+						lsb := target_word_i * WORD_BITS;
+						data_fields(target_line_i)(msb DOWNTO lsb) <= data_in;
+					END IF;
 
 					dirty_fields(target_line_i) <= '1';
-					data_fields(target_line_i)(msb_pos DOWNTO lsb_pos) <= data_in;
 				END IF;
 				LRU_execute(lru_fields, target_line_i);
 
 				hit <= '1';
 				target_word <= target_word_i;
+				target_byte <= target_byte_i;
 			END IF;
 		ELSE reset_cache(state, lru_fields, valid_fields, dirty_fields, mem_req, mem_we);
 		END IF;
@@ -243,12 +252,26 @@ BEGIN
 END PROCESS execution;
 
 -- Set the data_out port to the requested word
-WITH target_word SELECT data_out <=
+WITH target_word SELECT target_word_data <=
 		data_fields(target_line)(31  DOWNTO  0) WHEN 0,
 		data_fields(target_line)(63  DOWNTO 32) WHEN 1,
 		data_fields(target_line)(95  DOWNTO 64) WHEN 2,
 		data_fields(target_line)(127 DOWNTO 96) WHEN 3,
 		data_fields(target_line)(31  DOWNTO  0) WHEN OTHERS;
+
+target_byte_data(7 DOWNTO 0) <= data_fields(target_line)((target_byte+1)*BYTE_BITS-1 DOWNTO target_byte*BYTE_BITS);
+target_byte_data(31 DOWNTO 8) <=
+		x"FFFFFF" WHEN target_byte_data(7) = '1' ELSE
+		x"000000" WHEN target_byte_data(7) = '0' ELSE
+		x"000000";
+
+WITH is_byte SELECT data_out <=
+		target_byte_data WHEN '1',
+		target_word_data WHEN '0',
+		target_word_data WHEN OTHERS;
+
+-- Set the mem_data_out to the target line
+mem_data_out <= data_fields(target_line);
 
 -- The cache has completed an operation when the access is a hit
 done <= hit;
