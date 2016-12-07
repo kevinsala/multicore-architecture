@@ -128,9 +128,11 @@ ARCHITECTURE structure OF inkel_pentiun IS
             reset : IN STD_LOGIC;
             IR_op_code : IN  STD_LOGIC_VECTOR (6 DOWNTO 0);
             Branch : OUT  STD_LOGIC;
+            Jump : OUT STD_LOGIC;
             ALUSrc_A : OUT  STD_LOGIC;
             ALUSrc_B : OUT  STD_LOGIC;
             MemWrite : OUT  STD_LOGIC;
+            Byte : OUT STD_LOGIC;
             MemRead : OUT  STD_LOGIC;
             MemtoReg : OUT  STD_LOGIC;
             RegWrite : OUT  STD_LOGIC
@@ -182,12 +184,14 @@ ARCHITECTURE structure OF inkel_pentiun IS
             ALUSrc_A_ID : IN  STD_LOGIC;
             ALUSrc_B_ID : IN  STD_LOGIC;
             MemWrite_ID : IN  STD_LOGIC;
+            Byte_ID : IN STD_LOGIC;
             MemRead_ID : IN  STD_LOGIC;
             MemtoReg_ID : IN  STD_LOGIC;
             RegWrite_ID : IN  STD_LOGIC;
             ALUSrc_A_EX : OUT  STD_LOGIC;
             ALUSrc_B_EX : OUT  STD_LOGIC;
             MemWrite_EX : OUT  STD_LOGIC;
+            Byte_EX : OUT STD_LOGIC;
             MemRead_EX : OUT  STD_LOGIC;
             MemtoReg_EX : OUT  STD_LOGIC;
             RegWrite_EX : OUT  STD_LOGIC;
@@ -226,6 +230,7 @@ ARCHITECTURE structure OF inkel_pentiun IS
 	    PORT(
 		    Reg_Write : IN STD_LOGIC;
 		    Mem_Read : IN STD_LOGIC;
+            Byte : IN STD_LOGIC;
 		    Mem_Write : IN STD_LOGIC;
 		    MemtoReg : IN STD_LOGIC;
 		    ALU_Src_A : IN STD_LOGIC;
@@ -233,6 +238,7 @@ ARCHITECTURE structure OF inkel_pentiun IS
 		    ctrl : IN STD_LOGIC;
 		    Reg_Write_out : OUT STD_LOGIC;
 		    Mem_Read_out : OUT STD_LOGIC;
+            Byte_out : OUT STD_LOGIC;
 		    Mem_Write_out : OUT STD_LOGIC;
 		    MemtoReg_out : OUT STD_LOGIC;
 		    ALU_Src_A_out : OUT STD_LOGIC;
@@ -248,10 +254,12 @@ ARCHITECTURE structure OF inkel_pentiun IS
             reset : IN  STD_LOGIC;
             load : IN  STD_LOGIC;
             MemWrite_EX : IN  STD_LOGIC;
+            Byte_EX : IN STD_LOGIC;
             MemRead_EX : IN  STD_LOGIC;
             MemtoReg_EX : IN  STD_LOGIC;
             RegWrite_EX : IN  STD_LOGIC;
             MemWrite_MEM : OUT  STD_LOGIC;
+            Byte_MEM : OUT STD_LOGIC;
             MemRead_MEM : OUT  STD_LOGIC;
             MemtoReg_MEM : OUT  STD_LOGIC;
             RegWrite_MEM : OUT  STD_LOGIC;
@@ -289,6 +297,7 @@ ARCHITECTURE structure OF inkel_pentiun IS
     SIGNAL RegWrite_WB: STD_LOGIC;
     SIGNAL Z: STD_LOGIC;
     SIGNAL Branch: STD_LOGIC;
+    SIGNAL Jump: STD_LOGIC;
     SIGNAL ALUSrc_A_ID: STD_LOGIC;
     SIGNAL ALUSrc_B_ID: STD_LOGIC;
     SIGNAL ALUSrc_A_EX: STD_LOGIC;
@@ -297,6 +306,9 @@ ARCHITECTURE structure OF inkel_pentiun IS
     SIGNAL MemtoReg_EX: STD_LOGIC;
     SIGNAL MemtoReg_MEM: STD_LOGIC;
     SIGNAL MemtoReg_WB: STD_LOGIC;
+    SIGNAL Byte_ID: STD_LOGIC;
+    SIGNAL Byte_EX: STD_LOGIC;
+    SIGNAL Byte_MEM: STD_LOGIC;
     SIGNAL MemWrite_ID: STD_LOGIC;
     SIGNAL MemWrite_EX: STD_LOGIC;
     SIGNAL MemWrite_MEM: STD_LOGIC;
@@ -305,6 +317,7 @@ ARCHITECTURE structure OF inkel_pentiun IS
     SIGNAL MemRead_MEM: STD_LOGIC;
     SIGNAL Reg_Write_UD: STD_LOGIC;
     SIGNAL Mem_Read_UD: STD_LOGIC;
+    SIGNAL Byte_UD: STD_LOGIC;
     SIGNAL Mem_Write_UD: STD_LOGIC;
     SIGNAL MemtoReg_UD: STD_LOGIC;
     SIGNAL ALU_Src_A_UD: STD_LOGIC;
@@ -424,6 +437,7 @@ BEGIN
     Switch_det: Switch_UD PORT MAP(
     	Reg_Write => RegWrite_ID,
     	Mem_Read => MemRead_ID,
+        Byte => Byte_ID,
     	Mem_Write => MemWrite_ID,
     	MemtoReg => MemtoReg_ID,
     	ALU_Src_A => ALUSrc_A_ID,
@@ -431,6 +445,7 @@ BEGIN
     	ctrl => switch_ctrl,
     	Reg_Write_out => Reg_Write_UD,
     	Mem_Read_out => Mem_Read_UD,
+        Byte_out => Byte_UD,
         Mem_Write_out => Mem_Write_UD,
     	MemtoReg_out => MemtoReg_UD,
     	ALU_Src_A_out => ALU_Src_A_UD,
@@ -481,18 +496,15 @@ BEGIN
         reset => reset,
     	IR_op_code => IR_ID(31 DOWNTO 25),
     	Branch => Branch,
+        Jump => Jump,
     	ALUSrc_A => ALUSrc_A_ID,
     	ALUSrc_B => ALUSrc_B_ID,
     	MemWrite => MemWrite_ID,
+        Byte => Byte_ID,
         MemRead => MemRead_ID,
     	MemtoReg => MemtoReg_ID,
     	RegWrite => RegWrite_ID
     );
-
-    -- si la operacio?n es aritmetica (es decir: IR_ID(31 DOWNTO 26)= "000001") se mira el campo funct
-    -- como solo hay 4 operaciones en la alu, basta con los bits menos significativos del campo func
-    -- de la instruccion
-    -- si no es aritmetica le damos el valor de la suma (000)
 
     ALUctrl_ID <= IR_ID(27 DOWNTO 25) when IR_ID(31 DOWNTO 28)= "0000" else "000"; 
 
@@ -507,12 +519,14 @@ BEGIN
 	    ALUSrc_A_ID => ALU_Src_A_UD,
 	    ALUSrc_B_ID => ALU_Src_B_UD,
 	    MemWrite_ID => Mem_Write_UD,
+        Byte_ID => Byte_UD,
 	    MemRead_ID => Mem_Read_UD,
 	    MemtoReg_ID => MemtoReg_UD,
 	    RegWrite_ID => Reg_Write_UD,
 	    ALUSrc_A_EX => ALUSrc_A_EX,
 	    ALUSrc_B_EX => ALUSrc_B_EX,
 	    MemWrite_EX => MemWrite_EX,
+        Byte_EX => Byte_EX,
 	    MemRead_EX => MemRead_EX,
 	    MemtoReg_EX => MemtoReg_EX,
 	    RegWrite_EX => RegWrite_EX,
@@ -528,7 +542,7 @@ BEGIN
 	    Reg_Rs1_EX => Reg_Rs1_EX
     );
 
-    PCSrc <= Branch AND Z; -- Ahora mismo solo esta implementada la instruccion de salto BEQ.
+    PCSrc <= (Branch AND Z) OR Jump;
     Banco_ID_reset <= reset OR Branch;
 
     --------------------------------- Execution ------------------------------------------
@@ -583,23 +597,25 @@ BEGIN
     );
 
     Banco_EX_MEM: Banco_MEM PORT MAP(
-	    ALU_out_EX => ALU_out_EX,
-	    ALU_out_MEM => ALU_out_MEM,
-	    clk => clk,
-	    reset => reset,
-	    load => '1',
-	    MemWrite_EX => MemWrite_EX,
-	    MemRead_EX => MemRead_EX,
-	    MemtoReg_EX => MemtoReg_EX,
-	    RegWrite_EX => RegWrite_EX,
-	    MemWrite_MEM => MemWrite_MEM,
-	    MemRead_MEM => MemRead_MEM,
-	    MemtoReg_MEM => MemtoReg_MEM,
-	    RegWrite_MEM => RegWrite_MEM,
-	    BusB_EX => Mux_ant_C_out,
-	    BusB_MEM => BusB_MEM,
-	    RW_EX => RW_EX,
-	    RW_MEM => RW_MEM
+        ALU_out_EX => ALU_out_EX,
+        ALU_out_MEM => ALU_out_MEM,
+        clk => clk,
+        reset => reset,
+        load => '1',
+        MemWrite_EX => MemWrite_EX,
+        Byte_EX => Byte_EX,
+        MemRead_EX => MemRead_EX,
+        MemtoReg_EX => MemtoReg_EX,
+        RegWrite_EX => RegWrite_EX,
+        MemWrite_MEM => MemWrite_MEM,
+        Byte_MEM => Byte_MEM,
+        MemRead_MEM => MemRead_MEM,
+        MemtoReg_MEM => MemtoReg_MEM,
+        RegWrite_MEM => RegWrite_MEM,
+        BusB_EX => Mux_ant_C_out,
+        BusB_MEM => BusB_MEM,
+        RW_EX => RW_EX,
+        RW_MEM => RW_MEM
     );
 
     -------------------------------- Memory  ----------------------------------------------
@@ -614,19 +630,19 @@ BEGIN
     );
 
     Banco_MEM_WB: Banco_WB PORT MAP(
-	    ALU_out_MEM => ALU_out_MEM,
-	    ALU_out_WB => ALU_out_WB,
-	    Mem_out => Mem_out,
-	    MDR => MDR,
-	    clk => clk,
-	    reset => reset,
-	    load => '1',
-	    MemtoReg_MEM => MemtoReg_MEM,
-	    RegWrite_MEM => RegWrite_MEM,
-	    MemtoReg_WB => MemtoReg_WB,
-	    RegWrite_WB => RegWrite_WB,
-	    RW_MEM => RW_MEM,
-	    RW_WB => RW_WB
+        ALU_out_MEM => ALU_out_MEM,
+        ALU_out_WB => ALU_out_WB,
+        Mem_out => Mem_out,
+        MDR => MDR,
+        clk => clk,
+        reset => reset,
+        load => '1',
+        MemtoReg_MEM => MemtoReg_MEM,
+        RegWrite_MEM => RegWrite_MEM,
+        MemtoReg_WB => MemtoReg_WB,
+        RegWrite_WB => RegWrite_WB,
+        RW_MEM => RW_MEM,
+        RW_WB => RW_WB
     );
 
     mux_busW: mux2_1 PORT map(

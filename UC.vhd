@@ -6,9 +6,11 @@ entity UC is
     	reset : IN STD_LOGIC;
 		IR_op_code : in  STD_LOGIC_VECTOR (6 downto 0);
 		Branch : out  STD_LOGIC;
+		Jump : out STD_LOGIC;
 		ALUSrc_A : out STD_LOGIC;
 		ALUSrc_B : out STD_LOGIC;
 		MemWrite : out  STD_LOGIC;
+		Byte : out STD_LOGIC;
 		MemRead : out  STD_LOGIC;
 		MemtoReg : out  STD_LOGIC;
 		RegWrite : out  STD_LOGIC
@@ -22,25 +24,37 @@ UC_mux : process (IR_op_code)
 begin
 	if (reset = '1') then
 		Branch <= '0';
+		Jump <= '0';
 		ALUSrc_A <= '0';
 		ALUSrc_B <= '0';
 		MemWrite <= '0';
+		Byte <= '0';
 		MemRead <= '0';
 		MemtoReg <= '0';
 		RegWrite <= '0';
 	else
 		CASE IR_op_code IS
 			-- ADD
-			WHEN "0000000" => Branch <= '0'; ALUSrc_A <= '0'; ALUSrc_B <= '0'; MemWrite <= '0'; MemRead <= '0'; MemtoReg <= '0'; RegWrite <= '1';
+			WHEN "0000000" => Branch <= '0'; Jump <= '0'; ALUSrc_A <= '0'; ALUSrc_B <= '0'; MemWrite <= '0'; Byte <= '0'; MemRead <= '0'; MemtoReg <= '0'; RegWrite <= '1';
+			-- SUB
+			WHEN "0000001" => Branch <= '0'; Jump <= '0'; ALUSrc_A <= '0'; ALUSrc_B <= '0'; MemWrite <= '0'; Byte <= '0'; MemRead <= '0'; MemtoReg <= '0'; RegWrite <= '1';
+			-- LDB
+			WHEN "0010000" => Branch <= '0'; Jump <= '0'; ALUSrc_A <= '0'; ALUSrc_B <= '1'; MemWrite <= '0'; Byte <= '1'; MemRead <= '1'; MemtoReg <= '1'; RegWrite <= '1';
 			-- LDW
-			WHEN "0010001" => Branch <= '0'; ALUSrc_A <= '0'; ALUSrc_B <= '1'; MemWrite <= '0'; MemRead <= '1'; MemtoReg <= '1'; RegWrite <= '1';
+			WHEN "0010001" => Branch <= '0'; Jump <= '0'; ALUSrc_A <= '0'; ALUSrc_B <= '1'; MemWrite <= '0'; Byte <= '0'; MemRead <= '1'; MemtoReg <= '1'; RegWrite <= '1';
+			-- STB
+			WHEN "0010010" => Branch <= '0'; Jump <= '0'; ALUSrc_A <= '0'; ALUSrc_B <= '1'; MemWrite <= '1'; Byte <= '1'; MemRead <= '0'; MemtoReg <= '0'; RegWrite <= '0';
 			-- STW
-			WHEN "0010011" => Branch <= '0'; ALUSrc_A <= '0'; ALUSrc_B <= '1'; MemWrite <= '1'; MemRead <= '0'; MemtoReg <= '0'; RegWrite <= '0';
+			WHEN "0010011" => Branch <= '0'; Jump <= '0'; ALUSrc_A <= '0'; ALUSrc_B <= '1'; MemWrite <= '1'; Byte <= '0'; MemRead <= '0'; MemtoReg <= '0'; RegWrite <= '0';
+			-- MOV
+			WHEN "0010100" => Branch <= '0'; Jump <= '0'; ALUSrc_A <= '0'; ALUSrc_B <= '1'; MemWrite <= '0'; Byte <= '0'; MemRead <= '0'; MemtoReg <= '0'; RegWrite <= '1';
 			-- BEQ
-			WHEN "0110000" => Branch <= '1'; ALUSrc_A <= '0'; ALUSrc_B <= '1'; MemWrite <= '0'; MemRead <= '0'; MemtoReg <= '0'; RegWrite <= '0';
+			WHEN "0110000" => Branch <= '1'; Jump <= '0'; ALUSrc_A <= '0'; ALUSrc_B <= '1'; MemWrite <= '0'; Byte <= '0'; MemRead <= '0'; MemtoReg <= '0'; RegWrite <= '0';
+			-- JUMP
+			WHEN "0110001" => Branch <= '0'; Jump <= '1'; ALUSrc_A <= '0'; ALUSrc_B <= '1'; MemWrite <= '0'; Byte <= '0'; MemRead <= '0'; MemtoReg <= '0'; RegWrite <= '0';
 			-- NOP
-			WHEN "1111111" => Branch <= '0'; ALUSrc_A <= '0'; ALUSrc_B <= '0'; MemWrite <= '0'; MemRead <= '0'; MemtoReg <= '0'; RegWrite <= '0';
-			WHEN  OTHERS => Branch <= '0'; ALUSrc_A <= '0'; ALUSrc_B <= '0'; MemWrite <= '0'; MemRead <= '0'; MemtoReg <= '0'; RegWrite <= '0';
+			WHEN "1111111" => Branch <= '0'; Jump <= '0'; ALUSrc_A <= '0'; ALUSrc_B <= '0'; MemWrite <= '0'; Byte <= '0'; MemRead <= '0'; MemtoReg <= '0'; RegWrite <= '0';
+			WHEN  OTHERS => Branch <= '0'; Jump <= '0'; ALUSrc_A <= '0'; ALUSrc_B <= '0'; MemWrite <= '0'; Byte <= '0'; MemRead <= '0'; MemtoReg <= '0'; RegWrite <= '0';
 		END CASE;
 	end if;
 end process;
