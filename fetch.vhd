@@ -52,7 +52,7 @@ BEGIN
 
     WITH cache_done SELECT inst <=
         cache_data_out WHEN '1',
-        (OTHERS => '0') WHEN OTHERS;
+        x"FE000000" WHEN OTHERS;
 
     load_PC <= cache_done;
 END structure;
