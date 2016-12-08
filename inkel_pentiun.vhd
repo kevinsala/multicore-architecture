@@ -10,7 +10,7 @@ ENTITY inkel_pentiun IS
 END inkel_pentiun;
 
 ARCHITECTURE structure OF inkel_pentiun IS
-	COMPONENT adder32 is
+	COMPONENT adder32 IS
 		PORT(
 			Din0 : IN  STD_LOGIC_VECTOR(31 DOWNTO 0);
 			Din1 : IN  STD_LOGIC_VECTOR(31 DOWNTO 0);
@@ -18,7 +18,7 @@ ARCHITECTURE structure OF inkel_pentiun IS
 		);
 	END COMPONENT;
 
-	COMPONENT mux2_1 is
+	COMPONENT mux2_1 IS
 		PORT(
 			DIn0 : IN  STD_LOGIC_VECTOR(31 DOWNTO 0);
 			DIn1 : IN  STD_LOGIC_VECTOR(31 DOWNTO 0);
@@ -83,7 +83,7 @@ ARCHITECTURE structure OF inkel_pentiun IS
 		);
 	END COMPONENT;
 
-	COMPONENT Banco_ID is
+	COMPONENT Banco_ID IS
 		PORT(
 			IR_in : in  STD_LOGIC_VECTOR (31 DOWNTO 0); -- INstrucción leida en IF
 			PC_in:  IN  STD_LOGIC_VECTOR (31 DOWNTO 0); -- PC sumado en IF
@@ -95,7 +95,7 @@ ARCHITECTURE structure OF inkel_pentiun IS
 		);
 	END COMPONENT;
 
-	COMPONENT mux2_5bits is
+	COMPONENT mux2_5bits IS
 		PORT(
 			DIn0 : IN  STD_LOGIC_VECTOR (4 DOWNTO 0);
 			DIn1 : IN  STD_LOGIC_VECTOR (4 DOWNTO 0);
@@ -104,7 +104,7 @@ ARCHITECTURE structure OF inkel_pentiun IS
 		);
 	END COMPONENT;
 
-	COMPONENT BReg
+	COMPONENT BReg IS
 		PORT(
 			clk : IN  STD_LOGIC;
 			reset : IN  STD_LOGIC;
@@ -118,7 +118,7 @@ ARCHITECTURE structure OF inkel_pentiun IS
 		);
 	END COMPONENT;
 
-	COMPONENT Ext_signo is
+	COMPONENT Ext_signo IS
 		PORT(
 			opcode : in STD_LOGIC_VECTOR (6 downto 0);
 			offsethi : in  STD_LOGIC_VECTOR (4 downto 0);
@@ -128,14 +128,14 @@ ARCHITECTURE structure OF inkel_pentiun IS
 		);
 	END COMPONENT;
 
-	COMPONENT two_bits_shifter is
+	COMPONENT two_bits_shifter IS
 		PORT(
 			Din : IN  STD_LOGIC_VECTOR (31 DOWNTO 0);
 			Dout : OUT  STD_LOGIC_VECTOR (31 DOWNTO 0)
 		);
 	END COMPONENT;
 
-	COMPONENT UC is
+	COMPONENT UC IS
 		PORT(
 			reset : IN STD_LOGIC;
 			IR_op_code : IN  STD_LOGIC_VECTOR (6 DOWNTO 0);
@@ -151,7 +151,7 @@ ARCHITECTURE structure OF inkel_pentiun IS
 		);
 	END COMPONENT;
 
-	COMPONENT UA is
+	COMPONENT UA IS
 		PORT(
 			Rs2 : IN  STD_LOGIC_VECTOR (4 DOWNTO 0);
 			RW_MEM : IN  STD_LOGIC_VECTOR (4 DOWNTO 0);
@@ -168,7 +168,7 @@ ARCHITECTURE structure OF inkel_pentiun IS
 		);
 	END COMPONENT;
 
-	COMPONENT UD is
+	COMPONENT UD IS
 		PORT(
 			Codigo_OP : IN STD_LOGIC_VECTOR(6 DOWNTO 0);
 			ReadMem_EX : IN STD_LOGIC;
@@ -181,7 +181,7 @@ ARCHITECTURE structure OF inkel_pentiun IS
 		);
 	END COMPONENT;
 
-	COMPONENT Banco_EX
+	COMPONENT Banco_EX IS
 		PORT(
 			clk : IN  STD_LOGIC;
 			reset : IN  STD_LOGIC;
@@ -217,7 +217,7 @@ ARCHITECTURE structure OF inkel_pentiun IS
 		);
 	END COMPONENT;
 
-	COMPONENT mux4_32bits is
+	COMPONENT mux4_32bits IS
 		PORT(
 			DIn0 : IN  STD_LOGIC_VECTOR (31 DOWNTO 0);
 			DIn1 : IN  STD_LOGIC_VECTOR (31 DOWNTO 0);
@@ -257,7 +257,7 @@ ARCHITECTURE structure OF inkel_pentiun IS
         );
 	END COMPONENT;
 
-	COMPONENT Banco_MEM
+	COMPONENT Banco_MEM IS
 		PORT(
 			ALU_out_EX : IN  STD_LOGIC_VECTOR(31 DOWNTO 0);
 			ALU_out_MEM : OUT  STD_LOGIC_VECTOR(31 DOWNTO 0);
@@ -281,7 +281,7 @@ ARCHITECTURE structure OF inkel_pentiun IS
 		);
 	END COMPONENT;
 
-	COMPONENT Banco_WB
+	COMPONENT Banco_WB IS
 		PORT(
 			ALU_out_MEM : IN  STD_LOGIC_VECTOR(31 DOWNTO 0);
 			ALU_out_WB : OUT  STD_LOGIC_VECTOR(31 DOWNTO 0);
@@ -509,9 +509,9 @@ BEGIN
 		Dout => DirSalto
 	);
 
-	Z <= '1' when (busA=busB) else '0';
+	Z <= '1' WHEN (busA=busB) ELSE '0';
 
-	UC_seg: UC PORT map(
+	UC_seg: UC PORT MAP(
 		reset => reset,
 		IR_op_code => IR_ID(31 DOWNTO 25),
 		Branch => branch_D,
@@ -565,7 +565,7 @@ BEGIN
 
 	--------------------------------- Execution ------------------------------------------
 
-	UA_seg: UA PORT map(
+	UA_seg: UA PORT MAP(
 		Rs2 => Reg_Rs2_EX,
 		RW_MEM => RW_MEM,
 		RW_WB => RW_WB,
@@ -580,7 +580,7 @@ BEGIN
 		Mux_ant_C => Mux_ant_C
 	);
 
-	mux_a: mux4_32bits PORT map(
+	mux_a: mux4_32bits PORT MAP(
 		Din0 => busA_EX,
 		Din1 => busW,
 		Din2 => ALU_out_MEM,
@@ -589,7 +589,7 @@ BEGIN
 		Dout => Mux_ant_A_out
 	);
 
-	mux_b: mux4_32bits PORT map(
+	mux_b: mux4_32bits PORT MAP(
 		Din0 => busB_EX,
 		Din1 => busW,
 		Din2 => ALU_out_MEM,
@@ -605,7 +605,7 @@ BEGIN
 		Dout => ALU_out_EX
 	);
 
-	mux_c : mux4_32bits PORT map(
+	mux_c : mux4_32bits PORT MAP(
 		Din0 => busB_EX,
 		Din1 => busW,
 		Din2 => ALU_out_MEM,
