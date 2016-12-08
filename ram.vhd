@@ -61,11 +61,9 @@ BEGIN
     BEGIN
         IF rising_edge(clk) THEN
             IF reset = '1' THEN
-                -- 1024: memory line for position 0x1000 in decimal
-                --load_file("memory_boot", 1024, ram);
-                -- Load to position 0 until the start address is changed
-                load_file("memory_boot", 0, ram);
-                -- 2048: memory line for position 0x2000 in decimal
+                -- 256: memory line for address 0x1000
+                load_file("memory_boot", 256, ram);
+                -- 512: memory line for address 0x2000
                 load_file("memory_exc", 2048, ram);
                 cycle <= op_delay - 1;
             ELSE

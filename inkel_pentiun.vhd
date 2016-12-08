@@ -10,16 +10,6 @@ ENTITY inkel_pentiun IS
 end inkel_pentiun;
 
 ARCHITECTURE structure OF inkel_pentiun IS
-    COMPONENT reg32 IS
-        PORT(
-            Din : IN  STD_LOGIC_VECTOR(31 DOWNTO 0);
-            clk : IN  STD_LOGIC;
-            reset : IN  STD_LOGIC;
-            load : IN  STD_LOGIC;
-            Dout : OUT STD_LOGIC_VECTOR(31 DOWNTO 0)
-        );
-    END COMPONENT;
-
     COMPONENT adder32 is
         PORT(
             Din0 : IN  STD_LOGIC_VECTOR(31 DOWNTO 0);
@@ -50,6 +40,19 @@ ARCHITECTURE structure OF inkel_pentiun IS
               d_data_in : IN STD_LOGIC_VECTOR(127 DOWNTO 0);
               f_data_out : OUT STD_LOGIC_VECTOR(127 DOWNTO 0);
               d_data_out : OUT STD_LOGIC_VECTOR(127 DOWNTO 0)
+        );
+    END COMPONENT;
+
+    COMPONENT pc IS
+        PORT (clk : IN STD_LOGIC;
+            reset : IN STD_LOGIC;
+            addr_jump : IN STD_LOGIC_VECTOR(31 DOWNTO 0);
+            jump_D : IN STD_LOGIC;
+            branch_D : IN STD_LOGIC;
+            Z_D : IN STD_LOGIC;
+            load_PC_F : IN STD_LOGIC;
+            load_PC_UD : IN STD_LOGIC;
+            pc : OUT STD_LOGIC_VECTOR(31 DOWNTO 0)
         );
     END COMPONENT;
 
@@ -385,20 +388,16 @@ BEGIN
 
     ----------------------------- Fetch -------------------------------
 
-    pc: reg32 PORT MAP(
-        Din => PC_next,
+    pc_reg: pc PORT MAP (
         clk => clk,
         reset => reset,
-        load => '1',
-        Dout => PC_out
-    );
-
-    four <= "00000000000000000000000000000100";
-
-    adder_4: adder32 PORT MAP(
-        Din0 => PC_out,
-        Din1 => four,
-        Dout => PC4
+        addr_jump => DirSalto,
+        jump_D => jump_D,
+        branch_D => branch_D,
+        Z_D => Z,
+        load_PC_F => load_PC_F,
+        load_PC_UD => load_PC_UD,
+        pc => PC_out
     );
 
     mem: memory PORT MAP (
@@ -562,10 +561,6 @@ BEGIN
 	    Reg_Rd_EX => RW_EX,
 	    Reg_Rs1_EX => Reg_Rs1_EX
     );
-
-    PC_next <= DirSalto WHEN (Z AND branch_D) = '1' OR jump_D = '1'
-                ELSE PC4 WHEN load_PC_F = '1' AND load_PC_UD = '1'
-                ELSE PC_out;
 
     --------------------------------- Execution ------------------------------------------
 
