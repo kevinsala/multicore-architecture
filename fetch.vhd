@@ -1,9 +1,9 @@
 LIBRARY ieee;
-USE ieee.std_logic_1164.all;
-USE ieee.numeric_std.all;
-USE ieee.std_logic_unsigned.all;
-USE ieee.std_logic_textio.all;
-USE std.textio.all;
+USE ieee.std_logic_1164.ALL;
+USE ieee.numeric_std.ALL;
+USE ieee.std_logic_unsigned.ALL;
+USE ieee.std_logic_textio.ALL;
+USE std.textio.ALL;
 
 ENTITY fetch IS
     PORT (clk : IN STD_LOGIC;
@@ -11,6 +11,7 @@ ENTITY fetch IS
         pc : IN STD_LOGIC_VECTOR(31 DOWNTO 0);
         branch_D : IN STD_LOGIC;
         inst : OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
+        inst_v : OUT STD_LOGIC;
         load_PC : OUT STD_LOGIC;
         mem_req : OUT STD_LOGIC;
         mem_addr : OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
@@ -50,9 +51,7 @@ BEGIN
         mem_data_in => mem_data_in
     );
 
-    WITH cache_done SELECT inst <=
-        cache_data_out WHEN '1',
-        x"FE000000" WHEN OTHERS;
-
+    inst <= cache_data_out;
+    inst_v <= cache_done;
     load_PC <= cache_done;
 END structure;

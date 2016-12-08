@@ -59,6 +59,7 @@ ARCHITECTURE structure OF inkel_pentiun IS
             pc : IN STD_LOGIC_VECTOR(31 DOWNTO 0);
             branch_D : IN STD_LOGIC;
             inst : OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
+            inst_v : OUT STD_LOGIC;
             load_PC : OUT STD_LOGIC;
             mem_req : OUT STD_LOGIC;
             mem_addr : OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
@@ -148,7 +149,7 @@ ARCHITECTURE structure OF inkel_pentiun IS
 
     COMPONENT UA is
 
-        PORT(  
+        PORT(
             Rs2 : IN  STD_LOGIC_VECTOR (4 DOWNTO 0);
             RW_MEM : IN  STD_LOGIC_VECTOR (4 DOWNTO 0);
             RW_WB : IN STD_LOGIC_VECTOR (4 DOWNTO 0);
@@ -297,14 +298,15 @@ ARCHITECTURE structure OF inkel_pentiun IS
 
     -- 1 bit signals
     SIGNAL load_PC_F : STD_LOGIC;
+    SIGNAL inst_ready_F: STD_LOGIC;
     SIGNAL load_PC_UD: STD_LOGIC;
     SIGNAL RegWrite_ID: STD_LOGIC;
     SIGNAL RegWrite_EX: STD_LOGIC;
     SIGNAL RegWrite_MEM: STD_LOGIC;
     SIGNAL RegWrite_WB: STD_LOGIC;
     SIGNAL Z: STD_LOGIC;
-    SIGNAL Branch: STD_LOGIC;
-    SIGNAL Jump: STD_LOGIC;
+    SIGNAL branch_D: STD_LOGIC;
+    SIGNAL jump_D: STD_LOGIC;
     SIGNAL ALUSrc_A_ID: STD_LOGIC;
     SIGNAL ALUSrc_B_ID: STD_LOGIC;
     SIGNAL ALUSrc_A_EX: STD_LOGIC;
@@ -418,8 +420,9 @@ BEGIN
         clk => clk,
         reset => reset,
         pc => PC_out,
-        branch_D => Branch,
+        branch_D => branch_D,
         inst => IR_in,
+        inst_v => inst_ready_F,
         load_PC => load_PC_F,
         mem_req => mem_req_F,
         mem_addr => mem_addr_F,
@@ -436,6 +439,8 @@ BEGIN
         IR_ID => IR_ID,
         PC_ID => PC_ID
     );
+
+    Banco_ID_reset <= reset OR branch_D OR jump_D OR NOT inst_ready_F;
 
     ----------------------------- Decode -------------------------------
 
@@ -511,8 +516,8 @@ BEGIN
     UC_seg: UC PORT map(
         reset => reset,
     	IR_op_code => IR_ID(31 DOWNTO 25),
-    	Branch => Branch,
-        Jump => Jump,
+    	Branch => branch_D,
+    	Jump => jump_D,
     	ALUSrc_A => ALUSrc_A_ID,
     	ALUSrc_B => ALUSrc_B_ID,
     	MemWrite => MemWrite_ID,
@@ -522,7 +527,7 @@ BEGIN
     	RegWrite => RegWrite_ID
     );
 
-    ALUctrl_ID <= IR_ID(27 DOWNTO 25) when IR_ID(31 DOWNTO 28)= "0000" else "000"; 
+    ALUctrl_ID <= IR_ID(27 DOWNTO 25) when IR_ID(31 DOWNTO 28)= "0000" else "000";
 
     Banco_ID_EX: Banco_EX PORT MAP(
 	    clk => clk,
@@ -549,17 +554,16 @@ BEGIN
 	    ALUctrl_ID => ALUctrl_ID,
 	    ALUctrl_EX => ALUctrl_EX,
 	    inm_ext => inm_ext,
-	    inm_ext_EX => inm_ext_EX, 
+	    inm_ext_EX => inm_ext_EX,
 	    Reg_Rs2_ID => Reg_Rs2_ID,
 	    Reg_Rd_ID => IR_ID(24 DOWNTO 20),
 	    Reg_Rs1_ID => IR_ID(19 DOWNTO 15),
-	    Reg_Rs2_EX => Reg_Rs2_EX, 
-	    Reg_Rd_EX => RW_EX, 
+	    Reg_Rs2_EX => Reg_Rs2_EX,
+	    Reg_Rd_EX => RW_EX,
 	    Reg_Rs1_EX => Reg_Rs1_EX
     );
 
-    Banco_ID_reset <= reset OR Branch;
-    PC_next <= DirSalto WHEN (Z AND Branch) = '1' OR Jump = '1'
+    PC_next <= DirSalto WHEN (Z AND branch_D) = '1' OR jump_D = '1'
                 ELSE PC4 WHEN load_PC_F = '1' AND load_PC_UD = '1'
                 ELSE PC_out;
 
