@@ -9,7 +9,7 @@ ENTITY fetch IS
     PORT (clk : IN STD_LOGIC;
         reset : IN STD_LOGIC;
         pc : IN STD_LOGIC_VECTOR(31 DOWNTO 0);
-        branch_D : IN STD_LOGIC;
+        branch_taken_D : IN STD_LOGIC;
         inst : OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
         inst_v : OUT STD_LOGIC;
         load_PC : OUT STD_LOGIC;
@@ -45,7 +45,7 @@ BEGIN
         data_out => cache_data_out,
         done => cache_done,
         mem_req => mem_req,
-        mem_req_abort => branch_D,
+        mem_req_abort => branch_taken_D,
         mem_addr => mem_addr,
         mem_done => mem_done,
         mem_data_in => mem_data_in

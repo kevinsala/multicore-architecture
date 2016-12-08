@@ -47,9 +47,7 @@ ARCHITECTURE structure OF inkel_pentiun IS
         PORT (clk : IN STD_LOGIC;
             reset : IN STD_LOGIC;
             addr_jump : IN STD_LOGIC_VECTOR(31 DOWNTO 0);
-            jump_D : IN STD_LOGIC;
-            branch_D : IN STD_LOGIC;
-            Z_D : IN STD_LOGIC;
+            branch_taken_D : IN STD_LOGIC;
             load_PC_F : IN STD_LOGIC;
             load_PC_UD : IN STD_LOGIC;
             pc : OUT STD_LOGIC_VECTOR(31 DOWNTO 0)
@@ -60,7 +58,7 @@ ARCHITECTURE structure OF inkel_pentiun IS
         PORT (clk : IN STD_LOGIC;
             reset : IN STD_LOGIC;
             pc : IN STD_LOGIC_VECTOR(31 DOWNTO 0);
-            branch_D : IN STD_LOGIC;
+            branch_taken_D : IN STD_LOGIC;
             inst : OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
             inst_v : OUT STD_LOGIC;
             load_PC : OUT STD_LOGIC;
@@ -310,6 +308,7 @@ ARCHITECTURE structure OF inkel_pentiun IS
     SIGNAL Z: STD_LOGIC;
     SIGNAL branch_D: STD_LOGIC;
     SIGNAL jump_D: STD_LOGIC;
+    SIGNAL branch_taken_D : STD_LOGIC;
     SIGNAL ALUSrc_A_ID: STD_LOGIC;
     SIGNAL ALUSrc_B_ID: STD_LOGIC;
     SIGNAL ALUSrc_A_EX: STD_LOGIC;
@@ -392,9 +391,7 @@ BEGIN
         clk => clk,
         reset => reset,
         addr_jump => DirSalto,
-        jump_D => jump_D,
-        branch_D => branch_D,
-        Z_D => Z,
+        branch_taken_D => branch_taken_D,
         load_PC_F => load_PC_F,
         load_PC_UD => load_PC_UD,
         pc => PC_out
@@ -419,7 +416,7 @@ BEGIN
         clk => clk,
         reset => reset,
         pc => PC_out,
-        branch_D => branch_D,
+        branch_taken_D => branch_taken_D,
         inst => IR_in,
         inst_v => inst_ready_F,
         load_PC => load_PC_F,
@@ -439,7 +436,7 @@ BEGIN
         PC_ID => PC_ID
     );
 
-    Banco_ID_reset <= reset OR branch_D OR jump_D OR NOT inst_ready_F;
+    Banco_ID_reset <= reset OR branch_taken_D OR NOT inst_ready_F;
 
     ----------------------------- Decode -------------------------------
 
@@ -561,6 +558,8 @@ BEGIN
 	    Reg_Rd_EX => RW_EX,
 	    Reg_Rs1_EX => Reg_Rs1_EX
     );
+
+    branch_taken_D <= (Z AND branch_D) OR jump_D;
 
     --------------------------------- Execution ------------------------------------------
 
