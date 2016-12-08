@@ -1,22 +1,3 @@
-----------------------------------------------------------------------------------
--- Company: 
--- Engineer: 
--- 
--- Create Date:    15:28:20 04/07/2014 
--- Design Name: 
--- Module Name:    Banco_MEM - Behavioral 
--- Project Name: 
--- Target Devices: 
--- Tool versions: 
--- Description: 
---
--- Dependencies: 
---
--- Revision: 
--- Revision 0.01 - File Created
--- Additional Comments: 
---
-----------------------------------------------------------------------------------
 library IEEE;
 use IEEE.STD_LOGIC_1164.ALL;
 
@@ -36,6 +17,7 @@ Port(
 	clk : in  STD_LOGIC;
 	reset : in  STD_LOGIC;
 	load : in  STD_LOGIC;
+	Mul_det : IN STD_LOGIC;
 	MemWrite_EX : in  STD_LOGIC;
 	Byte_EX : in STD_LOGIC;
 	MemRead_EX : in  STD_LOGIC;
@@ -56,10 +38,10 @@ end Banco_MEM;
 architecture Behavioral of Banco_MEM is
 
 begin
-SYNC_PROC: process (clk)
+	SYNC_PROC: process (clk)
 	begin
 		if (clk'event and clk = '1') then
-			if (reset = '1') then
+			if (reset = '1' OR Mul_det = '1') then
             	ALU_out_MEM <= "00000000000000000000000000000000";
             	BUSB_MEM <= "00000000000000000000000000000000";
             	RW_MEM <= "00000";
@@ -69,7 +51,7 @@ SYNC_PROC: process (clk)
             	MemtoReg_MEM <= '0';
             	RegWrite_MEM <= '0';
         	else
-            	if (load='1') then
+            	if (load = '1') then
             		ALU_out_MEM <= ALU_out_EX;
             		BUSB_MEM <= BUSB_EX;
             		RW_MEM <= RW_EX;

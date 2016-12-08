@@ -1,25 +1,5 @@
-----------------------------------------------------------------------------------
--- Company: 
--- Engineer: 
--- 
--- Create Date:    11:03:23 04/03/2014 
--- Design Name: 
--- Module Name:    BR - Behavioral 
--- Project Name: 
--- Target Devices: 
--- Tool versions: 
--- Description: 
---
--- Dependencies: 
---
--- Revision: 
--- Revision 0.01 - File Created
--- Additional Comments: 
---
-----------------------------------------------------------------------------------
 library IEEE;
 use IEEE.STD_LOGIC_1164.ALL;
-
 
 -- Uncomment the following library declaration if using
 -- arithmetic functions with Signed or Unsigned values
@@ -34,9 +14,9 @@ use IEEE.std_logic_unsigned.all;
 --use UNISIM.VComponents.all;
 
 entity BReg is
-port (
+    port(
         clk : in std_logic;
-	reset : in std_logic;
+        reset : in std_logic;
         RA : in std_logic_vector (4 downto 0); --Dir para el puerto de lectura A
         RB : in std_logic_vector (4 downto 0); --Dir para el puerto de lectura B
         RW : in std_logic_vector (4 downto 0); --Dir para el puerto de escritura
@@ -44,7 +24,7 @@ port (
         RegWrite : in std_logic;						
         BusA : out std_logic_vector (31 downto 0);
         BusB : out std_logic_vector (31 downto 0)
-);
+    );
 end BReg;
 
 architecture Behavioral of BReg is
@@ -76,5 +56,4 @@ architecture Behavioral of BReg is
     --get data stored at register RA
     BusB <= reg_file(conv_integer(RB));
     
-
 end Behavioral;
