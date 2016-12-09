@@ -10,16 +10,6 @@ ENTITY inkel_pentiun IS
 end inkel_pentiun;
 
 ARCHITECTURE structure OF inkel_pentiun IS
-    COMPONENT reg32 IS
-        PORT(
-            Din : IN  STD_LOGIC_VECTOR(31 DOWNTO 0);
-            clk : IN  STD_LOGIC;
-            reset : IN  STD_LOGIC;
-            load : IN  STD_LOGIC;
-            Dout : OUT STD_LOGIC_VECTOR(31 DOWNTO 0)
-        );
-    END COMPONENT;
-
     COMPONENT adder32 is
         PORT(
             Din0 : IN  STD_LOGIC_VECTOR(31 DOWNTO 0);
@@ -37,6 +27,48 @@ ARCHITECTURE structure OF inkel_pentiun IS
         );
     END COMPONENT;
 
+    COMPONENT memory IS
+        PORT (clk : IN STD_LOGIC;
+              reset : IN STD_LOGIC;
+              f_req : IN STD_LOGIC;
+              d_req : IN STD_LOGIC;
+              d_we : IN STD_LOGIC;
+              f_done : OUT STD_LOGIC;
+              d_done : OUT STD_LOGIC;
+              f_addr : IN STD_LOGIC_VECTOR(31 DOWNTO 0);
+              d_addr : IN STD_LOGIC_VECTOR(31 DOWNTO 0);
+              d_data_in : IN STD_LOGIC_VECTOR(127 DOWNTO 0);
+              f_data_out : OUT STD_LOGIC_VECTOR(127 DOWNTO 0);
+              d_data_out : OUT STD_LOGIC_VECTOR(127 DOWNTO 0)
+        );
+    END COMPONENT;
+
+    COMPONENT pc IS
+        PORT (clk : IN STD_LOGIC;
+            reset : IN STD_LOGIC;
+            addr_jump : IN STD_LOGIC_VECTOR(31 DOWNTO 0);
+            branch_taken_D : IN STD_LOGIC;
+            load_PC_F : IN STD_LOGIC;
+            load_PC_UD : IN STD_LOGIC;
+            pc : OUT STD_LOGIC_VECTOR(31 DOWNTO 0)
+        );
+    END COMPONENT;
+
+    COMPONENT fetch IS
+        PORT (clk : IN STD_LOGIC;
+            reset : IN STD_LOGIC;
+            pc : IN STD_LOGIC_VECTOR(31 DOWNTO 0);
+            branch_taken_D : IN STD_LOGIC;
+            inst : OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
+            inst_v : OUT STD_LOGIC;
+            load_PC : OUT STD_LOGIC;
+            mem_req : OUT STD_LOGIC;
+            mem_addr : OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
+            mem_done : IN STD_LOGIC;
+            mem_data_in : IN STD_LOGIC_VECTOR(127 DOWNTO 0)
+        );
+    END COMPONENT;
+
     COMPONENT memoriaRAM_D IS
         PORT(
 	        CLK : IN STD_LOGIC;
@@ -45,29 +77,6 @@ ARCHITECTURE structure OF inkel_pentiun IS
             WE : IN STD_LOGIC;		-- write enable
 	        RE : IN STD_LOGIC;		-- read enable
 	        Dout : OUT STD_LOGIC_VECTOR (31 DOWNTO 0)
-        );
-    END COMPONENT;
-
-    --COMPONENT memoriaRAM_I IS
-    --    PORT(
-	--        CLK : IN STD_LOGIC;
-	--        ADDR : IN STD_LOGIC_VECTOR (31 DOWNTO 0); --Dir
-    --        Din : IN STD_LOGIC_VECTOR (31 DOWNTO 0);--entrada de datos para el puerto de escritura
-    --        WE : IN STD_LOGIC;		-- write enable
-	--        RE : IN STD_LOGIC;		-- read enable
-	--        Dout : OUT STD_LOGIC_VECTOR (31 DOWNTO 0)
-	--    );
-    --END COMPONENT;
-
-    COMPONENT ram IS
-        PORT (clk : IN STD_LOGIC;
-            reset : IN STD_LOGIC;
-            req : IN STD_LOGIC;
-            we : IN STD_LOGIC;
-            done : OUT STD_LOGIC;
-            addr : IN STD_LOGIC_VECTOR(31 DOWNTO 0);
-            data_in : IN STD_LOGIC_VECTOR(31 DOWNTO 0);
-            data_out : OUT STD_LOGIC_VECTOR(31 DOWNTO 0)
         );
     END COMPONENT;
 
@@ -151,7 +160,7 @@ ARCHITECTURE structure OF inkel_pentiun IS
 
     COMPONENT UA is
 
-        PORT(  
+        PORT(
             Rs2 : IN  STD_LOGIC_VECTOR (4 DOWNTO 0);
             RW_MEM : IN  STD_LOGIC_VECTOR (4 DOWNTO 0);
             RW_WB : IN STD_LOGIC_VECTOR (4 DOWNTO 0);
@@ -318,15 +327,17 @@ ARCHITECTURE structure OF inkel_pentiun IS
     END COMPONENT;
 
     -- 1 bit signals
-    SIGNAL load_PC: STD_LOGIC;
-    SIGNAL PCSrc: STD_LOGIC;
+    SIGNAL load_PC_F : STD_LOGIC;
+    SIGNAL inst_ready_F: STD_LOGIC;
+    SIGNAL load_PC_UD: STD_LOGIC;
     SIGNAL RegWrite_ID: STD_LOGIC;
     SIGNAL RegWrite_EX: STD_LOGIC;
     SIGNAL RegWrite_MEM: STD_LOGIC;
     SIGNAL RegWrite_WB: STD_LOGIC;
     SIGNAL Z: STD_LOGIC;
-    SIGNAL Branch: STD_LOGIC;
-    SIGNAL Jump: STD_LOGIC;
+    SIGNAL branch_D: STD_LOGIC;
+    SIGNAL jump_D: STD_LOGIC;
+    SIGNAL branch_taken_D : STD_LOGIC;
     SIGNAL ALUSrc_A_ID: STD_LOGIC;
     SIGNAL ALUSrc_B_ID: STD_LOGIC;
     SIGNAL ALUSrc_A_EX: STD_LOGIC;
@@ -361,6 +372,8 @@ ARCHITECTURE structure OF inkel_pentiun IS
     SIGNAL ID_Write: STD_LOGIC;
     SIGNAL done_i : STD_LOGIC;
     SIGNAL Banco_ID_reset : STD_LOGIC;
+    SIGNAL mem_req_F : STD_LOGIC;
+    SIGNAL mem_done_F : STD_LOGIC;
     -- 32 bits signals
     SIGNAL PC_in: STD_LOGIC_VECTOR(31 DOWNTO 0);
     SIGNAL PC_out: STD_LOGIC_VECTOR(31 DOWNTO 0);
@@ -389,6 +402,8 @@ ARCHITECTURE structure OF inkel_pentiun IS
     SIGNAL Mux_ant_A_out: STD_LOGIC_VECTOR(31 DOWNTO 0);
     SIGNAL Mux_ant_B_out: STD_LOGIC_VECTOR(31 DOWNTO 0);
     SIGNAL Mux_ant_C_out: STD_LOGIC_VECTOR(31 DOWNTO 0);
+    SIGNAL PC_next : STD_LOGIC_VECTOR(31 DOWNTO 0);
+    SIGNAL mem_addr_F : STD_LOGIC_VECTOR(31 DOWNTO 0);
     -- 5 bits signals
     SIGNAL Reg_Rs2_ID: STD_LOGIC_VECTOR(4 DOWNTO 0);
     SIGNAL Reg_Rs2_EX: STD_LOGIC_VECTOR(4 DOWNTO 0);
@@ -404,60 +419,62 @@ ARCHITECTURE structure OF inkel_pentiun IS
     SIGNAL Mux_ant_A: STD_LOGIC_VECTOR(1 DOWNTO 0);
     SIGNAL Mux_ant_B: STD_LOGIC_VECTOR(1 DOWNTO 0);
     SIGNAL Mux_ant_C: STD_LOGIC_VECTOR(1 DOWNTO 0);
+    -- 128 bits signals
+    SIGNAL mem_data_in_F : STD_LOGIC_VECTOR(127 DOWNTO 0);
 BEGIN
 
     ----------------------------- Fetch -------------------------------
-    pc: reg32 PORT map(
-        Din => PC_in,
+
+    pc_reg: pc PORT MAP (
         clk => clk,
         reset => reset,
-        load => load_PC,
-        Dout => PC_out
+        addr_jump => DirSalto,
+        branch_taken_D => branch_taken_D,
+        load_PC_F => load_PC_F,
+        load_PC_UD => load_PC_UD,
+        pc => PC_out
     );
 
-    four <= "00000000000000000000000000000100";
-
-    adder_4: adder32 PORT map (
-        Din0 => PC_out,
-        Din1 => four,
-        Dout => PC4
-    );
-
-    muxPC: mux2_1 PORT map(
-        Din0 => PC4,
-        DIn1 => DirSalto,
-        ctrl => PCSrc,
-        Dout => PC_in
-    );
-
-    --Mem_I: memoriaRAM_I PORT MAP(
-    --    CLK => CLK,
-    --    ADDR => PC_out,
-    --    Din => "00000000000000000000000000000000",
-    --    WE => '0',
-    --    RE => '1',
-    --    Dout => IR_in
-    --);
-
-    Mem_I: ram PORT MAP(
+    mem: memory PORT MAP (
         clk => clk,
         reset => reset,
-        req => '1',
-        we => '0',
-        data_in => (others => 'Z'),
-        done => done_i,
-        addr => pc_out,
-        data_out => IR_in
+        f_req => mem_req_F,
+        d_req => '0',
+        d_we => '0',
+        f_done => mem_done_F,
+        d_done => open, -- Unused output
+        f_addr => mem_addr_F,
+        d_addr => (OTHERS => 'Z'),
+        d_data_in => (OTHERS => 'Z'),
+        f_data_out => mem_data_in_F,
+        d_data_out => open -- Unusued output
     );
 
-    Banco_IF_ID: Banco_ID PORT map(
+    f: fetch PORT MAP (
+        clk => clk,
+        reset => reset,
+        pc => PC_out,
+        branch_taken_D => branch_taken_D,
+        inst => IR_in,
+        inst_v => inst_ready_F,
+        load_PC => load_PC_F,
+        mem_req => mem_req_F,
+        mem_addr => mem_addr_F,
+        mem_done => mem_done_F,
+        mem_data_in => mem_data_in_F
+    );
+
+    Banco_IF_ID: Banco_ID PORT MAP (
         IR_in => IR_in,
         PC_in => PC_out,
         clk => clk,
         reset => Banco_ID_reset,
         load => ID_Write,
         IR_ID => IR_ID,
-        PC_ID => PC_ID);
+        PC_ID => PC_ID
+    );
+
+    Banco_ID_reset <= reset OR branch_taken_D OR NOT inst_ready_F;
 
     ----------------------------- Decode -------------------------------
 
@@ -469,7 +486,7 @@ BEGIN
     	Rd_EX => RW_EX,
         Mul_det => Mul_det,
     	Sout => switch_ctrl,
-    	PC_Write => load_PC,
+    	PC_Write => load_PC_UD,
     	ID_Write => ID_Write
     );
 
@@ -536,8 +553,8 @@ BEGIN
     UC_seg: UC PORT map(
         reset => reset,
     	IR_op_code => IR_ID(31 DOWNTO 25),
-    	Branch => Branch,
-        Jump => Jump,
+    	Branch => branch_D,
+    	Jump => jump_D,
     	ALUSrc_A => ALUSrc_A_ID,
     	ALUSrc_B => ALUSrc_B_ID,
         Mul => Mul_ID,
@@ -548,7 +565,7 @@ BEGIN
     	RegWrite => RegWrite_ID
     );
 
-    ALUctrl_ID <= IR_ID(27 DOWNTO 25) when IR_ID(31 DOWNTO 28)= "0000" else "000"; 
+    ALUctrl_ID <= IR_ID(27 DOWNTO 25) when IR_ID(31 DOWNTO 28)= "0000" else "000";
 
     Banco_ID_EX: Banco_EX PORT MAP(
 	    clk => clk,
@@ -577,17 +594,16 @@ BEGIN
 	    ALUctrl_ID => ALUctrl_ID,
 	    ALUctrl_EX => ALUctrl_EX,
 	    inm_ext => inm_ext,
-	    inm_ext_EX => inm_ext_EX, 
+	    inm_ext_EX => inm_ext_EX,
 	    Reg_Rs2_ID => Reg_Rs2_ID,
 	    Reg_Rd_ID => IR_ID(24 DOWNTO 20),
 	    Reg_Rs1_ID => IR_ID(19 DOWNTO 15),
-	    Reg_Rs2_EX => Reg_Rs2_EX, 
-	    Reg_Rd_EX => RW_EX, 
+	    Reg_Rs2_EX => Reg_Rs2_EX,
+	    Reg_Rd_EX => RW_EX,
 	    Reg_Rs1_EX => Reg_Rs1_EX
     );
 
-    PCSrc <= (Branch AND Z) OR Jump;
-    Banco_ID_reset <= reset OR Branch;
+    branch_taken_D <= (Z AND branch_D) OR jump_D;
 
     --------------------------------- Execution ------------------------------------------
 
