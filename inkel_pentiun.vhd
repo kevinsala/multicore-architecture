@@ -101,6 +101,15 @@ ARCHITECTURE structure OF inkel_pentiun IS
         );
     END COMPONENT;
 
+    COMPONENT mux2_32bits is
+        PORT(
+            DIn0 : IN  STD_LOGIC_VECTOR (31 DOWNTO 0);
+            DIn1 : IN  STD_LOGIC_VECTOR (31 DOWNTO 0);
+            ctrl : IN  STD_LOGIC;
+            Dout : OUT  STD_LOGIC_VECTOR (31 DOWNTO 0)
+        );
+    END COMPONENT;
+
     COMPONENT BReg
         PORT(
             clk : IN  STD_LOGIC;
@@ -140,6 +149,7 @@ ARCHITECTURE structure OF inkel_pentiun IS
             Jump : OUT STD_LOGIC;
             ALUSrc_A : OUT  STD_LOGIC;
             ALUSrc_B : OUT  STD_LOGIC;
+            Mul : OUT STD_LOGIC;
             MemWrite : OUT  STD_LOGIC;
             Byte : OUT STD_LOGIC;
             MemRead : OUT  STD_LOGIC;
@@ -171,8 +181,9 @@ ARCHITECTURE structure OF inkel_pentiun IS
 		    Codigo_OP : IN STD_LOGIC_VECTOR(6 DOWNTO 0);
 		    ReadMem_EX : IN STD_LOGIC;
 		    Rs1_ID : IN STD_LOGIC_VECTOR (4 DOWNTO 0);
-		    Rs2_ID	: IN STD_LOGIC_VECTOR (4 DOWNTO 0);
-		    Rd_EX	: IN STD_LOGIC_VECTOR (4 DOWNTO 0);
+		    Rs2_ID : IN STD_LOGIC_VECTOR (4 DOWNTO 0);
+		    Rd_EX : IN STD_LOGIC_VECTOR (4 DOWNTO 0);
+            Mul_det : IN STD_LOGIC;
 		    Sout : OUT STD_LOGIC;
 		    PC_Write : OUT STD_LOGIC;
 		    ID_Write : OUT STD_LOGIC
@@ -192,6 +203,7 @@ ARCHITECTURE structure OF inkel_pentiun IS
             inm_ext_EX: OUT  STD_LOGIC_VECTOR(31 DOWNTO 0);
             ALUSrc_A_ID : IN  STD_LOGIC;
             ALUSrc_B_ID : IN  STD_LOGIC;
+            Mul_ID : IN STD_LOGIC;
             MemWrite_ID : IN  STD_LOGIC;
             Byte_ID : IN STD_LOGIC;
             MemRead_ID : IN  STD_LOGIC;
@@ -199,6 +211,7 @@ ARCHITECTURE structure OF inkel_pentiun IS
             RegWrite_ID : IN  STD_LOGIC;
             ALUSrc_A_EX : OUT  STD_LOGIC;
             ALUSrc_B_EX : OUT  STD_LOGIC;
+            Mul_EX : OUT STD_LOGIC;
             MemWrite_EX : OUT  STD_LOGIC;
             Byte_EX : OUT STD_LOGIC;
             MemRead_EX : OUT  STD_LOGIC;
@@ -235,6 +248,19 @@ ARCHITECTURE structure OF inkel_pentiun IS
         );
     END COMPONENT;
 
+    COMPONENT ALU_MUL
+        PORT(
+            clk : IN STD_LOGIC;
+            reset : IN STD_LOGIC;
+            load : IN STD_LOGIC;
+            DA : IN  STD_LOGIC_VECTOR (31 downto 0); --entrada 1
+            DB : IN  STD_LOGIC_VECTOR (31 downto 0); --entrada 2
+            --Counter : OUT STD_LOGIC_VECTOR(2 downto 0); --contador de los ciclos restantes para la multiplicacion
+            Mul_ready : OUT STD_LOGIC;
+            Dout : OUT  STD_LOGIC_VECTOR (31 downto 0)
+        ); 
+    END COMPONENT;
+
     COMPONENT Switch_UD is
 	    PORT(
 		    Reg_Write : IN STD_LOGIC;
@@ -244,6 +270,7 @@ ARCHITECTURE structure OF inkel_pentiun IS
 		    MemtoReg : IN STD_LOGIC;
 		    ALU_Src_A : IN STD_LOGIC;
 		    ALU_Src_B : IN STD_LOGIC;
+            Mul: IN STD_LOGIC;
 		    ctrl : IN STD_LOGIC;
 		    Reg_Write_out : OUT STD_LOGIC;
 		    Mem_Read_out : OUT STD_LOGIC;
@@ -251,7 +278,8 @@ ARCHITECTURE structure OF inkel_pentiun IS
 		    Mem_Write_out : OUT STD_LOGIC;
 		    MemtoReg_out : OUT STD_LOGIC;
 		    ALU_Src_A_out : OUT STD_LOGIC;
-		    ALU_Src_B_out : OUT STD_LOGIC
+		    ALU_Src_B_out : OUT STD_LOGIC;
+            Mul_out : OUT STD_LOGIC
         );
     END COMPONENT;
 
@@ -262,6 +290,7 @@ ARCHITECTURE structure OF inkel_pentiun IS
             clk : IN  STD_LOGIC;
             reset : IN  STD_LOGIC;
             load : IN  STD_LOGIC;
+            Mul_det : IN STD_LOGIC;
             MemWrite_EX : IN  STD_LOGIC;
             Byte_EX : IN STD_LOGIC;
             MemRead_EX : IN  STD_LOGIC;
@@ -313,6 +342,11 @@ ARCHITECTURE structure OF inkel_pentiun IS
     SIGNAL ALUSrc_B_ID: STD_LOGIC;
     SIGNAL ALUSrc_A_EX: STD_LOGIC;
     SIGNAL ALUSrc_B_EX: STD_LOGIC;
+    SIGNAL Mul_ID: STD_LOGIC;
+    SIGNAL Mul_EX: STD_LOGIC;
+    SIGNAL Mul_ready: STD_LOGIC;
+    SIGNAL Mul_det: STD_LOGIC;
+    SIGNAL Not_mul_det: STD_LOGIC;
     SIGNAL MemtoReg_ID: STD_LOGIC;
     SIGNAL MemtoReg_EX: STD_LOGIC;
     SIGNAL MemtoReg_MEM: STD_LOGIC;
@@ -333,6 +367,7 @@ ARCHITECTURE structure OF inkel_pentiun IS
     SIGNAL MemtoReg_UD: STD_LOGIC;
     SIGNAL ALU_Src_A_UD: STD_LOGIC;
     SIGNAL ALU_Src_B_UD: STD_LOGIC;
+    SIGNAL Mul_UD: STD_LOGIC;
     SIGNAL switch_ctrl: STD_LOGIC;
     SIGNAL ID_Write: STD_LOGIC;
     SIGNAL done_i : STD_LOGIC;
@@ -357,6 +392,8 @@ ARCHITECTURE structure OF inkel_pentiun IS
     SIGNAL BusA_EX: STD_LOGIC_VECTOR(31 DOWNTO 0);
     SIGNAL BusB_EX: STD_LOGIC_VECTOR(31 DOWNTO 0);
     SIGNAL BusB_MEM: STD_LOGIC_VECTOR(31 DOWNTO 0);
+    SIGNAL ALU_out: STD_LOGIC_VECTOR(31 DOWNTO 0);
+    SIGNAL Mul_out: STD_LOGIC_VECTOR(31 DOWNTO 0);    
     SIGNAL ALU_out_EX: STD_LOGIC_VECTOR(31 DOWNTO 0);
     SIGNAL ALU_out_MEM: STD_LOGIC_VECTOR(31 DOWNTO 0);
     SIGNAL ALU_out_WB: STD_LOGIC_VECTOR(31 DOWNTO 0);
@@ -377,6 +414,7 @@ ARCHITECTURE structure OF inkel_pentiun IS
     -- 3 bits signals
     SIGNAL ALUctrl_ID: STD_LOGIC_VECTOR(2 DOWNTO 0);
     SIGNAL ALUctrl_EX: STD_LOGIC_VECTOR(2 DOWNTO 0);
+    --SIGNAL Mul_counter: STD_LOGIC_VECTOR(2 DOWNTO 0);
     -- 2 bits signals
     SIGNAL Mux_ant_A: STD_LOGIC_VECTOR(1 DOWNTO 0);
     SIGNAL Mux_ant_B: STD_LOGIC_VECTOR(1 DOWNTO 0);
@@ -446,6 +484,7 @@ BEGIN
     	Rs1_ID => IR_ID(19 DOWNTO 15),
     	Rs2_ID => IR_ID(14 DOWNTO 10),
     	Rd_EX => RW_EX,
+        Mul_det => Mul_det,
     	Sout => switch_ctrl,
     	PC_Write => load_PC_UD,
     	ID_Write => ID_Write
@@ -459,6 +498,7 @@ BEGIN
     	MemtoReg => MemtoReg_ID,
     	ALU_Src_A => ALUSrc_A_ID,
         ALU_Src_B => ALUSrc_B_ID,
+        Mul => Mul_ID,
     	ctrl => switch_ctrl,
     	Reg_Write_out => Reg_Write_UD,
     	Mem_Read_out => Mem_Read_UD,
@@ -466,7 +506,8 @@ BEGIN
         Mem_Write_out => Mem_Write_UD,
     	MemtoReg_out => MemtoReg_UD,
     	ALU_Src_A_out => ALU_Src_A_UD,
-    	ALU_Src_B_out => ALU_Src_B_UD
+    	ALU_Src_B_out => ALU_Src_B_UD,
+        Mul_out => Mul_UD
     );
 
     Mux_RSrc2: mux2_5bits PORT MAP(
@@ -516,6 +557,7 @@ BEGIN
     	Jump => jump_D,
     	ALUSrc_A => ALUSrc_A_ID,
     	ALUSrc_B => ALUSrc_B_ID,
+        Mul => Mul_ID,
     	MemWrite => MemWrite_ID,
         Byte => Byte_ID,
         MemRead => MemRead_ID,
@@ -528,13 +570,14 @@ BEGIN
     Banco_ID_EX: Banco_EX PORT MAP(
 	    clk => clk,
 	    reset => reset,
-	    load => '1',
+	    load => Not_mul_det,
 	    busA => busA,
 	    busB => busB,
 	    busA_EX => busA_EX,
 	    busB_EX => busB_EX,
 	    ALUSrc_A_ID => ALU_Src_A_UD,
 	    ALUSrc_B_ID => ALU_Src_B_UD,
+        Mul_ID => Mul_UD,
 	    MemWrite_ID => Mem_Write_UD,
         Byte_ID => Byte_UD,
 	    MemRead_ID => Mem_Read_UD,
@@ -542,6 +585,7 @@ BEGIN
 	    RegWrite_ID => Reg_Write_UD,
 	    ALUSrc_A_EX => ALUSrc_A_EX,
 	    ALUSrc_B_EX => ALUSrc_B_EX,
+        Mul_EX => Mul_EX,
 	    MemWrite_EX => MemWrite_EX,
         Byte_EX => Byte_EX,
 	    MemRead_EX => MemRead_EX,
@@ -597,10 +641,28 @@ BEGIN
     );
 
     ALU_MIPs: ALU PORT MAP(
-	    DA => Mux_ant_A_out,
-	    DB => Mux_ant_B_out,
-	    ALUctrl => ALUctrl_EX,
-	    Dout => ALU_out_EX
+        DA => Mux_ant_A_out,
+        DB => Mux_ant_B_out,
+        ALUctrl => ALUctrl_EX,
+        Dout => ALU_out
+    );
+
+    Mul_unit: ALU_MUL PORT MAP(
+        clk => clk,
+        reset => reset,
+        load => Mul_EX,
+        DA => Mux_ant_A_out,
+        DB => Mux_ant_B_out,
+        --Counter => Mul_counter,
+        Mul_ready => Mul_ready,
+        Dout => Mul_out
+    );
+
+    mux_alu: mux2_32bits PORT MAP(
+        Din0 => ALU_out,
+        Din1 => Mul_out,
+        ctrl => Mul_EX,
+        Dout => ALU_out_EX
     );
 
     mux_c : mux4_32bits PORT map(
@@ -612,12 +674,16 @@ BEGIN
 	    Dout => Mux_ant_C_out
     );
 
+    Mul_det <= Mul_EX AND NOT(Mul_ready);
+    Not_mul_det <= NOT (Mul_det);
+
     Banco_EX_MEM: Banco_MEM PORT MAP(
         ALU_out_EX => ALU_out_EX,
         ALU_out_MEM => ALU_out_MEM,
         clk => clk,
         reset => reset,
         load => '1',
+        Mul_det => Mul_det,
         MemWrite_EX => MemWrite_EX,
         Byte_EX => Byte_EX,
         MemRead_EX => MemRead_EX,
