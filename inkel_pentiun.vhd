@@ -311,8 +311,8 @@ ARCHITECTURE structure OF inkel_pentiun IS
 	SIGNAL mem_data_in_F : STD_LOGIC_VECTOR(127 DOWNTO 0);
 
 	-- Decode stage signals
-	SIGNAL branch_D: STD_LOGIC;
-	SIGNAL jump_D: STD_LOGIC;
+	SIGNAL branch_D : STD_LOGIC;
+	SIGNAL jump_D : STD_LOGIC;
 	SIGNAL branch_taken_D : STD_LOGIC;
 	SIGNAL reg_we_D : STD_LOGIC;
 	SIGNAL mem_read_D : STD_LOGIC;
@@ -322,7 +322,9 @@ ARCHITECTURE structure OF inkel_pentiun IS
 	SIGNAL reg_src1_v_D : STD_LOGIC;
 	SIGNAL reg_src2_v_D : STD_LOGIC;
 	SIGNAL mul_D : STD_LOGIC;
-	SIGNAL ALU_ctrl_D: STD_LOGIC_VECTOR(2 DOWNTO 0);
+	SIGNAL switch_ctrl : STD_LOGIC;
+	SIGNAL Z : STD_LOGIC;
+	SIGNAL ALU_ctrl_D : STD_LOGIC_VECTOR(2 DOWNTO 0);
 	SIGNAL reg_src1_D : STD_LOGIC_VECTOR(4 DOWNTO 0);
 	SIGNAL reg_src2_D : STD_LOGIC_VECTOR(4 DOWNTO 0);
 	SIGNAL reg_dest_D : STD_LOGIC_VECTOR(4 DOWNTO 0);
@@ -353,8 +355,12 @@ ARCHITECTURE structure OF inkel_pentiun IS
 	SIGNAL reg_data1_A : STD_LOGIC_VECTOR(31 DOWNTO 0);
 	SIGNAL reg_data2_A : STD_LOGIC_VECTOR(31 DOWNTO 0);
 	SIGNAL inm_ext_A : STD_LOGIC_VECTOR(31 DOWNTO 0);
+	SIGNAL ALU_out_tmp : STD_LOGIC_VECTOR(31 DOWNTO 0);
 	SIGNAL ALU_out_A : STD_LOGIC_VECTOR(31 DOWNTO 0);
+	SIGNAL mul_out_tmp : STD_LOGIC_VECTOR(31 DOWNTO 0);
 	SIGNAL mem_data_A : STD_LOGIC_VECTOR(31 DOWNTO 0);
+	SIGNAL data1_BP_A : STD_LOGIC_VECTOR(31 DOWNTO 0);
+	SIGNAL data2_BP_A : STD_LOGIC_VECTOR(31 DOWNTO 0);
 
 	-- Cache stage signals
 	SIGNAL mem_we_C : STD_LOGIC;
@@ -362,17 +368,18 @@ ARCHITECTURE structure OF inkel_pentiun IS
 	SIGNAL mem_read_C : STD_LOGIC;
 	SIGNAL mem_to_reg_C : STD_LOGIC;
 	SIGNAL reg_we_C : STD_LOGIC;
-	SIGNAL reg_dest_C: STD_LOGIC_VECTOR(4 DOWNTO 0);
-	SIGNAL ALU_out_C: STD_LOGIC_VECTOR(31 DOWNTO 0);
+	SIGNAL reg_dest_C : STD_LOGIC_VECTOR(4 DOWNTO 0);
+	SIGNAL ALU_out_C : STD_LOGIC_VECTOR(31 DOWNTO 0);
 	SIGNAL data_in_C : STD_LOGIC_VECTOR(31 DOWNTO 0);
-	SIGNAL data_out_C: STD_LOGIC_VECTOR(31 DOWNTO 0);
+	SIGNAL data_out_C : STD_LOGIC_VECTOR(31 DOWNTO 0);
 
 	-- Writeback stage signals
 	SIGNAL reg_we_WB : STD_LOGIC;
 	SIGNAL mem_to_reg_WB: STD_LOGIC;
 	SIGNAL reg_dest_WB : STD_LOGIC_VECTOR(4 DOWNTO 0);
 	SIGNAL reg_data_WB : STD_LOGIC_VECTOR(31 DOWNTO 0);
-	SIGNAL mem_data_out_WB: STD_LOGIC_VECTOR(31 DOWNTO 0);
+	SIGNAL mem_data_out_WB : STD_LOGIC_VECTOR(31 DOWNTO 0);
+	SIGNAL ALU_out_WB : STD_LOGIC_VECTOR(31 DOWNTO 0);
 
 	-- Segmentation registers signals
 	SIGNAL reg_F_D_reset : STD_LOGIC;
@@ -389,22 +396,11 @@ ARCHITECTURE structure OF inkel_pentiun IS
 	SIGNAL reg_we_UD : STD_LOGIC;
 	SIGNAL mul_UD : STD_LOGIC;
 
-	-- 1 bit signals
-	SIGNAL Z: STD_LOGIC;
-	SIGNAL switch_ctrl: STD_LOGIC;
-	SIGNAL done_i : STD_LOGIC;
-	-- 32 bits signals
-	SIGNAL inm_ext_x4: STD_LOGIC_VECTOR(31 DOWNTO 0);
-	SIGNAL ALU_out: STD_LOGIC_VECTOR(31 DOWNTO 0);
-	SIGNAL Mul_out: STD_LOGIC_VECTOR(31 DOWNTO 0);
-	SIGNAL ALU_out_WB: STD_LOGIC_VECTOR(31 DOWNTO 0);
-	SIGNAL Mux_ant_A_out: STD_LOGIC_VECTOR(31 DOWNTO 0);
-	SIGNAL Mux_ant_B_out: STD_LOGIC_VECTOR(31 DOWNTO 0);
-	SIGNAL PC_next : STD_LOGIC_VECTOR(31 DOWNTO 0);
-	-- 2 bits signals
-	SIGNAL Mux_ant_A: STD_LOGIC_VECTOR(1 DOWNTO 0);
-	SIGNAL Mux_ant_B: STD_LOGIC_VECTOR(1 DOWNTO 0);
-	SIGNAL Mux_ant_C: STD_LOGIC_VECTOR(1 DOWNTO 0);
+	-- Bypass unit signals
+	SIGNAL mux_src1_BP : STD_LOGIC_VECTOR(1 DOWNTO 0);
+	SIGNAL mux_src2_BP : STD_LOGIC_VECTOR(1 DOWNTO 0);
+	SIGNAL mux_mem_data_BP : STD_LOGIC_VECTOR(1 DOWNTO 0);
+
 BEGIN
 
 	----------------------------- Fetch -------------------------------
@@ -582,9 +578,9 @@ BEGIN
 		MemWrite_EX => mem_write_A,
 		RegWrite_Mem => reg_we_C,
 		RegWrite_WB => reg_we_WB,
-		Mux_ant_A => Mux_ant_A,
-		Mux_ant_B => Mux_ant_B,
-		Mux_ant_C => Mux_ant_C
+		Mux_ant_A => mux_src1_BP,
+		Mux_ant_B => mux_src2_BP,
+		Mux_ant_C => mux_mem_data_BP
 	);
 
 	mux_a: mux4_32bits PORT MAP(
@@ -592,8 +588,8 @@ BEGIN
 		Din1 => reg_data_WB,
 		Din2 => ALU_out_C,
 		DIn3 => "00000000000000000000000000000000",
-		ctrl => Mux_ant_A,
-		Dout => Mux_ant_A_out
+		ctrl => mux_src1_BP,
+		Dout => data1_BP_A
 	);
 
 	mux_b: mux4_32bits PORT MAP(
@@ -601,31 +597,31 @@ BEGIN
 		Din1 => reg_data_WB,
 		Din2 => ALU_out_C,
 		DIn3 => inm_ext_A,
-		ctrl => Mux_ant_B,
-		Dout => Mux_ant_B_out
+		ctrl => mux_src2_BP,
+		Dout => data2_BP_A
 	);
 
 	ALU_MIPs: ALU PORT MAP(
-		DA => Mux_ant_A_out,
-		DB => Mux_ant_B_out,
+		DA => data1_BP_A,
+		DB => data2_BP_A,
 		ALUctrl => ALU_ctrl_A,
-		Dout => ALU_out_A
+		Dout => ALU_out_tmp
 	);
 
 	Mul_unit: ALU_MUL PORT MAP(
 		clk => clk,
 		reset => reset,
 		load => mul_A,
-		DA => Mux_ant_A_out,
-		DB => Mux_ant_B_out,
+		DA => data1_BP_A,
+		DB => data2_BP_A,
 		--Counter => Mul_counter,
 		Mul_ready => mul_ready_A,
-		Dout => Mul_out
+		Dout => mul_out_tmp
 	);
 
 	mux_alu: mux2_32bits PORT MAP(
-		Din0 => ALU_out,
-		Din1 => Mul_out,
+		Din0 => ALU_out_tmp,
+		Din1 => mul_out_tmp,
 		ctrl => mul_A,
 		Dout => ALU_out_A
 	);
@@ -635,7 +631,7 @@ BEGIN
 		Din1 => reg_data_WB,
 		Din2 => ALU_out_C,
 		DIn3 => "00000000000000000000000000000000",
-		ctrl => Mux_ant_C,
+		ctrl => mux_mem_data_BP,
 		Dout => mem_data_A
 	);
 
