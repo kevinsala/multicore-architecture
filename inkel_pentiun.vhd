@@ -10,14 +10,6 @@ ENTITY inkel_pentiun IS
 end inkel_pentiun;
 
 ARCHITECTURE structure OF inkel_pentiun IS
-	COMPONENT adder32 IS
-		PORT(
-			Din0 : IN  STD_LOGIC_VECTOR(31 DOWNTO 0);
-			Din1 : IN  STD_LOGIC_VECTOR(31 DOWNTO 0);
-			Dout : OUT  STD_LOGIC_VECTOR(31 DOWNTO 0)
-		);
-	END COMPONENT;
-
 	COMPONENT mux2_1 IS
 		PORT(
 			DIn0 : IN  STD_LOGIC_VECTOR(31 DOWNTO 0);
@@ -95,15 +87,6 @@ ARCHITECTURE structure OF inkel_pentiun IS
 		);
 	END COMPONENT;
 
-	COMPONENT mux2_5bits IS
-		PORT(
-			DIn0 : IN STD_LOGIC_VECTOR (4 DOWNTO 0);
-			DIn1 : IN STD_LOGIC_VECTOR (4 DOWNTO 0);
-			ctrl : IN STD_LOGIC;
-			Dout : OUT STD_LOGIC_VECTOR (4 DOWNTO 0)
-		);
-	END COMPONENT;
-
 	COMPONENT mux2_32bits IS
 		PORT(
 			DIn0 : IN  STD_LOGIC_VECTOR (31 DOWNTO 0);
@@ -127,26 +110,16 @@ ARCHITECTURE structure OF inkel_pentiun IS
 		);
 	END COMPONENT;
 
-	COMPONENT Ext_signo IS
-		PORT(
-			opcode : IN STD_LOGIC_VECTOR (6 DOWNTO 0);
-			offsethi : IN STD_LOGIC_VECTOR (4 DOWNTO 0);
-			offsetm : IN STD_LOGIC_VECTOR (4 DOWNTO 0);
-			offsetlo : IN STD_LOGIC_VECTOR (9 DOWNTO 0);
-			inm_ext : OUT STD_LOGIC_VECTOR (31 DOWNTO 0)
-		);
-	END COMPONENT;
-
-	COMPONENT two_bits_shifter IS
-		PORT(
-			Din : IN STD_LOGIC_VECTOR (31 DOWNTO 0);
-			Dout : OUT STD_LOGIC_VECTOR (31 DOWNTO 0)
-		);
-	END COMPONENT;
-
 	COMPONENT decode IS
 		PORT(
-			op_code : IN STD_LOGIC_VECTOR(6 DOWNTO 0);
+			inst : IN STD_LOGIC_VECTOR(31 DOWNTO 0);
+			pc : IN STD_LOGIC_VECTOR(31 DOWNTO 0);
+			op_code : OUT STD_LOGIC_VECTOR(6 DOWNTO 0);
+			reg_src1 : OUT STD_LOGIC_VECTOR(4 DOWNTO 0);
+			reg_src2 : OUT STD_LOGIC_VECTOR(4 DOWNTO 0);
+			reg_dest : OUT STD_LOGIC_VECTOR(4 DOWNTO 0);
+			calc_addr : OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
+			ALU_ctrl : OUT STD_LOGIC_VECTOR(2 DOWNTO 0);
 			branch : OUT STD_LOGIC;
 			jump : OUT STD_LOGIC;
 			reg_src1_v : OUT STD_LOGIC;
@@ -350,7 +323,10 @@ ARCHITECTURE structure OF inkel_pentiun IS
 	SIGNAL reg_src2_v_D : STD_LOGIC;
 	SIGNAL mul_D : STD_LOGIC;
 	SIGNAL ALU_ctrl_D: STD_LOGIC_VECTOR(2 DOWNTO 0);
+	SIGNAL reg_src1_D : STD_LOGIC_VECTOR(4 DOWNTO 0);
 	SIGNAL reg_src2_D : STD_LOGIC_VECTOR(4 DOWNTO 0);
+	SIGNAL reg_dest_D : STD_LOGIC_VECTOR(4 DOWNTO 0);
+	SIGNAL op_code_D : STD_LOGIC_VECTOR(6 DOWNTO 0);
 	SIGNAL inst_D : STD_LOGIC_VECTOR(31 DOWNTO 0);
 	SIGNAL pc_D : STD_LOGIC_VECTOR(31 DOWNTO 0);
 	SIGNAL calc_addr_D : STD_LOGIC_VECTOR(31 DOWNTO 0);
@@ -489,15 +465,36 @@ BEGIN
 	----------------------------- Decode -------------------------------
 
 	UD_seg: UD PORT MAP(
-		Codigo_OP => inst_D(31 DOWNTO 25),
+		Codigo_OP => op_code_D,
 		ReadMem_EX => mem_read_A,
-		Rs1_ID => inst_D(19 DOWNTO 15),
-		Rs2_ID => inst_D(14 DOWNTO 10),
+		Rs1_ID => reg_src1_D,
+		Rs2_ID => reg_src2_D,
 		Rd_EX => reg_dest_A,
 		Mul_det => mul_det_A,
 		Sout => switch_ctrl,
 		PC_Write => load_PC_UD,
 		ID_Write => reg_F_D_we
+	);
+
+	d: decode PORT MAP(
+		inst => inst_D,
+		pc => pc_D,
+		op_code => op_code_D,
+		reg_src1 => reg_src1_D,
+		reg_src2 => reg_src2_D,
+		reg_dest => reg_dest_D,
+		calc_addr => calc_addr_D,
+		ALU_ctrl => ALU_ctrl_D,
+		branch => branch_D,
+		jump => jump_D,
+		reg_src1_v => reg_src1_v_D,
+		reg_src2_v => reg_src2_v_D,
+		mul => mul_D,
+		mem_write => mem_write_D,
+		byte => byte_D,
+		mem_read => mem_read_D,
+		mem_to_reg => mem_to_reg_D,
+		reg_we => reg_we_D
 	);
 
 	Switch_det: Switch_UD PORT MAP(
@@ -520,17 +517,10 @@ BEGIN
 		Mul_out => mul_UD
 	);
 
-	Mux_RSrc2: mux2_5bits PORT MAP(
-		Din0 => inst_D(14 DOWNTO 10),
-		Din1 => inst_D(24 DOWNTO 20),
-		ctrl => mem_write_UD,
-		Dout => reg_src2_D
-	);
-
 	Register_bank: BReg PORT MAP(
 		clk => clk,
 		reset => reset,
-		RA => inst_D(19 DOWNTO 15),
+		RA => reg_src1_D,
 		RB => reg_src2_D,
 		RW => reg_dest_WB,
 		BusW => reg_data_WB,
@@ -539,42 +529,7 @@ BEGIN
 		BusB => reg_data2_D
 	);
 
-	sign_ext: Ext_signo PORT MAP(
-		opcode => inst_D(31 downto 25),
-		offsethi => inst_D(24 downto 20),
-		offsetm => inst_D(14 downto 10),
-		offsetlo => inst_D(9 downto 0),
-		inm_ext => inm_ext_D
-	);
-
-	two_bits_shift: two_bits_shifter PORT MAP(
-		Din => inm_ext_D,
-		Dout => inm_ext_x4
-	);
-
-	adder_dir: adder32 PORT MAP(
-		Din0 => inm_ext_x4,
-		Din1 => pc_D,
-		Dout => calc_addr_D
-	);
-
 	Z <= '1' WHEN (reg_data1_D = reg_data2_D) ELSE '0';
-
-	d: decode PORT MAP(
-		op_code => inst_D(31 DOWNTO 25),
-		branch => branch_D,
-		jump => jump_D,
-		reg_src1_v => reg_src1_v_D,
-		reg_src2_v => reg_src2_v_D,
-		mul => mul_D,
-		mem_write => mem_write_D,
-		byte => byte_D,
-		mem_read => mem_read_D,
-		mem_to_reg => mem_to_reg_D,
-		reg_we => reg_we_D
-	);
-
-	ALU_ctrl_D <= inst_D(27 DOWNTO 25) when inst_D(31 DOWNTO 28)= "0000" else "000";
 	branch_taken_D <= (Z AND branch_D) OR jump_D;
 
 	reg_D_A: Banco_EX PORT MAP(
@@ -606,8 +561,8 @@ BEGIN
 		inm_ext => inm_ext_D,
 		inm_ext_EX => inm_ext_A,
 		Reg_Rs2_ID => reg_src2_D,
-		Reg_Rd_ID => inst_D(24 DOWNTO 20),
-		Reg_Rs1_ID => inst_D(19 DOWNTO 15),
+		Reg_Rd_ID => reg_dest_D,
+		Reg_Rs1_ID => reg_src1_D,
 		Reg_Rs2_EX => reg_src2_A,
 		Reg_Rd_EX => reg_dest_A,
 		Reg_Rs1_EX => reg_src1_A
