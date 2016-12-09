@@ -339,6 +339,8 @@ ARCHITECTURE structure OF inkel_pentiun IS
 	SIGNAL mem_data_in_F : STD_LOGIC_VECTOR(127 DOWNTO 0);
 
 	-- Decode stage signals
+	SIGNAL branch_D: STD_LOGIC;
+	SIGNAL jump_D: STD_LOGIC;
 	SIGNAL branch_taken_D : STD_LOGIC;
 	SIGNAL reg_we_D : STD_LOGIC;
 	SIGNAL mem_read_D : STD_LOGIC;
@@ -371,16 +373,31 @@ ARCHITECTURE structure OF inkel_pentiun IS
 	SIGNAL reg_we_A : STD_LOGIC;
 	SIGNAL ALU_ctrl_A : STD_LOGIC_VECTOR(2 DOWNTO 0);
 	SIGNAL reg_dest_A : STD_LOGIC_VECTOR(4 DOWNTO 0);
-	SIGNAL reg_src1_A: STD_LOGIC_VECTOR(4 DOWNTO 0);
+	SIGNAL reg_src1_A : STD_LOGIC_VECTOR(4 DOWNTO 0);
 	SIGNAL Reg_src2_A : STD_LOGIC_VECTOR(4 DOWNTO 0);
 	SIGNAL reg_data1_A : STD_LOGIC_VECTOR(31 DOWNTO 0);
 	SIGNAL reg_data2_A : STD_LOGIC_VECTOR(31 DOWNTO 0);
 	SIGNAL inm_ext_A : STD_LOGIC_VECTOR(31 DOWNTO 0);
+	SIGNAL ALU_out_A : STD_LOGIC_VECTOR(31 DOWNTO 0);
+	SIGNAL mem_data_A : STD_LOGIC_VECTOR(31 DOWNTO 0);
 
-	-- WB stage signals
+	-- Cache stage signals
+	SIGNAL mem_we_C : STD_LOGIC;
+	SIGNAL byte_C : STD_LOGIC;
+	SIGNAL mem_read_C : STD_LOGIC;
+	SIGNAL mem_to_reg_C : STD_LOGIC;
+	SIGNAL reg_we_C : STD_LOGIC;
+	SIGNAL reg_dest_C: STD_LOGIC_VECTOR(4 DOWNTO 0);
+	SIGNAL ALU_out_C: STD_LOGIC_VECTOR(31 DOWNTO 0);
+	SIGNAL data_in_C : STD_LOGIC_VECTOR(31 DOWNTO 0);
+	SIGNAL data_out_C: STD_LOGIC_VECTOR(31 DOWNTO 0);
+
+	-- Writeback stage signals
 	SIGNAL reg_we_WB : STD_LOGIC;
+	SIGNAL mem_to_reg_WB: STD_LOGIC;
 	SIGNAL reg_dest_WB : STD_LOGIC_VECTOR(4 DOWNTO 0);
 	SIGNAL reg_data_WB : STD_LOGIC_VECTOR(31 DOWNTO 0);
+	SIGNAL mem_data_out_WB: STD_LOGIC_VECTOR(31 DOWNTO 0);
 
 	-- Segmentation registers signals
 	SIGNAL reg_F_D_reset : STD_LOGIC;
@@ -398,33 +415,17 @@ ARCHITECTURE structure OF inkel_pentiun IS
 	SIGNAL mul_UD : STD_LOGIC;
 
 	-- 1 bit signals
-	SIGNAL RegWrite_MEM: STD_LOGIC;
 	SIGNAL Z: STD_LOGIC;
-	SIGNAL branch_D: STD_LOGIC;
-	SIGNAL jump_D: STD_LOGIC;
-	SIGNAL MemtoReg_MEM: STD_LOGIC;
-	SIGNAL MemtoReg_WB: STD_LOGIC;
-	SIGNAL Byte_MEM: STD_LOGIC;
-	SIGNAL MemWrite_MEM: STD_LOGIC;
-	SIGNAL MemRead_MEM: STD_LOGIC;
 	SIGNAL switch_ctrl: STD_LOGIC;
 	SIGNAL done_i : STD_LOGIC;
 	-- 32 bits signals
 	SIGNAL inm_ext_x4: STD_LOGIC_VECTOR(31 DOWNTO 0);
-	SIGNAL BusB_MEM: STD_LOGIC_VECTOR(31 DOWNTO 0);
 	SIGNAL ALU_out: STD_LOGIC_VECTOR(31 DOWNTO 0);
 	SIGNAL Mul_out: STD_LOGIC_VECTOR(31 DOWNTO 0);
-	SIGNAL ALU_out_EX: STD_LOGIC_VECTOR(31 DOWNTO 0);
-	SIGNAL ALU_out_MEM: STD_LOGIC_VECTOR(31 DOWNTO 0);
 	SIGNAL ALU_out_WB: STD_LOGIC_VECTOR(31 DOWNTO 0);
-	SIGNAL Mem_out: STD_LOGIC_VECTOR(31 DOWNTO 0);
-	SIGNAL MDR: STD_LOGIC_VECTOR(31 DOWNTO 0);
 	SIGNAL Mux_ant_A_out: STD_LOGIC_VECTOR(31 DOWNTO 0);
 	SIGNAL Mux_ant_B_out: STD_LOGIC_VECTOR(31 DOWNTO 0);
-	SIGNAL Mux_ant_C_out: STD_LOGIC_VECTOR(31 DOWNTO 0);
 	SIGNAL PC_next : STD_LOGIC_VECTOR(31 DOWNTO 0);
-	-- 5 bits signals
-	SIGNAL RW_MEM: STD_LOGIC_VECTOR(4 DOWNTO 0);
 	-- 2 bits signals
 	SIGNAL Mux_ant_A: STD_LOGIC_VECTOR(1 DOWNTO 0);
 	SIGNAL Mux_ant_B: STD_LOGIC_VECTOR(1 DOWNTO 0);
@@ -620,13 +621,13 @@ BEGIN
 
 	UA_seg: UA PORT MAP(
 		Rs2 => reg_src2_A,
-		RW_MEM => RW_MEM,
+		RW_MEM => reg_dest_C,
 		RW_WB => reg_dest_WB,
 		Rs1 => reg_src1_A,
 		ALUSrc_A => reg_src1_v_A,
 		ALUSrc_B => reg_src2_v_A,
 		MemWrite_EX => mem_write_A,
-		RegWrite_Mem => RegWrite_MEM,
+		RegWrite_Mem => reg_we_C,
 		RegWrite_WB => reg_we_WB,
 		Mux_ant_A => Mux_ant_A,
 		Mux_ant_B => Mux_ant_B,
@@ -636,7 +637,7 @@ BEGIN
 	mux_a: mux4_32bits PORT MAP(
 		Din0 => reg_data1_A,
 		Din1 => reg_data_WB,
-		Din2 => ALU_out_MEM,
+		Din2 => ALU_out_C,
 		DIn3 => "00000000000000000000000000000000",
 		ctrl => Mux_ant_A,
 		Dout => Mux_ant_A_out
@@ -645,7 +646,7 @@ BEGIN
 	mux_b: mux4_32bits PORT MAP(
 		Din0 => reg_data2_A,
 		Din1 => reg_data_WB,
-		Din2 => ALU_out_MEM,
+		Din2 => ALU_out_C,
 		DIn3 => inm_ext_A,
 		ctrl => Mux_ant_B,
 		Dout => Mux_ant_B_out
@@ -655,7 +656,7 @@ BEGIN
 		DA => Mux_ant_A_out,
 		DB => Mux_ant_B_out,
 		ALUctrl => ALU_ctrl_A,
-		Dout => ALU_out_EX
+		Dout => ALU_out_A
 	);
 
 	Mul_unit: ALU_MUL PORT MAP(
@@ -673,24 +674,24 @@ BEGIN
 		Din0 => ALU_out,
 		Din1 => Mul_out,
 		ctrl => mul_A,
-		Dout => ALU_out_EX
+		Dout => ALU_out_A
 	);
 
 	mux_c : mux4_32bits PORT MAP(
 		Din0 => reg_data2_A,
 		Din1 => reg_data_WB,
-		Din2 => ALU_out_MEM,
+		Din2 => ALU_out_C,
 		DIn3 => "00000000000000000000000000000000",
 		ctrl => Mux_ant_C,
-		Dout => Mux_ant_C_out
+		Dout => mem_data_A
 	);
 
 	mul_det_A <= mul_A AND NOT(mul_ready_A);
 	not_mul_det_A <= NOT (mul_det_A);
 
 	Banco_EX_MEM: Banco_MEM PORT MAP(
-		ALU_out_EX => ALU_out_EX,
-		ALU_out_MEM => ALU_out_MEM,
+		ALU_out_EX => ALU_out_A,
+		ALU_out_MEM => ALU_out_C,
 		clk => clk,
 		reset => reset,
 		load => '1',
@@ -700,48 +701,48 @@ BEGIN
 		MemRead_EX => mem_read_A,
 		MemtoReg_EX => mem_to_reg_A,
 		RegWrite_EX => reg_we_A,
-		MemWrite_MEM => MemWrite_MEM,
-		Byte_MEM => Byte_MEM,
-		MemRead_MEM => MemRead_MEM,
-		MemtoReg_MEM => MemtoReg_MEM,
-		RegWrite_MEM => RegWrite_MEM,
-		BusB_EX => Mux_ant_C_out,
-		BusB_MEM => BusB_MEM,
+		MemWrite_MEM => mem_we_C,
+		Byte_MEM => byte_C,
+		MemRead_MEM => mem_read_C,
+		MemtoReg_MEM => mem_to_reg_C,
+		RegWrite_MEM => reg_we_C,
+		BusB_EX => mem_data_A,
+		BusB_MEM => data_in_C,
 		RW_EX => reg_dest_A,
-		RW_MEM => RW_MEM
+		RW_MEM => reg_dest_C
 	);
 
 	-------------------------------- Memory  ----------------------------------------------
 
 	Mem_D: memoriaRAM_D PORT MAP(
 		CLK => CLK,
-		ADDR => ALU_out_MEM,
-		Din => BusB_MEM,
-		WE => MemWrite_MEM,
-		RE => MemRead_MEM,
-		Dout => Mem_out
+		ADDR => ALU_out_C,
+		Din => data_in_C,
+		WE => mem_we_C,
+		RE => mem_read_C,
+		Dout => data_out_C
 	);
 
 	Banco_MEM_WB: Banco_WB PORT MAP(
-		ALU_out_MEM => ALU_out_MEM,
+		ALU_out_MEM => ALU_out_C,
 		ALU_out_WB => ALU_out_WB,
-		Mem_out => Mem_out,
-		MDR => MDR,
+		Mem_out => data_out_C,
+		MDR => mem_data_out_WB,
 		clk => clk,
 		reset => reset,
 		load => '1',
-		MemtoReg_MEM => MemtoReg_MEM,
-		RegWrite_MEM => RegWrite_MEM,
-		MemtoReg_WB => MemtoReg_WB,
+		MemtoReg_MEM => mem_to_reg_C,
+		RegWrite_MEM => reg_we_C,
+		MemtoReg_WB => mem_to_reg_WB,
 		RegWrite_WB => reg_we_WB,
-		RW_MEM => RW_MEM,
+		RW_MEM => reg_dest_C,
 		RW_WB => reg_dest_WB
 	);
 
 	mux_busW: mux2_1 PORT map(
 		Din0 => ALU_out_WB,
-		DIn1 => MDR,
-		ctrl => MemtoReg_WB,
+		DIn1 => mem_data_out_WB,
+		ctrl => mem_to_reg_WB,
 		Dout => reg_data_WB
 	);
 
