@@ -144,20 +144,19 @@ ARCHITECTURE structure OF inkel_pentiun IS
 		);
 	END COMPONENT;
 
-	COMPONENT UC IS
+	COMPONENT decode IS
 		PORT(
-			reset : IN STD_LOGIC;
-			IR_op_code : IN STD_LOGIC_VECTOR (6 DOWNTO 0);
-			Branch : OUT STD_LOGIC;
-			Jump : OUT STD_LOGIC;
-			ALUSrc_A : OUT STD_LOGIC;
-			ALUSrc_B : OUT STD_LOGIC;
-			Mul : OUT STD_LOGIC;
-			MemWrite : OUT STD_LOGIC;
-			Byte : OUT STD_LOGIC;
-			MemRead : OUT STD_LOGIC;
-			MemtoReg : OUT STD_LOGIC;
-			RegWrite : OUT STD_LOGIC
+			op_code : IN STD_LOGIC_VECTOR(6 DOWNTO 0);
+			branch : OUT STD_LOGIC;
+			jump : OUT STD_LOGIC;
+			reg_src1_v : OUT STD_LOGIC;
+			reg_src2_v : OUT STD_LOGIC;
+			mul : OUT STD_LOGIC;
+			mem_write : OUT STD_LOGIC;
+			byte : OUT STD_LOGIC;
+			mem_read : OUT STD_LOGIC;
+			mem_to_reg : OUT STD_LOGIC;
+			reg_we : OUT STD_LOGIC
 		);
 	END COMPONENT;
 
@@ -561,19 +560,18 @@ BEGIN
 
 	Z <= '1' WHEN (reg_data1_D = reg_data2_D) ELSE '0';
 
-	UC_seg: UC PORT map(
-		reset => reset,
-		IR_op_code => inst_D(31 DOWNTO 25),
-		Branch => branch_D,
-		Jump => jump_D,
-		ALUSrc_A => reg_src1_v_D,
-		ALUSrc_B => reg_src2_v_D,
-		Mul => mul_D,
-		MemWrite => mem_write_D,
-		Byte => byte_D,
-		MemRead => mem_read_D,
-		MemtoReg => mem_to_reg_D,
-		RegWrite => reg_we_D
+	d: decode PORT MAP(
+		op_code => inst_D(31 DOWNTO 25),
+		branch => branch_D,
+		jump => jump_D,
+		reg_src1_v => reg_src1_v_D,
+		reg_src2_v => reg_src2_v_D,
+		mul => mul_D,
+		mem_write => mem_write_D,
+		byte => byte_D,
+		mem_read => mem_read_D,
+		mem_to_reg => mem_to_reg_D,
+		reg_we => reg_we_D
 	);
 
 	ALU_ctrl_D <= inst_D(27 DOWNTO 25) when inst_D(31 DOWNTO 28)= "0000" else "000";
