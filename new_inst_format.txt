@@ -3,6 +3,10 @@ formato add:
 op	     rd	  	rs1	   rs2	  resto
 0000000  00011  00001  00010  0000000000	ADD R3, R1, R2
 
+formato mul:
+op	     rd	  	rs1	   rs2	  resto
+0000010  00011  00001  00010  0000000000	MUL R3, R1, R2
+
 M-type
 formato ldw:
 op	     rd	   	rs1	   offset
@@ -23,7 +27,7 @@ op	     offsetHi  rs1	  rs2	 offsetLo
 
 formato jump:
 op	     offsetHi  rs1	  offsetM  offsetLo
-0110001  11111     00000  11111    1111111100		JUMP 0	dir 0x10; queremos saltar a la posicion 0, y el procesador calcula la direccion haciendo PC + 4*Ext(inm) por eso ponemos fffC: 4*fffC+0010=0000
+0110001  11111     00000  11111    1111111001		JUMP 0	dir 0x10; queremos saltar a la posicion 0, y el procesador calcula la direccion haciendo PC + 4*Ext(inm) por eso ponemos fffC: 4*fffA+0018=0000
 
 
 LDW R1, 0(R0)
@@ -38,11 +42,14 @@ ADD R3, R1, R2
 STW R3, 8(R0)
 0010011  00011  00000  000000000001000		26300008
 
+MUL R3, R1, R2
+0000010  00011  00001  00010  0000000000	04308800
+
 MOV R1, R2
 0010100  00001  00010  000000000000000		28110000
 
 BEQ R0, R0, 0
-0110000  11111  00000  00000  1111111100	61f003fc
+0110000  11111  00000  00000  1111111001	61f003f9
 
 JUMP 0
-0110001  11111  00000  11111  1111111100	63f07ffc
+0110001  11111  00000  11111  1111111001	63f07ff9
