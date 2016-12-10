@@ -310,21 +310,21 @@ ARCHITECTURE structure OF inkel_pentiun IS
 		);
 	END COMPONENT;
 
-	COMPONENT Banco_WB IS
+	COMPONENT reg_CW IS
 		PORT(
-			ALU_out_MEM : IN STD_LOGIC_VECTOR(31 DOWNTO 0);
-			ALU_out_WB : OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
-			MEM_out : IN STD_LOGIC_VECTOR(31 DOWNTO 0);
-			MDR : OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
 			clk : IN STD_LOGIC;
 			reset : IN STD_LOGIC;
-			load : IN STD_LOGIC;
-			MemtoReg_MEM : IN STD_LOGIC;
-			RegWrite_MEM : IN STD_LOGIC;
-			MemtoReg_WB : OUT STD_LOGIC;
-			RegWrite_WB : OUT STD_LOGIC;
-			RW_MEM : IN STD_LOGIC_VECTOR(4 DOWNTO 0);
-			RW_WB : OUT STD_LOGIC_VECTOR(4 DOWNTO 0)
+			we : IN STD_LOGIC;
+			mem_to_reg_in : IN STD_LOGIC;
+			reg_we_in : IN STD_LOGIC;
+			reg_dest_in : IN STD_LOGIC_VECTOR(4 DOWNTO 0);
+			ALU_out_in : IN STD_LOGIC_VECTOR(31 DOWNTO 0);
+			mem_data_out_in : IN STD_LOGIC_VECTOR(31 DOWNTO 0);
+			mem_to_reg_out : OUT STD_LOGIC;
+			reg_we_out : OUT STD_LOGIC;
+			reg_dest_out : OUT STD_LOGIC_VECTOR(4 DOWNTO 0);
+			ALU_out_out : OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
+			mem_data_out_out : OUT STD_LOGIC_VECTOR(31 DOWNTO 0)
 		);
 	END COMPONENT;
 
@@ -405,6 +405,7 @@ ARCHITECTURE structure OF inkel_pentiun IS
 	SIGNAL reg_we_WB : STD_LOGIC;
 	SIGNAL mem_to_reg_WB: STD_LOGIC;
 	SIGNAL reg_dest_WB : STD_LOGIC_VECTOR(4 DOWNTO 0);
+	SIGNAL pc_WB : STD_LOGIC_VECTOR(31 DOWNTO 0);
 	SIGNAL reg_data_WB : STD_LOGIC_VECTOR(31 DOWNTO 0);
 	SIGNAL mem_data_out_WB : STD_LOGIC_VECTOR(31 DOWNTO 0);
 	SIGNAL ALU_out_WB : STD_LOGIC_VECTOR(31 DOWNTO 0);
@@ -758,23 +759,39 @@ BEGIN
 		Dout => data_out_C
 	);
 
-	Banco_MEM_WB: Banco_WB PORT MAP(
-		ALU_out_MEM => ALU_out_C,
-		ALU_out_WB => ALU_out_WB,
-		Mem_out => data_out_C,
-		MDR => mem_data_out_WB,
+	reg_C_W: reg_CW PORT MAP(
 		clk => clk,
 		reset => reg_C_W_reset,
-		load => reg_C_W_we,
-		MemtoReg_MEM => mem_to_reg_C,
-		RegWrite_MEM => reg_we_C,
-		MemtoReg_WB => mem_to_reg_WB,
-		RegWrite_WB => reg_we_WB,
-		RW_MEM => reg_dest_C,
-		RW_WB => reg_dest_WB
+		we => reg_C_W_we,
+		mem_to_reg_in => mem_to_reg_C,
+		reg_we_in => reg_we_C,
+		reg_dest_in => reg_dest_C,
+		ALU_out_in => ALU_out_C,
+		mem_data_out_in => data_out_C,
+		mem_to_reg_out => mem_to_reg_WB,
+		reg_we_out => reg_we_WB,
+		reg_dest_out => reg_dest_WB,
+		ALU_out_out => ALU_out_WB,
+		mem_data_out_out => mem_data_out_WB
 	);
 
-	mux_busW: mux2_1 PORT map(
+	reg_status_C_WB: reg_status PORT MAP(
+		clk => clk,
+		reset => reg_C_W_reset,
+		we => reg_C_W_we,
+		pc_in => pc_C,
+		status_in => '0',
+		exc_in => '0',
+		exc_code_in => (OTHERS => '0'),
+		exc_data_in => (OTHERS => '0'),
+		pc_out => pc_WB,
+		status_out => open,
+		exc_out => open,
+		exc_code_out => open,
+		exc_data_out => open
+	);
+
+	mux_busW: mux2_1 PORT MAP(
 		Din0 => ALU_out_WB,
 		DIn1 => mem_data_out_WB,
 		ctrl => mem_to_reg_WB,
