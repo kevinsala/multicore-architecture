@@ -25,12 +25,12 @@ ARCHITECTURE structure OF inkel_pentiun IS
 			reset : IN STD_LOGIC;
 			we : IN STD_LOGIC;
 			pc_in : IN STD_LOGIC_VECTOR(31 DOWNTO 0);
-			status_in : IN STD_LOGIC;
+			priv_status_in : IN STD_LOGIC;
 			exc_in : IN STD_LOGIC;
 			exc_code_in : IN STD_LOGIC_VECTOR(1 DOWNTO 0);
 			exc_data_in : IN STD_LOGIC_VECTOR(31 DOWNTO 0);
 			pc_out : OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
-			status_out : OUT STD_LOGIC;
+			priv_status_out : OUT STD_LOGIC;
 			exc_out : OUT STD_LOGIC;
 			exc_code_out : OUT STD_LOGIC_VECTOR(1 DOWNTO 0);
 			exc_data_out : OUT STD_LOGIC_VECTOR(31 DOWNTO 0)
@@ -332,6 +332,7 @@ ARCHITECTURE structure OF inkel_pentiun IS
 	SIGNAL inst_v_F : STD_LOGIC;
 	SIGNAL mem_req_F : STD_LOGIC;
 	SIGNAL mem_done_F : STD_LOGIC;
+	SIGNAL priv_status_F : STD_LOGIC;
 	SIGNAL pc_F : STD_LOGIC_VECTOR(31 DOWNTO 0);
 	SIGNAL inst_F : STD_LOGIC_VECTOR(31 DOWNTO 0);
 	SIGNAL mem_addr_F : STD_LOGIC_VECTOR(31 DOWNTO 0);
@@ -351,6 +352,7 @@ ARCHITECTURE structure OF inkel_pentiun IS
 	SIGNAL mul_D : STD_LOGIC;
 	SIGNAL switch_ctrl : STD_LOGIC;
 	SIGNAL Z : STD_LOGIC;
+	SIGNAL priv_status_D : STD_LOGIC;
 	SIGNAL ALU_ctrl_D : STD_LOGIC_VECTOR(2 DOWNTO 0);
 	SIGNAL reg_src1_D : STD_LOGIC_VECTOR(4 DOWNTO 0);
 	SIGNAL reg_src2_D : STD_LOGIC_VECTOR(4 DOWNTO 0);
@@ -374,6 +376,7 @@ ARCHITECTURE structure OF inkel_pentiun IS
 	SIGNAL mem_we_A : STD_LOGIC;
 	SIGNAL byte_A : STD_LOGIC;
 	SIGNAL reg_we_A : STD_LOGIC;
+	SIGNAL priv_status_A : STD_LOGIC;
 	SIGNAL ALU_ctrl_A : STD_LOGIC_VECTOR(2 DOWNTO 0);
 	SIGNAL reg_dest_A : STD_LOGIC_VECTOR(4 DOWNTO 0);
 	SIGNAL reg_src1_A : STD_LOGIC_VECTOR(4 DOWNTO 0);
@@ -395,6 +398,7 @@ ARCHITECTURE structure OF inkel_pentiun IS
 	SIGNAL mem_read_C : STD_LOGIC;
 	SIGNAL mem_to_reg_C : STD_LOGIC;
 	SIGNAL reg_we_C : STD_LOGIC;
+	SIGNAL priv_status_C : STD_LOGIC;
 	SIGNAL reg_dest_C : STD_LOGIC_VECTOR(4 DOWNTO 0);
 	SIGNAL pc_C : STD_LOGIC_VECTOR(31 DOWNTO 0);
 	SIGNAL ALU_out_C : STD_LOGIC_VECTOR(31 DOWNTO 0);
@@ -404,6 +408,7 @@ ARCHITECTURE structure OF inkel_pentiun IS
 	-- Writeback stage signals
 	SIGNAL reg_we_WB : STD_LOGIC;
 	SIGNAL mem_to_reg_WB: STD_LOGIC;
+	SIGNAL priv_status_WB : STD_LOGIC;
 	SIGNAL reg_dest_WB : STD_LOGIC_VECTOR(4 DOWNTO 0);
 	SIGNAL pc_WB : STD_LOGIC_VECTOR(31 DOWNTO 0);
 	SIGNAL reg_data_WB : STD_LOGIC_VECTOR(31 DOWNTO 0);
@@ -478,6 +483,8 @@ BEGIN
 		mem_data_in => mem_data_in_F
 	);
 
+	priv_status_F <= '0';
+
 	reg_F_D: reg_FD PORT MAP(
 		clk => clk,
 		reset => reg_F_D_reset,
@@ -491,12 +498,12 @@ BEGIN
 		reset => reg_F_D_reset,
 		we => reg_F_D_we,
 		pc_in => pc_F,
-		status_in => '0',
+		priv_status_in => priv_status_F,
 		exc_in => '0',
 		exc_code_in => (OTHERS => '0'),
 		exc_data_in => (OTHERS => '0'),
 		pc_out => pc_D,
-		status_out => open,
+		priv_status_out => priv_status_D,
 		exc_out => open,
 		exc_code_out => open,
 		exc_data_out => open
@@ -629,12 +636,12 @@ BEGIN
 		reset => reg_D_A_reset,
 		we => reg_D_A_we,
 		pc_in => pc_D,
-		status_in => '0',
+		priv_status_in => priv_status_D,
 		exc_in => '0',
 		exc_code_in => (OTHERS => '0'),
 		exc_data_in => (OTHERS => '0'),
 		pc_out => pc_A,
-		status_out => open,
+		priv_status_out => priv_status_A,
 		exc_out => open,
 		exc_code_out => open,
 		exc_data_out => open
@@ -737,12 +744,12 @@ BEGIN
 		reset => reg_A_C_reset,
 		we => reg_A_C_we,
 		pc_in => pc_A,
-		status_in => '0',
+		priv_status_in => priv_status_A,
 		exc_in => '0',
 		exc_code_in => (OTHERS => '0'),
 		exc_data_in => (OTHERS => '0'),
 		pc_out => pc_C,
-		status_out => open,
+		priv_status_out => priv_status_C,
 		exc_out => open,
 		exc_code_out => open,
 		exc_data_out => open
@@ -780,12 +787,12 @@ BEGIN
 		reset => reg_C_W_reset,
 		we => reg_C_W_we,
 		pc_in => pc_C,
-		status_in => '0',
+		priv_status_in => priv_status_C,
 		exc_in => '0',
 		exc_code_in => (OTHERS => '0'),
 		exc_data_in => (OTHERS => '0'),
 		pc_out => pc_WB,
-		status_out => open,
+		priv_status_out => priv_status_WB,
 		exc_out => open,
 		exc_code_out => open,
 		exc_data_out => open
