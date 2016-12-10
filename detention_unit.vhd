@@ -10,7 +10,7 @@ ENTITY detention_unit IS
 		reg_dest_D     : IN STD_LOGIC_VECTOR(4 DOWNTO 0);
 		reg_src1_v_D   : IN STD_LOGIC;
 		reg_src2_v_D   : IN STD_LOGIC;
-		mem_write_D    : IN STD_LOGIC;
+		mem_we_D       : IN STD_LOGIC;
 		reg_dest_A     : IN STD_LOGIC_VECTOR(4 DOWNTO 0);
 		mem_read_A     : IN STD_LOGIC;
 		mul_det_A      : IN STD_LOGIC;
@@ -38,7 +38,7 @@ ARCHITECTURE detention_unit_behavior OF detention_unit IS
 	SIGNAL conflict : STD_LOGIC;
 
 BEGIN
-	conflict_ALU <= '1' WHEN mem_read_A='1' AND ((reg_src1_D=reg_dest_A AND reg_src1_v_D='1') OR (reg_src2_D=reg_dest_A AND reg_src2_v_D='1') OR (reg_dest_D=reg_dest_A AND mem_write_D='1'))
+	conflict_ALU <= '1' WHEN mem_read_A='1' AND ((reg_src1_D=reg_dest_A AND reg_src1_v_D='1') OR (reg_src2_D=reg_dest_A AND reg_src2_v_D='1') OR (reg_dest_D=reg_dest_A AND mem_we_D='1'))
 			ELSE '0';
 	conflict_MUL <= mul_det_A;
 	conflict <= conflict_ALU OR conflict_MUL;
