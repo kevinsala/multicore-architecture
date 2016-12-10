@@ -19,6 +19,24 @@ ARCHITECTURE structure OF inkel_pentiun IS
 		);
 	END COMPONENT;
 
+	COMPONENT reg_status IS
+		PORT(
+			clk : IN STD_LOGIC;
+			reset : IN STD_LOGIC;
+			we : IN STD_LOGIC;
+			pc_in : IN STD_LOGIC_VECTOR(31 DOWNTO 0);
+			status_in : IN STD_LOGIC;
+			exc_in : IN STD_LOGIC;
+			exc_code_in : IN STD_LOGIC_VECTOR(1 DOWNTO 0);
+			exc_data_in : IN STD_LOGIC_VECTOR(31 DOWNTO 0);
+			pc_out : OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
+			status_out : OUT STD_LOGIC;
+			exc_out : OUT STD_LOGIC;
+			exc_code_out : OUT STD_LOGIC_VECTOR(1 DOWNTO 0);
+			exc_data_out : OUT STD_LOGIC_VECTOR(31 DOWNTO 0)
+		);
+	END COMPONENT;
+
 	COMPONENT memory IS
 		PORT(
 			clk : IN STD_LOGIC;
@@ -73,15 +91,13 @@ ARCHITECTURE structure OF inkel_pentiun IS
 		);
 	END COMPONENT;
 
-	COMPONENT Banco_ID IS
+	COMPONENT reg_FD IS
 		PORT(
-			IR_in : in  STD_LOGIC_VECTOR (31 DOWNTO 0); -- INstrucción leida en IF
-			PC_in:  IN  STD_LOGIC_VECTOR (31 DOWNTO 0); -- PC sumado en IF
-			clk : IN  STD_LOGIC;
-			reset : IN  STD_LOGIC;
-			load : IN  STD_LOGIC;
-			IR_ID : OUT  STD_LOGIC_VECTOR (31 DOWNTO 0); -- instrucción en la etapa ID
-			PC_ID:  OUT  STD_LOGIC_VECTOR (31 DOWNTO 0) -- PC en la etapa ID
+			clk : IN STD_LOGIC;
+			reset : IN STD_LOGIC;
+			we : IN STD_LOGIC;
+			inst_in : IN STD_LOGIC_VECTOR(31 DOWNTO 0);
+			inst_out : OUT STD_LOGIC_VECTOR(31 DOWNTO 0)
 		);
 	END COMPONENT;
 
@@ -460,14 +476,28 @@ BEGIN
 		mem_data_in => mem_data_in_F
 	);
 
-	reg_F_D: Banco_ID PORT MAP(
-		IR_in => inst_F,
-		PC_in => pc_F,
+	reg_F_D: reg_FD PORT MAP(
 		clk => clk,
 		reset => reg_F_D_reset,
-		load => reg_F_D_we,
-		IR_ID => inst_D,
-		PC_ID => pc_D
+		we => reg_F_D_we,
+		inst_in => inst_F,
+		inst_out => inst_D
+	);
+
+	reg_status_F_D: reg_status PORT MAP(
+		clk => clk,
+		reset => reg_F_D_reset,
+		we => reg_F_D_we,
+		pc_in => pc_F,
+		status_in => '0',
+		exc_in => '0',
+		exc_code_in => (OTHERS => '0'),
+		exc_data_in => (OTHERS => '0'),
+		pc_out => pc_D,
+		status_out => open,
+		exc_out => open,
+		exc_code_out => open,
+		exc_data_out => open
 	);
 
 	----------------------------- Decode -------------------------------
