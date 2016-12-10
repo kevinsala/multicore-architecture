@@ -1,16 +1,7 @@
 LIBRARY IEEE;
 USE IEEE.STD_LOGIC_1164.ALL;
 
--- Uncomment the following library declaration if using
--- arithmetic functions with Signed or Unsigned values
---use IEEE.NUMERIC_STD.ALL;
-
--- Uncomment the following library declaration if instantiating
--- any Xilinx primitives in this code.
---library UNISIM;
---use UNISIM.VComponents.all;
-
-ENTITY Ext_signo IS
+ENTITY sign_ext IS
 	PORT(
 		opcode : IN STD_LOGIC_VECTOR (6 downto 0);
 		offsethi : IN  STD_LOGIC_VECTOR (4 downto 0);
@@ -18,12 +9,12 @@ ENTITY Ext_signo IS
 		offsetlo : IN  STD_LOGIC_VECTOR (9 downto 0);
 		inm_ext : OUT  STD_LOGIC_VECTOR (31 downto 0)
 	);
-END Ext_signo;
+END sign_ext;
 
-ARCHITECTURE Behavioral OF Ext_signo IS
+ARCHITECTURE Behavioral OF sign_ext IS
 BEGIN
 	inm_ext(9 downto 0) <= offsetlo;
-	inm_ext(14 downto 10) <= offsetm when (opcode(6 downto 3)="0010" OR opcode(6 downto 0)="0110001") 
+	inm_ext(14 downto 10) <= offsetm when (opcode(6 downto 3)="0010" OR opcode(6 downto 0)="0110001")
 		else offsethi;
 	inm_ext(19 downto 15) <= offsethi when opcode(6 downto 0)="0110001"
 		else "00000" when (offsetm(4)='0' AND opcode(6 downto 3)="0010")

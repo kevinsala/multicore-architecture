@@ -22,14 +22,14 @@ architecture Behavioral of UA is
 begin
 	Mux_ant_A <= "10" when (Rs1=RW_MEM AND RegWrite_Mem='1')
 	else "01" when (Rs1=RW_WB AND RegWrite_WB='1')
-	else "00" when (ALUSrc_A='0')
+	else "00" when (ALUSrc_A='1')
 	else "11";
-	
+
 	Mux_ant_B <= "01" when (Rs2=RW_WB AND MemWrite_EX='0' AND RegWrite_WB='1')
 	else "10" when (Rs2=RW_MEM AND MemWrite_EX='0' AND RegWrite_Mem='1')
-	else "00" when (ALUSrc_B='0')
+	else "00" when (ALUSrc_B='1')
 	else "11";
-	
+
 	Mux_ant_C <= "01" when (Rs2=RW_WB AND MemWrite_EX='1' AND RegWrite_WB='1')
 	else "10" when (Rs2=RW_MEM AND MemWrite_EX='1' AND RegWrite_Mem='1')
 	else "00";
