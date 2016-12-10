@@ -286,28 +286,27 @@ ARCHITECTURE structure OF inkel_pentiun IS
 		);
 	END COMPONENT;
 
-	COMPONENT Banco_MEM IS
+	COMPONENT reg_AC IS
 		PORT(
-			ALU_out_EX : IN STD_LOGIC_VECTOR(31 DOWNTO 0);
-			ALU_out_MEM : OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
 			clk : IN STD_LOGIC;
 			reset : IN STD_LOGIC;
-			load : IN STD_LOGIC;
-			Mul_det : IN STD_LOGIC;
-			MemWrite_EX : IN STD_LOGIC;
-			Byte_EX : IN STD_LOGIC;
-			MemRead_EX : IN STD_LOGIC;
-			MemtoReg_EX : IN STD_LOGIC;
-			RegWrite_EX : IN STD_LOGIC;
-			MemWrite_MEM : OUT STD_LOGIC;
-			Byte_MEM : OUT STD_LOGIC;
-			MemRead_MEM : OUT STD_LOGIC;
-			MemtoReg_MEM : OUT STD_LOGIC;
-			RegWrite_MEM : OUT STD_LOGIC;
-			BusB_EX : IN STD_LOGIC_VECTOR(31 DOWNTO 0);
-			BusB_MEM : OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
-			RW_EX : IN STD_LOGIC_VECTOR(4 DOWNTO 0);
-			RW_MEM : OUT STD_LOGIC_VECTOR(4 DOWNTO 0)
+			we : IN STD_LOGIC;
+			mem_we_in : IN STD_LOGIC;
+			byte_in : IN STD_LOGIC;
+			mem_read_in : IN STD_LOGIC;
+			mem_to_reg_in : IN STD_LOGIC;
+			reg_we_in : IN STD_LOGIC;
+			reg_dest_in : IN STD_LOGIC_VECTOR(4 DOWNTO 0);
+			ALU_out_in : IN STD_LOGIC_VECTOR(31 DOWNTO 0);
+			mem_data_in : IN STD_LOGIC_VECTOR(31 DOWNTO 0);
+			mem_we_out : OUT STD_LOGIC;
+			byte_out : OUT STD_LOGIC;
+			mem_read_out : OUT STD_LOGIC;
+			mem_to_reg_out : OUT STD_LOGIC;
+			reg_we_out : OUT STD_LOGIC;
+			reg_dest_out : OUT STD_LOGIC_VECTOR(4 DOWNTO 0);
+			ALU_out_out : OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
+			mem_data_out : OUT STD_LOGIC_VECTOR(31 DOWNTO 0)
 		);
 	END COMPONENT;
 
@@ -397,6 +396,7 @@ ARCHITECTURE structure OF inkel_pentiun IS
 	SIGNAL mem_to_reg_C : STD_LOGIC;
 	SIGNAL reg_we_C : STD_LOGIC;
 	SIGNAL reg_dest_C : STD_LOGIC_VECTOR(4 DOWNTO 0);
+	SIGNAL pc_C : STD_LOGIC_VECTOR(31 DOWNTO 0);
 	SIGNAL ALU_out_C : STD_LOGIC_VECTOR(31 DOWNTO 0);
 	SIGNAL data_in_C : STD_LOGIC_VECTOR(31 DOWNTO 0);
 	SIGNAL data_out_C : STD_LOGIC_VECTOR(31 DOWNTO 0);
@@ -709,27 +709,42 @@ BEGIN
 
 	mul_det_A <= mul_A AND NOT(mul_ready_A);
 
-	Banco_EX_MEM: Banco_MEM PORT MAP(
-		ALU_out_EX => ALU_out_A,
-		ALU_out_MEM => ALU_out_C,
+	reg_A_C: reg_AC PORT MAP(
 		clk => clk,
 		reset => reg_A_C_reset,
-		load => reg_A_C_we,
-		Mul_det => mul_det_A,
-		MemWrite_EX => mem_we_A,
-		Byte_EX => byte_A,
-		MemRead_EX => mem_read_A,
-		MemtoReg_EX => mem_to_reg_A,
-		RegWrite_EX => reg_we_A,
-		MemWrite_MEM => mem_we_C,
-		Byte_MEM => byte_C,
-		MemRead_MEM => mem_read_C,
-		MemtoReg_MEM => mem_to_reg_C,
-		RegWrite_MEM => reg_we_C,
-		BusB_EX => mem_data_A,
-		BusB_MEM => data_in_C,
-		RW_EX => reg_dest_A,
-		RW_MEM => reg_dest_C
+		we => reg_A_C_we,
+		mem_we_in => mem_we_A,
+		byte_in => byte_A,
+		mem_read_in => mem_read_A,
+		mem_to_reg_in => mem_to_reg_A,
+		reg_we_in => reg_we_A,
+		reg_dest_in => reg_dest_A,
+		ALU_out_in => ALU_out_A,
+		mem_data_in => mem_data_A,
+		mem_we_out => mem_we_C,
+		byte_out => byte_C,
+		mem_read_out => mem_read_C,
+		mem_to_reg_out => mem_to_reg_C,
+		reg_we_out => reg_we_C,
+		reg_dest_out => reg_dest_C,
+		ALU_out_out => ALU_out_C,
+		mem_data_out => data_in_C
+	);
+
+	reg_status_A_C: reg_status PORT MAP(
+		clk => clk,
+		reset => reg_A_C_reset,
+		we => reg_A_C_we,
+		pc_in => pc_A,
+		status_in => '0',
+		exc_in => '0',
+		exc_code_in => (OTHERS => '0'),
+		exc_data_in => (OTHERS => '0'),
+		pc_out => pc_C,
+		status_out => open,
+		exc_out => open,
+		exc_code_out => open,
+		exc_data_out => open
 	);
 
 	-------------------------------- Memory  ----------------------------------------------

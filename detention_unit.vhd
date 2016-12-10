@@ -54,6 +54,6 @@ BEGIN
 	reg_PC_reset <= reset;
 	reg_F_D_reset <= reset OR branch_taken_D OR NOT done_F;
 	reg_D_A_reset <= reset;
-	reg_A_C_reset <= reset;
+	reg_A_C_reset <= reset OR conflict_MUL;
 	reg_C_W_reset <= reset OR NOT done_C;
 END detention_unit_behavior;
