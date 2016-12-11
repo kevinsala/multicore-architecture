@@ -29,6 +29,10 @@ formato jump:
 op	     offsetHi  rs1	  offsetM  offsetLo
 0110001  11111     00000  11111    1111111001		JUMP 0	dir 0x10; queremos saltar a la posicion 0, y el procesador calcula la direccion haciendo PC + 4*Ext(inm) por eso ponemos fffC: 4*fffA+0018=0000
 
+I-type
+formato li:
+op       rd       offset
+0001111  00001    00000000000000010000      LI R1, 16
 
 LDW R1, 0(R0)
 0010001  00001  00000  000000000000000		22100000

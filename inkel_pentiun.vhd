@@ -118,6 +118,7 @@ ARCHITECTURE structure OF inkel_pentiun IS
 			reg_src1 : OUT STD_LOGIC_VECTOR(4 DOWNTO 0);
 			reg_src2 : OUT STD_LOGIC_VECTOR(4 DOWNTO 0);
 			reg_dest : OUT STD_LOGIC_VECTOR(4 DOWNTO 0);
+			inm_ext : OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
 			calc_addr : OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
 			ALU_ctrl : OUT STD_LOGIC_VECTOR(2 DOWNTO 0);
 			branch : OUT STD_LOGIC;
@@ -479,6 +480,7 @@ BEGIN
 		reg_src1 => reg_src1_D,
 		reg_src2 => reg_src2_D,
 		reg_dest => reg_dest_D,
+		inm_ext => inm_ext_D,
 		calc_addr => calc_addr_D,
 		ALU_ctrl => ALU_ctrl_D,
 		branch => branch_D,

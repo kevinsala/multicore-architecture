@@ -1,28 +1,34 @@
-library IEEE;
-use IEEE.STD_LOGIC_1164.ALL;
-use IEEE.std_logic_arith.all;
-use IEEE.std_logic_unsigned.all;
--- Uncomment the following library declaration if using
--- arithmetic functions with Signed or Unsigned values
-use IEEE.NUMERIC_STD.ALL;
+LIBRARY IEEE;
+USE IEEE.std_logic_1164.ALL;
+USE IEEE.std_logic_arith.ALL;
+USE IEEE.std_logic_unsigned.ALL;
+USE IEEE.numeric_std.ALL;
 
-entity ALU is
-    Port(
-		DA : in  STD_LOGIC_VECTOR (31 downto 0); --entrada 1
-		DB : in  STD_LOGIC_VECTOR (31 downto 0); --entrada 2
-		ALUctrl : in  STD_LOGIC_VECTOR (2 downto 0); -- función a realizar: 0 suma, 1 resta, 2 AND, 3 OR. El resto se dejan por si queremos añadir operaciones
-		Dout : out  STD_LOGIC_VECTOR (31 downto 0)
-    ); 
-end ALU;
+ENTITY ALU IS
+	PORT(
+		DA : IN STD_LOGIC_VECTOR (31 DOWNTO 0); -- input1
+		DB : IN STD_LOGIC_VECTOR (31 DOWNTO 0); -- input2
+		ALUctrl : IN STD_LOGIC_VECTOR (2 DOWNTO 0); -- function: 0 ADD, 1 SUB, 2 AND, 3 OR and 4 LI
+		Dout : OUT STD_LOGIC_VECTOR (31 DOWNTO 0)
+	);
+END ALU;
 
-architecture Behavioral of ALU is
-signal Dout_internal : STD_LOGIC_VECTOR (31 downto 0);
-begin
-Dout_internal <= DA + DB when (ALUctrl="000") 
-		else DA - DB when (ALUctrl="001") 
-		else DA AND DB when (ALUctrl="010")
-		else DA OR DB when (ALUctrl="011")
-		else "00000000000000000000000000000000";
+ARCHITECTURE ALU_behavior OF ALU IS
+	CONSTANT ADD_CTRL : STD_LOGIC_VECTOR := "000";
+	CONSTANT SUB_CTRL : STD_LOGIC_VECTOR := "001";
+	CONSTANT AND_CTRL : STD_LOGIC_VECTOR := "010";
+	CONSTANT OR_CTRL : STD_LOGIC_VECTOR := "011";
+	CONSTANT LI_CTRL : STD_LOGIC_VECTOR := "100";
+
+	SIGNAL Dout_internal : STD_LOGIC_VECTOR(31 DOWNTO 0);
+BEGIN
+Dout_internal <= DA + DB WHEN ALUctrl = ADD_CTRL
+		ELSE DA - DB WHEN ALUctrl = SUB_CTRL
+		ELSE DA AND DB WHEN ALUctrl = AND_CTRL
+		ELSE DA OR DB WHEN ALUctrl = OR_CTRL
+		ELSE DB WHEN ALUctrl = LI_CTRL
+		ELSE "00000000000000000000000000000000";
+
 Dout <= Dout_internal;
 
-end Behavioral;
+END ALU_behavior;
