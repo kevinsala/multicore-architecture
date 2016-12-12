@@ -134,20 +134,19 @@ ARCHITECTURE structure OF inkel_pentiun IS
 		);
 	END COMPONENT;
 
-	COMPONENT UA IS
+	COMPONENT bypass_unit IS
 		PORT(
-			Rs2 : IN STD_LOGIC_VECTOR (4 DOWNTO 0);
-			RW_MEM : IN STD_LOGIC_VECTOR (4 DOWNTO 0);
-			RW_WB : IN STD_LOGIC_VECTOR (4 DOWNTO 0);
-			Rs1 : IN STD_LOGIC_VECTOR (4 DOWNTO 0);
-			ALUSrc_A : IN STD_LOGIC;
-			ALUSrc_B : IN STD_LOGIC;
-			MemWrite_EX : IN STD_LOGIC;
-			RegWrite_Mem : IN STD_LOGIC;
-			RegWrite_WB : IN STD_LOGIC;
-			Mux_ant_A : OUT STD_LOGIC_VECTOR (1 DOWNTO 0);
-			Mux_ant_B : OUT STD_LOGIC_VECTOR (1 DOWNTO 0);
-			Mux_ant_C : OUT STD_LOGIC_VECTOR (1 DOWNTO 0)
+			reg_src1_A      : IN STD_LOGIC_VECTOR (4 DOWNTO 0);
+			reg_src2_A      : IN STD_LOGIC_VECTOR (4 DOWNTO 0);
+			reg_src1_v_A    : IN STD_LOGIC;
+			reg_src2_v_A    : IN STD_LOGIC;
+			reg_dest_C      : IN STD_LOGIC_VECTOR (4 DOWNTO 0);
+			reg_we_C        : IN STD_LOGIC;
+			reg_dest_W      : IN STD_LOGIC_VECTOR (4 DOWNTO 0);
+			reg_we_W        : IN STD_LOGIC;
+			mux_src1_BP     : OUT STD_LOGIC_VECTOR (1 DOWNTO 0);
+			mux_src2_BP     : OUT STD_LOGIC_VECTOR (1 DOWNTO 0);
+			mux_mem_data_BP : OUT STD_LOGIC_VECTOR (1 DOWNTO 0)
 		);
 	END COMPONENT;
 
@@ -570,19 +569,19 @@ BEGIN
 
 	--------------------------------- Execution ------------------------------------------
 
-	UA_seg: UA PORT MAP(
-		Rs2 => reg_src2_A,
-		RW_MEM => reg_dest_C,
-		RW_WB => reg_dest_WB,
-		Rs1 => reg_src1_A,
-		ALUSrc_A => reg_src1_v_A,
-		ALUSrc_B => reg_src2_v_A,
-		MemWrite_EX => mem_write_A,
-		RegWrite_Mem => reg_we_C,
-		RegWrite_WB => reg_we_WB,
-		Mux_ant_A => mux_src1_BP,
-		Mux_ant_B => mux_src2_BP,
-		Mux_ant_C => mux_mem_data_BP
+
+	UB : bypass_unit PORT MAP(
+		reg_src1_A => reg_src1_A,
+		reg_src2_A => reg_src2_A,
+		reg_src1_v_A => reg_src1_v_A,
+		reg_src2_v_A => reg_src2_v_A,
+		reg_dest_C => reg_dest_C,
+		reg_we_C => reg_we_C,
+		reg_dest_W => reg_dest_WB,
+		reg_we_W => reg_we_WB,
+		mux_src1_BP => mux_src1_BP,
+		mux_src2_BP => mux_src2_BP,
+		mux_mem_data_BP => mux_mem_data_BP
 	);
 
 	mux_a: mux4_32bits PORT MAP(
