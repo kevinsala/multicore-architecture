@@ -94,7 +94,6 @@ BEGIN
 		'1' WHEN OP_ADD,
 		'1' WHEN OP_SUB,
 		'1' WHEN OP_MUL,
-		'1' WHEN OP_NOP, -- TODO: !?
 		'0' WHEN OTHERS;
 
 	WITH op_code_int SELECT mul <=
