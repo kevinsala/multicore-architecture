@@ -29,8 +29,6 @@ BEGIN
 		ELSE "00000" WHEN (offsethi(4)='0' AND opcode = "0110000")
 		ELSE inst(19 DOWNTO 15) WHEN opcode = "0001111"
 		ELSE "11111";
-	inm_ext(31 DOWNTO 20) <= "000000000000" WHEN (offsetm(4) = '0' AND opcode(6 DOWNTO 3) = "0010")
-		ELSE "000000000000" WHEN (offsethi(4) = '0' AND opcode(6 DOWNTO 1) = "011000")
-		ELSE "000000000000" WHEN (inst(19) = '0' AND opcode = "0001111")
+	inm_ext(31 DOWNTO 20) <= "000000000000" WHEN inm_ext(19) = '0'
 		ELSE "111111111111";
 END Behavioral;
