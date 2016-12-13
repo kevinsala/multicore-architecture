@@ -42,8 +42,7 @@ ARCHITECTURE structure OF inkel_pentiun IS
 			reset : IN STD_LOGIC;
 			addr_jump : IN STD_LOGIC_VECTOR(31 DOWNTO 0);
 			branch_taken_D : IN STD_LOGIC;
-			load_PC_F : IN STD_LOGIC;
-			load_PC_UD : IN STD_LOGIC;
+			load_PC : IN STD_LOGIC;
 			pc : OUT STD_LOGIC_VECTOR(31 DOWNTO 0)
 		);
 	END COMPONENT;
@@ -56,7 +55,6 @@ ARCHITECTURE structure OF inkel_pentiun IS
 			branch_taken_D : IN STD_LOGIC;
 			inst : OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
 			inst_v : OUT STD_LOGIC;
-			load_PC : OUT STD_LOGIC;
 			mem_req : OUT STD_LOGIC;
 			mem_addr : OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
 			mem_done : IN STD_LOGIC;
@@ -150,17 +148,32 @@ ARCHITECTURE structure OF inkel_pentiun IS
 		);
 	END COMPONENT;
 
-	COMPONENT UD IS
+	COMPONENT detention_unit IS
 		PORT(
-			Codigo_OP : IN STD_LOGIC_VECTOR(6 DOWNTO 0);
-			ReadMem_EX : IN STD_LOGIC;
-			Rs1_ID : IN STD_LOGIC_VECTOR (4 DOWNTO 0);
-			Rs2_ID : IN STD_LOGIC_VECTOR (4 DOWNTO 0);
-			Rd_EX : IN STD_LOGIC_VECTOR (4 DOWNTO 0);
-			Mul_det : IN STD_LOGIC;
-			Sout : OUT STD_LOGIC;
-			PC_Write : OUT STD_LOGIC;
-			ID_Write : OUT STD_LOGIC
+			reset          : IN STD_LOGIC;
+			branch_taken_D : IN STD_LOGIC;
+			reg_src1_D     : IN STD_LOGIC_VECTOR (4 DOWNTO 0);
+			reg_src2_D     : IN STD_LOGIC_VECTOR (4 DOWNTO 0);
+			reg_dest_D     : IN STD_LOGIC_VECTOR (4 DOWNTO 0);
+			reg_src1_v_D   : IN STD_LOGIC;
+			reg_src2_v_D   : IN STD_LOGIC;
+			mem_write_D    : IN STD_LOGIC;
+			reg_dest_A     : IN STD_LOGIC_VECTOR (4 DOWNTO 0);
+			mem_read_A     : IN STD_LOGIC;
+			mul_det_A      : IN STD_LOGIC;
+			done_F         : IN STD_LOGIC;
+			done_C         : IN STD_LOGIC;
+			switch_ctrl    : OUT STD_LOGIC;
+			reg_PC_reset   : OUT STD_LOGIC;
+			reg_F_D_reset  : OUT STD_LOGIC;
+			reg_D_A_reset  : OUT STD_LOGIC;
+			reg_A_C_reset  : OUT STD_LOGIC;
+			reg_C_W_reset  : OUT STD_LOGIC;
+			reg_PC_we      : OUT STD_LOGIC;
+			reg_F_D_we     : OUT STD_LOGIC;
+			reg_D_A_we     : OUT STD_LOGIC;
+			reg_A_C_we     : OUT STD_LOGIC;
+			reg_C_W_we     : OUT STD_LOGIC
 		);
 	END COMPONENT;
 
@@ -301,7 +314,6 @@ ARCHITECTURE structure OF inkel_pentiun IS
 	END COMPONENT;
 
 	-- Fetch stage signals
-	SIGNAL load_PC_F : STD_LOGIC;
 	SIGNAL inst_v_F : STD_LOGIC;
 	SIGNAL mem_req_F : STD_LOGIC;
 	SIGNAL mem_done_F : STD_LOGIC;
@@ -340,7 +352,6 @@ ARCHITECTURE structure OF inkel_pentiun IS
 	SIGNAL mem_read_A : STD_LOGIC;
 	SIGNAL mem_to_reg_A : STD_LOGIC;
 	SIGNAL mul_det_A : STD_LOGIC;
-	SIGNAL not_mul_det_A : STD_LOGIC;
 	SIGNAL mul_ready_A : STD_LOGIC;
 	SIGNAL mul_A : STD_LOGIC;
 	SIGNAL reg_src1_v_A : STD_LOGIC;
@@ -383,10 +394,17 @@ ARCHITECTURE structure OF inkel_pentiun IS
 
 	-- Segmentation registers signals
 	SIGNAL reg_F_D_reset : STD_LOGIC;
+	SIGNAL reg_D_A_reset : STD_LOGIC;
+	SIGNAL reg_A_C_reset : STD_LOGIC;
+	SIGNAL reg_C_W_reset : STD_LOGIC;
 	SIGNAL reg_F_D_we : STD_LOGIC;
+	SIGNAL reg_D_A_we : STD_LOGIC;
+	SIGNAL reg_A_C_we : STD_LOGIC;
+	SIGNAL reg_C_W_we : STD_LOGIC;
 
 	-- Stall unit signals
-	SIGNAL load_PC_UD : STD_LOGIC;
+	SIGNAL load_PC : STD_LOGIC;
+	SIGNAL reset_PC : STD_LOGIC;
 	SIGNAL mem_read_UD : STD_LOGIC;
 	SIGNAL byte_UD : STD_LOGIC;
 	SIGNAL mem_write_UD : STD_LOGIC;
@@ -405,15 +423,12 @@ BEGIN
 
 	----------------------------- Fetch -------------------------------
 
-	-- TODO: load_PC_UD has to be the signal from the global stall unit,
-	-- and load_PC_F should be removed
 	reg_pc: pc PORT MAP(
 		clk => clk,
-		reset => reset,
+		reset => reset_PC,
 		addr_jump => calc_addr_D,
 		branch_taken_D => branch_taken_D,
-		load_PC_F => load_PC_F,
-		load_PC_UD => load_PC_UD,
+		load_PC => load_PC,
 		pc => pc_F
 	);
 
@@ -439,7 +454,6 @@ BEGIN
 		branch_taken_D => branch_taken_D,
 		inst => inst_F,
 		inst_v => inst_v_F,
-		load_PC => load_PC_F,
 		mem_req => mem_req_F,
 		mem_addr => mem_addr_F,
 		mem_done => mem_done_F,
@@ -456,20 +470,33 @@ BEGIN
 		PC_ID => pc_D
 	);
 
-	reg_F_D_reset <= reset OR branch_taken_D OR NOT inst_v_F;
-
 	----------------------------- Decode -------------------------------
 
-	UD_seg: UD PORT MAP(
-		Codigo_OP => op_code_D,
-		ReadMem_EX => mem_read_A,
-		Rs1_ID => reg_src1_D,
-		Rs2_ID => reg_src2_D,
-		Rd_EX => reg_dest_A,
-		Mul_det => mul_det_A,
-		Sout => switch_ctrl,
-		PC_Write => load_PC_UD,
-		ID_Write => reg_F_D_we
+	UD : detention_unit PORT MAP(
+		reset => reset,
+		branch_taken_D => branch_taken_D,
+		reg_src1_D => reg_src1_D,
+		reg_src2_D => reg_src2_D,
+		reg_dest_D => reg_dest_D,
+		reg_src1_v_D => reg_src1_v_D,
+		reg_src2_v_D => reg_src2_v_D,
+		mem_write_D => mem_write_D,
+		reg_dest_A => reg_dest_A,
+		mem_read_A => mem_read_A,
+		mul_det_A => mul_det_A,
+		done_F => inst_v_F,
+		done_C => '1',
+		switch_ctrl => switch_ctrl,
+		reg_PC_reset => reset_PC,
+		reg_F_D_reset => reg_F_D_reset,
+		reg_D_A_reset => reg_D_A_reset,
+		reg_A_C_reset => reg_A_C_reset,
+		reg_C_W_reset => reg_C_W_reset,
+		reg_PC_we => load_PC,
+		reg_F_D_we => reg_F_D_we,
+		reg_D_A_we => reg_D_A_we,
+		reg_A_C_we => reg_A_C_we,
+		reg_C_W_we => reg_C_W_we
 	);
 
 	d: decode PORT MAP(
@@ -531,8 +558,8 @@ BEGIN
 
 	reg_D_A: Banco_EX PORT MAP(
 		clk => clk,
-		reset => reset,
-		load => not_mul_det_A,
+		reset => reg_D_A_reset,
+		load => reg_D_A_we,
 		busA => reg_data1_D,
 		busB => reg_data2_D,
 		busA_EX => reg_data1_A,
@@ -637,14 +664,13 @@ BEGIN
 	);
 
 	mul_det_A <= mul_A AND NOT(mul_ready_A);
-	not_mul_det_A <= NOT (mul_det_A);
 
 	Banco_EX_MEM: Banco_MEM PORT MAP(
 		ALU_out_EX => ALU_out_A,
 		ALU_out_MEM => ALU_out_C,
 		clk => clk,
-		reset => reset,
-		load => '1',
+		reset => reg_A_C_reset,
+		load => reg_A_C_we,
 		Mul_det => mul_det_A,
 		MemWrite_EX => mem_write_A,
 		Byte_EX => byte_A,
@@ -679,8 +705,8 @@ BEGIN
 		Mem_out => data_out_C,
 		MDR => mem_data_out_WB,
 		clk => clk,
-		reset => reset,
-		load => '1',
+		reset => reg_C_W_reset,
+		load => reg_C_W_we,
 		MemtoReg_MEM => mem_to_reg_C,
 		RegWrite_MEM => reg_we_C,
 		MemtoReg_WB => mem_to_reg_WB,

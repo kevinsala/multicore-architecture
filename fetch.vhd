@@ -12,7 +12,6 @@ ENTITY fetch IS
         branch_taken_D : IN STD_LOGIC;
         inst : OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
         inst_v : OUT STD_LOGIC;
-        load_PC : OUT STD_LOGIC;
         mem_req : OUT STD_LOGIC;
         mem_addr : OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
         mem_done : IN STD_LOGIC;
@@ -53,5 +52,4 @@ BEGIN
 
     inst <= cache_data_out;
     inst_v <= cache_done;
-    load_PC <= cache_done;
 END structure;
