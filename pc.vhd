@@ -7,8 +7,7 @@ ENTITY pc IS
         reset : IN STD_LOGIC;
         addr_jump : IN STD_LOGIC_VECTOR(31 DOWNTO 0);
         branch_taken_D : IN STD_LOGIC;
-        load_PC_F : IN STD_LOGIC;
-        load_PC_UD : IN STD_LOGIC;
+        load_PC : IN STD_LOGIC;
         pc : OUT STD_LOGIC_VECTOR(31 DOWNTO 0)
     );
 END pc;
@@ -33,7 +32,7 @@ BEGIN
 
 
     pc_next <= addr_jump WHEN branch_taken_D = '1'
-                ELSE pc_int + 4 WHEN load_PC_F = '1' AND load_PC_UD = '1'
+                ELSE pc_int + 4 WHEN load_PC = '1'
                 ELSE pc_int;
 
     pc <= pc_int;
