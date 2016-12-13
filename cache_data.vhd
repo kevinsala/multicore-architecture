@@ -1,7 +1,7 @@
 LIBRARY ieee;
-USE ieee.std_logic_1164.all;
-USE ieee.numeric_std.all;
-USE work.utils.all;
+USE ieee.std_logic_1164.ALL;
+USE ieee.numeric_std.ALL;
+USE work.utils.ALL;
 
 ENTITY cache_data IS
 	PORT(
@@ -10,8 +10,9 @@ ENTITY cache_data IS
 		addr     : IN STD_LOGIC_VECTOR(31 DOWNTO 0);
 		data_in  : IN STD_LOGIC_VECTOR(31 DOWNTO 0);
 		data_out : OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
+		re       : IN STD_LOGIC;
 		we       : IN STD_LOGIC;
-		is_byte     : IN STD_LOGIC;
+		is_byte  : IN STD_LOGIC;
 		done     : OUT STD_LOGIC;
 		mem_req  : OUT STD_LOGIC;
 		mem_addr : OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
@@ -55,9 +56,6 @@ ARCHITECTURE cache_data_behavior OF cache_data IS
 	SIGNAL tag_fields   : tag_fields_t;
 	SIGNAL data_fields  : data_fields_t;
 
-	-- Determine whether the access has hit, which line and its data
-	SIGNAL hit : STD_LOGIC := '1';
-
 	-- Determine the target line of the access
 	SIGNAL target_line : INTEGER RANGE 0 TO 3 := 0;
 
@@ -72,6 +70,7 @@ ARCHITECTURE cache_data_behavior OF cache_data IS
 	-- Procedure to reset and initialize the cache
 	PROCEDURE reset_cache(
 			SIGNAL state : OUT state_t;
+			SIGNAL done : OUT STD_LOGIC;
 			SIGNAL lru_fields : OUT lru_fields_t;
 			SIGNAL valid_fields : OUT valid_fields_t;
 			SIGNAL dirty_fields : OUT dirty_fields_t;
@@ -88,6 +87,7 @@ ARCHITECTURE cache_data_behavior OF cache_data IS
 
 		-- Set ready the cache
 		state <= READY;
+		done <= '1';
 
 		-- Cancel any memory request
 		mem_req <= '0';
@@ -162,7 +162,7 @@ ARCHITECTURE cache_data_behavior OF cache_data IS
 	END PROCEDURE;
 BEGIN
 
-execution : PROCESS(clk)
+execution : PROCESS(reset, addr, re, we, is_byte, mem_done)
 	VARIABLE hit_i : STD_LOGIC;
 	VARIABLE replacement_i : STD_LOGIC;
 	VARIABLE target_line_i : INTEGER RANGE 0 TO 3;
@@ -174,8 +174,8 @@ execution : PROCESS(clk)
 BEGIN
 	serve_access := FALSE;
 
-	IF rising_edge(clk) THEN
-		IF reset = '0' THEN
+	IF clk = '1' THEN
+		IF reset = '0' AND (re = '1' OR we = '1') THEN
 			target_line_i := target_line;
 			-- It's ready to process a new access
 			IF state = READY THEN
@@ -197,7 +197,7 @@ BEGIN
 					mem_req	<= '1';
 				END IF;
 
-				hit <= hit_i;
+				done <= hit_i;
 				target_line <= target_line_i;
 
 			-- It's waiting for a confirmation of line replacement
@@ -242,22 +242,20 @@ BEGIN
 				END IF;
 				LRU_execute(lru_fields, target_line_i);
 
-				hit <= '1';
+				done <= '1';
 				target_word <= target_word_i;
 				target_byte <= target_byte_i;
 			END IF;
-		ELSE reset_cache(state, lru_fields, valid_fields, dirty_fields, mem_req, mem_we);
+
+		ELSIF reset = '0' THEN
+			done <= '1';
+		ELSE
+			reset_cache(state, done, lru_fields, valid_fields, dirty_fields, mem_req, mem_we);
 		END IF;
 	END IF;
 END PROCESS execution;
 
--- Set the data_out port to the requested word
-WITH target_word SELECT target_word_data <=
-		data_fields(target_line)(31  DOWNTO  0) WHEN 0,
-		data_fields(target_line)(63  DOWNTO 32) WHEN 1,
-		data_fields(target_line)(95  DOWNTO 64) WHEN 2,
-		data_fields(target_line)(127 DOWNTO 96) WHEN 3,
-		data_fields(target_line)(31  DOWNTO  0) WHEN OTHERS;
+target_word_data <= data_fields(target_line)((target_word+1)*WORD_BITS-1 DOWNTO target_word*WORD_BITS);
 
 target_byte_data(7 DOWNTO 0) <= data_fields(target_line)((target_byte+1)*BYTE_BITS-1 DOWNTO target_byte*BYTE_BITS);
 target_byte_data(31 DOWNTO 8) <=
@@ -272,8 +270,5 @@ WITH is_byte SELECT data_out <=
 
 -- Set the mem_data_out to the target line
 mem_data_out <= data_fields(target_line);
-
--- The cache has completed an operation when the access is a hit
-done <= hit;
 
 END cache_data_behavior;
