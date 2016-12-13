@@ -59,7 +59,7 @@ BEGIN
         '0' WHEN OTHERS;
 
     WITH state SELECT mem_we <=
-        d_req WHEN REQD,
+        d_we WHEN REQD,
         '0' WHEN OTHERS;
 
     WITH state SELECT f_done <=
