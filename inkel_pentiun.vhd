@@ -62,14 +62,23 @@ ARCHITECTURE structure OF inkel_pentiun IS
 		);
 	END COMPONENT;
 
-	COMPONENT memoriaRAM_D IS
+	COMPONENT cache_stage IS
 		PORT(
-			CLK : IN STD_LOGIC;
-			ADDR : IN STD_LOGIC_VECTOR (31 DOWNTO 0); --Dir
-			Din : IN STD_LOGIC_VECTOR (31 DOWNTO 0);--entrada de datos para el puerto de escritura
-			WE : IN STD_LOGIC;		-- write enable
-			RE : IN STD_LOGIC;		-- read enable
-			Dout : OUT STD_LOGIC_VECTOR (31 DOWNTO 0)
+			clk      : IN STD_LOGIC;
+			reset    : IN STD_LOGIC;
+			addr     : IN STD_LOGIC_VECTOR(31 DOWNTO 0);
+			data_in  : IN STD_LOGIC_VECTOR(31 DOWNTO 0);
+			data_out : OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
+			re       : IN STD_LOGIC;
+			we       : IN STD_LOGIC;
+			is_byte  : IN STD_LOGIC;
+			done     : OUT STD_LOGIC;
+			mem_req  : OUT STD_LOGIC;
+			mem_addr : OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
+			mem_we   : OUT STD_LOGIC;
+			mem_done : IN STD_LOGIC;
+			mem_data_in  : IN STD_LOGIC_VECTOR(127 DOWNTO 0);
+			mem_data_out : OUT STD_LOGIC_VECTOR(127 DOWNTO 0)
 		);
 	END COMPONENT;
 
@@ -374,15 +383,22 @@ ARCHITECTURE structure OF inkel_pentiun IS
 	SIGNAL data2_BP_A : STD_LOGIC_VECTOR(31 DOWNTO 0);
 
 	-- Cache stage signals
-	SIGNAL mem_we_C : STD_LOGIC;
+	SIGNAL cache_re_C : STD_LOGIC;
+	SIGNAL cache_we_C : STD_LOGIC;
 	SIGNAL byte_C : STD_LOGIC;
-	SIGNAL mem_read_C : STD_LOGIC;
 	SIGNAL mem_to_reg_C : STD_LOGIC;
 	SIGNAL reg_we_C : STD_LOGIC;
 	SIGNAL reg_dest_C : STD_LOGIC_VECTOR(4 DOWNTO 0);
 	SIGNAL ALU_out_C : STD_LOGIC_VECTOR(31 DOWNTO 0);
-	SIGNAL data_in_C : STD_LOGIC_VECTOR(31 DOWNTO 0);
-	SIGNAL data_out_C : STD_LOGIC_VECTOR(31 DOWNTO 0);
+	SIGNAL cache_data_in_C : STD_LOGIC_VECTOR(31 DOWNTO 0);
+	SIGNAL cache_data_out_C : STD_LOGIC_VECTOR(31 DOWNTO 0);
+	SIGNAL done_C : STD_LOGIC;
+	SIGNAL mem_req_C : STD_LOGIC;
+	SIGNAL mem_addr_C : STD_LOGIC_VECTOR(31 DOWNTO 0);
+	SIGNAL mem_we_C : STD_LOGIC;
+	SIGNAL mem_done_C : STD_LOGIC;
+	SIGNAL mem_data_in_C : STD_LOGIC_VECTOR(127 DOWNTO 0);
+	SIGNAL mem_data_out_C : STD_LOGIC_VECTOR(127 DOWNTO 0);
 
 	-- Writeback stage signals
 	SIGNAL reg_we_WB : STD_LOGIC;
@@ -436,15 +452,15 @@ BEGIN
 		clk => clk,
 		reset => reset,
 		f_req => mem_req_F,
-		d_req => '0',
-		d_we => '0',
+		d_req => mem_req_C,
+		d_we => mem_we_C,
 		f_done => mem_done_F,
-		d_done => open, -- Unused output
+		d_done => mem_done_C,
 		f_addr => mem_addr_F,
-		d_addr => (OTHERS => 'Z'),
-		d_data_in => (OTHERS => 'Z'),
+		d_addr => mem_addr_C,
+		d_data_in => mem_data_out_C,
 		f_data_out => mem_data_in_F,
-		d_data_out => open -- Unusued output
+		d_data_out => mem_data_in_C
 	);
 
 	f: fetch PORT MAP(
@@ -485,7 +501,7 @@ BEGIN
 		mem_read_A => mem_read_A,
 		mul_det_A => mul_det_A,
 		done_F => inst_v_F,
-		done_C => '1',
+		done_C => done_C,
 		switch_ctrl => switch_ctrl,
 		reg_PC_reset => reset_PC,
 		reg_F_D_reset => reg_F_D_reset,
@@ -677,32 +693,41 @@ BEGIN
 		MemRead_EX => mem_read_A,
 		MemtoReg_EX => mem_to_reg_A,
 		RegWrite_EX => reg_we_A,
-		MemWrite_MEM => mem_we_C,
+		MemWrite_MEM => cache_we_C,
 		Byte_MEM => byte_C,
-		MemRead_MEM => mem_read_C,
+		MemRead_MEM => cache_re_C,
 		MemtoReg_MEM => mem_to_reg_C,
 		RegWrite_MEM => reg_we_C,
 		BusB_EX => mem_data_A,
-		BusB_MEM => data_in_C,
+		BusB_MEM => cache_data_in_C,
 		RW_EX => reg_dest_A,
 		RW_MEM => reg_dest_C
 	);
 
 	-------------------------------- Memory  ----------------------------------------------
 
-	Mem_D: memoriaRAM_D PORT MAP(
-		CLK => CLK,
-		ADDR => ALU_out_C,
-		Din => data_in_C,
-		WE => mem_we_C,
-		RE => mem_read_C,
-		Dout => data_out_C
+	c : cache_stage PORT MAP(
+		clk => clk,
+		reset => reset,
+		addr => ALU_out_C,
+		data_in => cache_data_in_C,
+		data_out => cache_data_out_C,
+		re => cache_re_C,
+		we => cache_we_C,
+		is_byte => byte_C,
+		done => done_C,
+		mem_req => mem_req_C,
+		mem_addr => mem_addr_C,
+		mem_we => mem_we_C,
+		mem_done => mem_done_C,
+		mem_data_in => mem_data_in_C,
+		mem_data_out => mem_data_out_C
 	);
 
 	Banco_MEM_WB: Banco_WB PORT MAP(
 		ALU_out_MEM => ALU_out_C,
 		ALU_out_WB => ALU_out_WB,
-		Mem_out => data_out_C,
+		Mem_out => cache_data_out_C,
 		MDR => mem_data_out_WB,
 		clk => clk,
 		reset => reg_C_W_reset,
