@@ -1,13 +1,16 @@
 LIBRARY ieee;
-USE ieee.std_logic_1164.all;
-USE ieee.numeric_std.all;
+USE ieee.std_logic_1164.ALL;
+USE ieee.numeric_std.ALL;
+USE work.utils.ALL;
 
 ENTITY cache_inst IS
-    PORT (clk : IN STD_LOGIC;
+	PORT (clk : IN STD_LOGIC;
 		reset : IN STD_LOGIC;
 		addr : IN STD_LOGIC_VECTOR(31 DOWNTO 0);
 		data_out : OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
 		done : OUT STD_LOGIC;
+		state : IN inst_cache_state_t;
+		state_nx : OUT inst_cache_state_t;
 		mem_req : OUT STD_LOGIC;
 		mem_req_abort : IN STD_LOGIC;
 		mem_addr : OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
@@ -22,17 +25,9 @@ ARCHITECTURE structure OF cache_inst IS
 	CONSTANT DATA_BITS	 : INTEGER := 128;
 	CONSTANT CACHE_LINES : INTEGER := 4;
 
-	TYPE state_t IS (READY, LINEREQ);
-
 	TYPE valid_fields_t IS ARRAY(CACHE_LINES-1 DOWNTO 0) OF STD_LOGIC;
 	TYPE tag_fields_t	IS ARRAY(CACHE_LINES-1 DOWNTO 0) OF STD_LOGIC_VECTOR(TAG_BITS-1 DOWNTO 0);
 	TYPE data_fields_t	IS ARRAY(CACHE_LINES-1 DOWNTO 0) OF STD_LOGIC_VECTOR(DATA_BITS-1 DOWNTO 0);
-
-	-- Determine the state of the cache:
-	-- READY: The cache will be ready to execute a new instruction in the next cycle.
-	-- LINEREQ: The cache is waiting to get a memory line from the memory. The cache
-	-- won't be ready to execute a new instruction in the next cycle.
-	SIGNAL state : state_t;
 
 	-- Fields of the cache
 	SIGNAL valid_fields	: valid_fields_t;
@@ -42,53 +37,43 @@ ARCHITECTURE structure OF cache_inst IS
 	SIGNAL hit_cache : STD_LOGIC;
 	SIGNAL cache_line : INTEGER RANGE 0 TO CACHE_LINES - 1;
 	SIGNAL req_word : STD_LOGIC_VECTOR(1 DOWNTO 0);
-
-	SIGNAL mem_req_int : STD_LOGIC := '0';
 BEGIN
-    p1 : process(clk, reset)
-    BEGIN
-	    IF rising_edge(clk) THEN
-	        IF reset = '1' THEN
-	            FOR i IN 0 TO CACHE_LINES - 1 LOOP
-		            valid_fields(i) <= '0';
-	            END LOOP;
-	            state <= READY;
-	        ELSE
-	            IF state = READY THEN
-	                IF hit_cache = '0' THEN
-	                    state <= LINEREQ;
-	                    mem_req_int <= '1';
-	                END IF;
-	            ELSIF state = LINEREQ THEN
-	                IF mem_done = '1' THEN
-	                    state <= READY;
-	                    mem_req_int <= '0';
-	                    tag_fields(cache_line) <= addr(31 DOWNTO 6);
-	                    valid_fields(cache_line) <= '1';
-	                    data_fields(cache_line) <= mem_data_in;
-	                ELSIF mem_req_abort = '1' THEN
-	                    -- Abort memory request when there is a branch mispredict
-	                    state <= READY;
-	                    mem_req_int <= '0';
-	                END IF;
-	            END IF;
-	        END IF;
-	    END IF;
-    END PROCESS p1;
+	p : PROCESS(clk)
+	BEGIN
+		IF falling_edge(clk) THEN
+			IF reset = '1' THEN
+				FOR i IN 0 TO CACHE_LINES - 1 LOOP
+					valid_fields(i) <= '0';
+				END LOOP;
+			ELSE
+				IF state = LINEREQ AND mem_done = '1' THEN
+					tag_fields(cache_line) <= addr(31 DOWNTO 6);
+					valid_fields(cache_line) <= '1';
+					data_fields(cache_line) <= mem_data_in;
+				END IF;
+			END IF;
+		END IF;
+	END PROCESS p;
 
-    cache_line <= to_integer(unsigned(addr(5 DOWNTO 4)));
-    hit_cache <= '1' WHEN addr(31 DOWNTO 6) = tag_fields(cache_line) AND valid_fields(cache_line) = '1'
-                ELSE '0';
+	state_nx <= LINEREQ WHEN state = READY AND hit_cache = '0' ELSE
+				READY WHEN (state = LINEREQ AND mem_done = '1') OR mem_req_abort = '1';
 
-    WITH addr(3 DOWNTO 0) SELECT data_out <=
-        data_fields(cache_line)(31 DOWNTO 0) WHEN x"0",
-        data_fields(cache_line)(63 DOWNTO 32) WHEN x"4",
-        data_fields(cache_line)(95 DOWNTO 64) WHEN x"8",
-        data_fields(cache_line)(127 DOWNTO 96) WHEN x"C",
-        (OTHERS => 'Z') WHEN OTHERS;
+	mem_req <= '1' WHEN (state = READY AND hit_cache = '0') ELSE
+				'1' WHEN (state = LINEREQ AND mem_done = '0') ELSE
+				'0';
 
-    done <= hit_cache;
-    mem_req <= mem_req_int;
-    mem_addr <= addr;
+	cache_line <= to_integer(unsigned(addr(5 DOWNTO 4)));
+	hit_cache <= '1' WHEN addr(31 DOWNTO 6) = tag_fields(cache_line) AND valid_fields(cache_line) = '1'
+				ELSE '0';
+
+	WITH addr(3 DOWNTO 0) SELECT data_out <=
+		data_fields(cache_line)(31 DOWNTO 0) WHEN x"0",
+		data_fields(cache_line)(63 DOWNTO 32) WHEN x"4",
+		data_fields(cache_line)(95 DOWNTO 64) WHEN x"8",
+		data_fields(cache_line)(127 DOWNTO 96) WHEN x"C",
+		(OTHERS => 'Z') WHEN OTHERS;
+
+	done <= hit_cache;
+	mem_addr <= addr;
 END structure;
 

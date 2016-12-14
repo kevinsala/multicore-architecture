@@ -4,6 +4,7 @@ USE ieee.numeric_std.ALL;
 USE ieee.std_logic_unsigned.ALL;
 USE ieee.std_logic_textio.ALL;
 USE std.textio.ALL;
+USE work.utils.ALL;
 
 ENTITY fetch IS
     PORT (clk : IN STD_LOGIC;
@@ -26,6 +27,8 @@ ARCHITECTURE structure OF fetch IS
 			addr : IN STD_LOGIC_VECTOR(31 DOWNTO 0);
 			data_out : OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
 			done : OUT STD_LOGIC;
+			state : IN inst_cache_state_t;
+			state_nx : OUT inst_cache_state_t;
 			mem_req : OUT STD_LOGIC;
 			mem_addr : OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
 	        mem_req_abort : IN STD_LOGIC;
@@ -36,13 +39,28 @@ ARCHITECTURE structure OF fetch IS
 
     SIGNAL cache_done : STD_LOGIC;
     SIGNAL cache_data_out : STD_LOGIC_VECTOR(31 DOWNTO 0);
+    SIGNAL cache_state : inst_cache_state_t;
+    SIGNAL cache_state_nx : inst_cache_state_t;
 BEGIN
+    p : PROCESS(clk)
+	BEGIN
+		IF rising_edge(clk) THEN
+			IF reset = '1' THEN
+				cache_state <= READY;
+			ELSE
+				cache_state <= cache_state_nx;
+			END IF;
+		END IF;
+	END PROCESS p;
+
     ci: cache_inst PORT MAP(
         clk => clk,
         reset => reset,
         addr => pc,
         data_out => cache_data_out,
         done => cache_done,
+        state => cache_state,
+        state_nx => cache_state_nx,
         mem_req => mem_req,
         mem_req_abort => branch_taken_D,
         mem_addr => mem_addr,

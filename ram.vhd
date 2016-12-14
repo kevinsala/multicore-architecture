@@ -30,7 +30,6 @@ ARCHITECTURE structure OF ram IS
 
     SIGNAL mem_line : INTEGER := 0;
     SIGNAL cycle : INTEGER RANGE 0 TO op_delay - 1;
-    SIGNAL done_int : STD_LOGIC := '0';
 
     PROCEDURE load_file(CONSTANT filename : IN STRING;
                         CONSTANT mem_line : IN INTEGER;
@@ -56,7 +55,6 @@ ARCHITECTURE structure OF ram IS
         END LOOP;
     END PROCEDURE;
 BEGIN
-
     p : PROCESS(clk)
     BEGIN
         IF rising_edge(clk) THEN
@@ -67,13 +65,9 @@ BEGIN
                 load_file("memory_exc", 2048, ram);
                 cycle <= op_delay - 1;
             ELSE
-                IF rising_edge(req) THEN
-                    -- If some transaction stopped at the middle, restart the memory state machine
-                    cycle <= cycle - 1;
-                    done_int <= '0';
-                ELSIF req = '1' THEN
+                IF req = '1' THEN
                     IF cycle = 0 THEN
-                        done_int <= '1';
+                        done <= '1';
                         cycle <= op_delay - 1;
                         mem_line <= to_integer(unsigned(addr(depth_bits + mem_line_bits DOWNTO mem_line_bits)));
                         IF we = '1' THEN
@@ -81,13 +75,15 @@ BEGIN
                         END IF;
                     ELSE
                         cycle <= cycle - 1;
-                        done_int <= '0';
+                        done <= '0';
                     END IF;
+                ELSE
+                    cycle <= op_delay - 1;
+                    done <= '0';
                 END IF;
             END IF;
         END IF;
     END PROCESS p;
 
     data_out <= ram(mem_line);
-    done <= done_int;
 END structure;
