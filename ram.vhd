@@ -22,7 +22,7 @@ ARCHITECTURE structure OF ram IS
     CONSTANT data_bits : INTEGER := 128;
     CONSTANT mem_line_bits: INTEGER := 4;
     CONSTANT depth : INTEGER := 16384;
-    CONSTANT depth_bits : INTEGER := 16;
+    CONSTANT depth_bits : INTEGER := 14;
     CONSTANT op_delay : INTEGER := 5; -- In cycles
 
     TYPE ram_type IS ARRAY(depth - 1 DOWNTO 0) OF STD_LOGIC_VECTOR(data_bits - 1 DOWNTO 0);
@@ -56,6 +56,7 @@ ARCHITECTURE structure OF ram IS
     END PROCEDURE;
 BEGIN
     p : PROCESS(clk)
+        VARIABLE mem_line_int : INTEGER RANGE 0 TO depth;
     BEGIN
         IF rising_edge(clk) THEN
             IF reset = '1' THEN
@@ -69,9 +70,10 @@ BEGIN
                     IF cycle = 0 THEN
                         done <= '1';
                         cycle <= op_delay - 1;
-                        mem_line <= to_integer(unsigned(addr(depth_bits + mem_line_bits DOWNTO mem_line_bits)));
+                        mem_line_int := to_integer(unsigned(addr(depth_bits + mem_line_bits DOWNTO mem_line_bits)));
+                        mem_line <= mem_line_int;
                         IF we = '1' THEN
-                            ram(mem_line) <= data_in;
+                            ram(mem_line_int) <= data_in;
                         END IF;
                     ELSE
                         cycle <= cycle - 1;
