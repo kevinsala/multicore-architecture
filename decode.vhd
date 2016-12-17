@@ -17,6 +17,7 @@ ENTITY decode IS
 		jump : OUT STD_LOGIC;
 		reg_src1_v : OUT STD_LOGIC;
 		reg_src2_v : OUT STD_LOGIC;
+		inm_src2_v : OUT STD_LOGIC;
 		mul : OUT STD_LOGIC;
 		mem_write : OUT STD_LOGIC;
 		byte : OUT STD_LOGIC;
@@ -94,6 +95,13 @@ BEGIN
 		'1' WHEN OP_ADD,
 		'1' WHEN OP_SUB,
 		'1' WHEN OP_MUL,
+		'0' WHEN OTHERS;
+
+	WITH op_code_int SELECT inm_src2_v <=
+		'1' WHEN OP_STW,
+		'1' WHEN OP_STB,
+		'1' WHEN OP_LDW,
+		'1' WHEN OP_LDB,
 		'0' WHEN OTHERS;
 
 	WITH op_code_int SELECT mul <=

@@ -135,6 +135,7 @@ ARCHITECTURE structure OF inkel_pentiun IS
 			jump : OUT STD_LOGIC;
 			reg_src1_v : OUT STD_LOGIC;
 			reg_src2_v : OUT STD_LOGIC;
+			inm_src2_v : OUT STD_LOGIC;
 			mul : OUT STD_LOGIC;
 			mem_write : OUT STD_LOGIC;
 			byte : OUT STD_LOGIC;
@@ -150,6 +151,8 @@ ARCHITECTURE structure OF inkel_pentiun IS
 			reg_src2_A      : IN STD_LOGIC_VECTOR (4 DOWNTO 0);
 			reg_src1_v_A    : IN STD_LOGIC;
 			reg_src2_v_A    : IN STD_LOGIC;
+			inm_src2_v_A    : IN STD_LOGIC;
+			mem_write_A     : IN STD_LOGIC;
 			reg_dest_C      : IN STD_LOGIC_VECTOR (4 DOWNTO 0);
 			reg_we_C        : IN STD_LOGIC;
 			reg_dest_W      : IN STD_LOGIC_VECTOR (4 DOWNTO 0);
@@ -202,6 +205,7 @@ ARCHITECTURE structure OF inkel_pentiun IS
 			inm_ext_EX: OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
 			ALUSrc_A_ID : IN STD_LOGIC;
 			ALUSrc_B_ID : IN STD_LOGIC;
+			inm_src2_v_UD : IN STD_LOGIC;
 			Mul_ID : IN STD_LOGIC;
 			MemWrite_ID : IN STD_LOGIC;
 			Byte_ID : IN STD_LOGIC;
@@ -210,6 +214,7 @@ ARCHITECTURE structure OF inkel_pentiun IS
 			RegWrite_ID : IN STD_LOGIC;
 			ALUSrc_A_EX : OUT STD_LOGIC;
 			ALUSrc_B_EX : OUT STD_LOGIC;
+			inm_src2_v_A : OUT STD_LOGIC;
 			Mul_EX : OUT STD_LOGIC;
 			MemWrite_EX : OUT STD_LOGIC;
 			Byte_EX : OUT STD_LOGIC;
@@ -269,6 +274,7 @@ ARCHITECTURE structure OF inkel_pentiun IS
 			MemtoReg : IN STD_LOGIC;
 			ALU_Src_A : IN STD_LOGIC;
 			ALU_Src_B : IN STD_LOGIC;
+			inm_src2_v_D : IN STD_LOGIC;
 			Mul: IN STD_LOGIC;
 			ctrl : IN STD_LOGIC;
 			Reg_Write_out : OUT STD_LOGIC;
@@ -278,6 +284,7 @@ ARCHITECTURE structure OF inkel_pentiun IS
 			MemtoReg_out : OUT STD_LOGIC;
 			ALU_Src_A_out : OUT STD_LOGIC;
 			ALU_Src_B_out : OUT STD_LOGIC;
+			inm_src2_v_UD : OUT STD_LOGIC;
 			Mul_out : OUT STD_LOGIC
 		);
 	END COMPONENT;
@@ -347,6 +354,7 @@ ARCHITECTURE structure OF inkel_pentiun IS
 	SIGNAL mem_to_reg_D : STD_LOGIC;
 	SIGNAL reg_src1_v_D : STD_LOGIC;
 	SIGNAL reg_src2_v_D : STD_LOGIC;
+	SIGNAL inm_src2_v_D : STD_LOGIC;
 	SIGNAL mul_D : STD_LOGIC;
 	SIGNAL switch_ctrl : STD_LOGIC;
 	SIGNAL Z : STD_LOGIC;
@@ -370,6 +378,7 @@ ARCHITECTURE structure OF inkel_pentiun IS
 	SIGNAL mul_A : STD_LOGIC;
 	SIGNAL reg_src1_v_A : STD_LOGIC;
 	SIGNAL reg_src2_v_A : STD_LOGIC;
+	SIGNAL inm_src2_v_A : STD_LOGIC;
 	SIGNAL mem_write_A : STD_LOGIC;
 	SIGNAL byte_A : STD_LOGIC;
 	SIGNAL reg_we_A : STD_LOGIC;
@@ -434,6 +443,7 @@ ARCHITECTURE structure OF inkel_pentiun IS
 	SIGNAL mem_to_reg_UD : STD_LOGIC;
 	SIGNAL reg_src1_v_UD : STD_LOGIC;
 	SIGNAL reg_src2_v_UD : STD_LOGIC;
+	SIGNAL inm_src2_v_UD : STD_LOGIC;
 	SIGNAL reg_we_UD : STD_LOGIC;
 	SIGNAL mul_UD : STD_LOGIC;
 
@@ -536,6 +546,7 @@ BEGIN
 		jump => jump_D,
 		reg_src1_v => reg_src1_v_D,
 		reg_src2_v => reg_src2_v_D,
+		inm_src2_v => inm_src2_v_D,
 		mul => mul_D,
 		mem_write => mem_write_D,
 		byte => byte_D,
@@ -552,6 +563,7 @@ BEGIN
 		MemtoReg => mem_to_reg_D,
 		ALU_Src_A => reg_src1_v_D,
 		ALU_Src_B => reg_src2_v_D,
+		inm_src2_v_D => inm_src2_v_D,
 		Mul => mul_D,
 		ctrl => switch_ctrl,
 		Reg_Write_out => reg_we_UD,
@@ -561,6 +573,7 @@ BEGIN
 		MemtoReg_out => mem_to_reg_UD,
 		ALU_Src_A_out => reg_src1_v_UD,
 		ALU_Src_B_out => reg_src2_v_UD,
+		inm_src2_v_UD => inm_src2_v_UD,
 		Mul_out => mul_UD
 	);
 
@@ -589,6 +602,7 @@ BEGIN
 		busB_EX => reg_data2_A,
 		ALUSrc_A_ID => reg_src1_v_UD,
 		ALUSrc_B_ID => reg_src2_v_UD,
+		inm_src2_v_UD => inm_src2_v_UD,
 		Mul_ID => mul_UD,
 		MemWrite_ID => mem_write_UD,
 		byte_ID => byte_UD,
@@ -597,6 +611,7 @@ BEGIN
 		RegWrite_ID => reg_we_UD,
 		ALUSrc_A_EX => reg_src1_v_A,
 		ALUSrc_B_EX => reg_src2_v_A,
+		inm_src2_v_A => inm_src2_v_A,
 		Mul_EX => mul_A,
 		MemWrite_EX => mem_write_A,
 		Byte_EX => byte_A,
@@ -625,6 +640,8 @@ BEGIN
 		reg_src2_A => reg_src2_A,
 		reg_src1_v_A => reg_src1_v_A,
 		reg_src2_v_A => reg_src2_v_A,
+		inm_src2_v_A => inm_src2_v_A,
+		mem_write_A => mem_write_A,
 		reg_dest_C => reg_dest_C,
 		reg_we_C => reg_we_C,
 		reg_dest_W => reg_dest_WB,

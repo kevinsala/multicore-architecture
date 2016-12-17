@@ -19,6 +19,7 @@ Port(
 	MemtoReg : in STD_LOGIC;
 	ALU_Src_A : in STD_LOGIC;
 	ALU_Src_B : in STD_LOGIC;
+	inm_src2_v_D : IN STD_LOGIC;
 	Mul : in STD_LOGIC;
 	ctrl : in STD_LOGIC;
 	Reg_Write_out : out STD_LOGIC;
@@ -28,6 +29,7 @@ Port(
 	MemtoReg_out : out STD_LOGIC;
 	ALU_Src_A_out : out STD_LOGIC;
 	ALU_Src_B_out : out STD_LOGIC;
+	inm_src2_v_UD : OUT STD_LOGIC;
 	Mul_out : out STD_LOGIC);
 end Switch_UD;
 
@@ -41,6 +43,7 @@ begin
 	MemtoReg_out <= MemtoReg when (ctrl ='1') else '0';
 	ALU_Src_A_out <= ALU_Src_A when (ctrl ='1') else '0';
 	ALU_Src_B_out <= ALU_Src_B when (ctrl ='1') else '0';
+	inm_src2_v_UD <= inm_src2_v_D WHEN (ctrl = '1') ELSE '0';
 	Mul_out <= Mul when (ctrl ='1') else '0';
 end Behavioral;
 

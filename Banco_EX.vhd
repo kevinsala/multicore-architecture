@@ -12,6 +12,7 @@ ENTITY Banco_EX IS
 		busB_EX : OUT STD_LOGIC_VECTOR (31 downto 0);
 		ALUSrc_A_ID : IN STD_LOGIC;
 		ALUSrc_B_ID : IN STD_LOGIC;
+		inm_src2_v_UD : IN STD_LOGIC;
 		Mul_ID : IN STD_LOGIC;
 		MemWrite_ID : IN STD_LOGIC;
 		Byte_ID : IN STD_LOGIC;
@@ -22,6 +23,7 @@ ENTITY Banco_EX IS
 		inm_ext_EX: OUT std_logic_vector(31 downto 0);
 		ALUSrc_A_EX : OUT STD_LOGIC;
 		ALUSrc_B_EX : OUT STD_LOGIC;
+		inm_src2_v_A : OUT STD_LOGIC;
 		Mul_EX : OUT STD_LOGIC;
 		MemWrite_EX : OUT STD_LOGIC;
 		Byte_EX : OUT STD_LOGIC;
@@ -50,6 +52,7 @@ SYNC_PROC: PROCESS (clk)
 				inm_ext_EX <= "00000000000000000000000000000000";
 				ALUSrc_A_EX <= '0';
 				ALUSrc_B_EX <= '0';
+				inm_src2_v_A <= '0';
 				Mul_EX <= '0';
 				MemWrite_EX <= '0';
 				Byte_EX <= '0';
@@ -66,6 +69,7 @@ SYNC_PROC: PROCESS (clk)
             		busB_EX <= busB;
             		ALUSrc_A_EX <= ALUSrc_A_ID;
             		ALUSrc_B_EX <= ALUSrc_B_ID;
+					inm_src2_v_A <= inm_src2_v_UD;
             		Mul_EX <= Mul_ID;
             		MemWrite_EX <= MemWrite_ID;
             		Byte_EX <= Byte_ID;
