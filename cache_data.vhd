@@ -13,6 +13,8 @@ ENTITY cache_data IS
 		re       : IN STD_LOGIC;
 		we       : IN STD_LOGIC;
 		is_byte  : IN STD_LOGIC;
+		state    : IN data_cache_state_t;
+		state_nx : OUT data_cache_state_t;
 		done     : OUT STD_LOGIC;
 		mem_req  : OUT STD_LOGIC;
 		mem_addr : OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
@@ -31,8 +33,6 @@ ARCHITECTURE cache_data_behavior OF cache_data IS
 	CONSTANT WORD_BITS   : INTEGER := 32;
 	CONSTANT CACHE_LINES : INTEGER := 4;
 
-	TYPE state_t IS (READY, LINEREQ, LINEREPL);
-
 	TYPE lru_fields_t   IS ARRAY(CACHE_LINES-1 DOWNTO 0) OF INTEGER RANGE 0 to 3;
 	TYPE valid_fields_t IS ARRAY(CACHE_LINES-1 DOWNTO 0) OF STD_LOGIC;
 	TYPE dirty_fields_t IS ARRAY(CACHE_LINES-1 DOWNTO 0) OF STD_LOGIC;
@@ -41,14 +41,6 @@ ARCHITECTURE cache_data_behavior OF cache_data IS
 
 	TYPE hit_t IS ARRAY(CACHE_LINES-1 DOWNTO 0) OF STD_LOGIC;
 
-	-- Determine the state of the cache:
-	-- READY: The cache will be ready to execute a new instruction in the next cycle.
-	-- LINEREQ: The cache is waiting to get a memory line from the memory. The cache
-	-- won't be ready to execute a new instruction in the next cycle.
-	-- LINEREPL: The cache has sent a dirty line to the memory, which has been replaced.
-	-- It won't be ready to execute a new instruction in the next cycle.
-	SIGNAL state : state_t := READY;
-
 	-- Fields of the cache
 	SIGNAL lru_fields   : lru_fields_t;
 	SIGNAL valid_fields : valid_fields_t;
@@ -56,26 +48,36 @@ ARCHITECTURE cache_data_behavior OF cache_data IS
 	SIGNAL tag_fields   : tag_fields_t;
 	SIGNAL data_fields  : data_fields_t;
 
-	-- Determine the target line of the access
-	SIGNAL target_line : INTEGER RANGE 0 TO 3 := 0;
+	-- The next state of the cache
+	SIGNAL state_nx_i : data_cache_state_t;
+
+	-- Determine the line of the cache that has hit with the access
+	SIGNAL hit : STD_LOGIC := '0';
+	SIGNAL hit_line : hit_t;
+	SIGNAL hit_line_num : INTEGER RANGE 0 TO 3 := 0;
+
+	-- Replacement signals
+	SIGNAL replacement : STD_LOGIC := '0';
+	SIGNAL lru_line_num : INTEGER RANGE 0 TO 3 := 0;
 
 	-- Determine the target word of the access
-	SIGNAL target_word : INTEGER RANGE 0 TO 3 := 0;
+	SIGNAL target_word_num : INTEGER RANGE 0 TO 3 := 0;
+	SIGNAL target_word_msb : INTEGER RANGE 0 TO 127 := 31;
+	SIGNAL target_word_lsb : INTEGER RANGE 0 TO 127 := 0;
 	SIGNAL target_word_data : STD_LOGIC_VECTOR(WORD_BITS-1 DOWNTO 0);
 
 	-- Determine the target byte of the access
-	SIGNAL target_byte : INTEGER RANGE 0 TO 16 := 0;
+	SIGNAL target_byte_num : INTEGER RANGE 0 TO 16 := 0;
+	SIGNAL target_byte_msb : INTEGER RANGE 0 TO 127 := 7;
+	SIGNAL target_byte_lsb : INTEGER RANGE 0 TO 127 := 0;
 	SIGNAL target_byte_data : STD_LOGIC_VECTOR(WORD_BITS-1 DOWNTO 0);
 
 	-- Procedure to reset and initialize the cache
 	PROCEDURE reset_cache(
-			SIGNAL state : OUT state_t;
-			SIGNAL done : OUT STD_LOGIC;
 			SIGNAL lru_fields : OUT lru_fields_t;
 			SIGNAL valid_fields : OUT valid_fields_t;
 			SIGNAL dirty_fields : OUT dirty_fields_t;
-			SIGNAL mem_req : OUT STD_LOGIC;
-			SIGNAL mem_we  : OUT STD_LOGIC
+			SIGNAL mem_req : OUT STD_LOGIC
 		) IS
 	BEGIN
 		-- Initialize LRU and valid fields
@@ -85,13 +87,8 @@ ARCHITECTURE cache_data_behavior OF cache_data IS
 			dirty_fields(i) <= '0';
 		END LOOP;
 
-		-- Set ready the cache
-		state <= READY;
-		done <= '1';
-
 		-- Cancel any memory request
 		mem_req <= '0';
-		mem_we <= '0';
 	END PROCEDURE;
 
 	-- Procedure to execute the Least Recently Used alogrithm
@@ -108,167 +105,153 @@ ARCHITECTURE cache_data_behavior OF cache_data IS
 		lru_fields(line_id) <= 0;
 		END LOOP;
 	END PROCEDURE;
-
-	PROCEDURE check_hit(
-			SIGNAL addr : IN STD_LOGIC_VECTOR(31 DOWNTO 0);
-			SIGNAL valid_fields : IN valid_fields_t;
-			SIGNAL tag_fields : IN tag_fields_t;
-			VARIABLE hit : OUT STD_LOGIC;
-			VARIABLE hit_line_id : OUT INTEGER RANGE 0 TO 3
-		) IS
-		VARIABLE hit_line : hit_t;
-	BEGIN
-		FOR i IN 0 TO CACHE_LINES-1 LOOP
-			hit_line(i) := valid_fields(i) AND to_std_logic(tag_fields(i) = addr(31 DOWNTO 4));
-		END LOOP;
-
-		hit := hit_line(0) OR hit_line(1) OR hit_line(2) OR hit_line(3);
-
-		IF hit_line(0) = '1' THEN hit_line_id := 0;
-		ELSIF hit_line(1) = '1' THEN hit_line_id := 1;
-		ELSIF hit_line(2) = '1' THEN hit_line_id := 2;
-		ELSE hit_line_id := 3;
-		END IF;
-	END PROCEDURE;
-
-	PROCEDURE check_replacement(
-			SIGNAL lru_fields : IN lru_fields_t;
-			SIGNAL valid_fields : IN valid_fields_t;
-			SIGNAL dirty_fields : IN dirty_fields_t;
-			VARIABLE hit : IN STD_LOGIC;
-			VARIABLE replacement : OUT STD_LOGIC;
-			VARIABLE lru_line_id : INOUT INTEGER RANGE 0 TO 3
-		) IS
-	BEGIN
-		-- Conditional assignment to know which line is the least recentrly used
-		IF lru_fields(0) = 3 THEN lru_line_id := 0;
-		ELSIF lru_fields(1) = 3 THEN lru_line_id := 1;
-		ELSIF lru_fields(2) = 3 THEN lru_line_id := 2;
-		ELSE lru_line_id := 3;
-		END IF;
-
-		-- Logic to determine if the cache needs a replacement
-		replacement := NOT hit AND dirty_fields(lru_line_id) AND valid_fields(0) AND valid_fields(1) AND valid_fields(2) AND valid_fields(3);
-	END PROCEDURE;
-
-	PROCEDURE get_target_word_and_byte(
-			SIGNAL addr : IN STD_LOGIC_VECTOR(31 DOWNTO 0);
-			VARIABLE word : OUT INTEGER RANGE 0 TO 3;
-			VARIABLE byte : INOUT INTEGER RANGE 0 TO 15
-		) IS
-	BEGIN
-		byte := to_integer(unsigned(addr(3 DOWNTO 0)));
-		word := byte / 4;
-	END PROCEDURE;
 BEGIN
 
-execution : PROCESS(reset, addr, re, we, is_byte, mem_done)
-	VARIABLE hit_i : STD_LOGIC;
-	VARIABLE replacement_i : STD_LOGIC;
-	VARIABLE target_line_i : INTEGER RANGE 0 TO 3;
-	VARIABLE target_word_i : INTEGER RANGE 0 TO 3;
-	VARIABLE target_byte_i : INTEGER RANGE 0 TO 15;
-	VARIABLE msb : INTEGER RANGE 0 TO 127;
-	VARIABLE lsb : INTEGER RANGE 0 TO 127;
-	VARIABLE serve_access : BOOLEAN;
+-- Process that computes the next state of the cache
+next_state_process : process(reset, state, re, we, hit, replacement, mem_done)
 BEGIN
-	serve_access := FALSE;
-
-	IF clk = '1' THEN
-		IF reset = '0' AND (re = '1' OR we = '1') THEN
-			target_line_i := target_line;
-			-- It's ready to process a new access
-			IF state = READY THEN
-				check_hit(addr, valid_fields, tag_fields, hit_i, target_line_i);
-
-				IF hit_i = '1' THEN
-					serve_access := TRUE;
+	IF reset = '1' THEN
+		state_nx_i <= READY;
+	ELSE
+		state_nx_i <= state;
+		IF state = READY THEN
+			IF re = '1' OR we = '1' THEN
+				IF hit = '1' THEN
+					state_nx_i <= READY;
+				ELSIF replacement = '1' THEN
+					state_nx_i <= LINEREPL;
 				ELSE
-					check_replacement(lru_fields, valid_fields, dirty_fields, hit_i, replacement_i, target_line_i);
-					IF replacement_i = '1' THEN
-						state <= LINEREPL;
-						mem_addr <= tag_fields(target_line_i) & "0000";
-						mem_we <= '1';
-					ELSE
-						state <= LINEREQ;
-						mem_addr <= addr;
-						mem_we <= '0';
-					END IF;
-					mem_req	<= '1';
-				END IF;
-
-				done <= hit_i;
-				target_line <= target_line_i;
-
-			-- It's waiting for a confirmation of line replacement
-			ELSIF state = LINEREPL THEN
-				IF mem_done = '1' THEN
-					state <= LINEREQ;
-					mem_addr <= addr;
-					mem_we <= '0';
-					mem_req <= '1';
-				END IF;
-
-			-- It's waiting for a memory line
-			ELSIF state = LINEREQ THEN
-				IF mem_done = '1' THEN
-					state <= READY;
-					mem_req <= '0';
-					mem_we <= '0';
-					valid_fields(target_line_i) <= '1';
-					dirty_fields(target_line_i) <= '0';
-					tag_fields(target_line_i) <= addr(31 DOWNTO 4);
-					data_fields(target_line_i) <= mem_data_in;
-					serve_access := TRUE;
+					state_nx_i <= LINEREQ;
 				END IF;
 			END IF;
 
-			-- It can serve the access
-			IF serve_access THEN
-				get_target_word_and_byte(addr, target_word_i, target_byte_i);
-
-				IF we = '1' THEN
-					IF is_byte = '1' THEN
-						msb := (target_byte_i + 1) * BYTE_BITS - 1;
-						lsb := target_byte_i * BYTE_BITS;
-						data_fields(target_line_i)(msb DOWNTO lsb) <= data_in(BYTE_BITS-1 DOWNTO 0);
-					ELSE
-						msb := (target_word_i + 1) * WORD_BITS - 1;
-						lsb := target_word_i * WORD_BITS;
-						data_fields(target_line_i)(msb DOWNTO lsb) <= data_in;
-					END IF;
-
-					dirty_fields(target_line_i) <= '1';
-				END IF;
-				LRU_execute(lru_fields, target_line_i);
-
-				done <= '1';
-				target_word <= target_word_i;
-				target_byte <= target_byte_i;
+		ELSIF state = LINEREPL THEN
+			IF mem_done = '1' THEN
+				state_nx_i <= LINEREQ;
 			END IF;
 
-		ELSIF reset = '0' THEN
-			done <= '1';
-		ELSE
-			reset_cache(state, done, lru_fields, valid_fields, dirty_fields, mem_req, mem_we);
+		ELSIF state = LINEREQ THEN
+			IF mem_done = '1' THEN
+				state_nx_i <= READY;
+			END IF;
 		END IF;
 	END IF;
-END PROCESS execution;
+END PROCESS next_state_process;
 
-target_word_data <= data_fields(target_line)((target_word+1)*WORD_BITS-1 DOWNTO target_word*WORD_BITS);
+-- Process that sets the output signals of the cache
+execution_process : process(clk)
+	VARIABLE serve_access : BOOLEAN;
+	VARIABLE request_line : BOOLEAN;
+	VARIABLE target_line : INTEGER RANGE 0 TO 3;
+BEGIN
+	IF rising_edge(clk) AND reset = '1' THEN
+		reset_cache(lru_fields, valid_fields, dirty_fields, mem_req);
 
-target_byte_data(7 DOWNTO 0) <= data_fields(target_line)((target_byte+1)*BYTE_BITS-1 DOWNTO target_byte*BYTE_BITS);
-target_byte_data(31 DOWNTO 8) <=
-		x"FFFFFF" WHEN target_byte_data(7) = '1' ELSE
-		x"000000" WHEN target_byte_data(7) = '0' ELSE
-		x"000000";
+	ELSIF falling_edge(clk) AND reset = '0' THEN
+		serve_access := FALSE;
+		request_line := FALSE;
 
-WITH is_byte SELECT data_out <=
-		target_byte_data WHEN '1',
-		target_word_data WHEN '0',
+		IF state = READY THEN
+			IF state_nx_i = READY THEN
+				IF re = '1' OR we = '1' THEN
+					target_line := hit_line_num;
+					serve_access := TRUE;
+				END IF;
+			ELSIF state_nx_i = LINEREPL THEN
+				mem_req <= '1';
+				mem_we <= '1';
+				mem_addr <= tag_fields(lru_line_num) & "0000";
+			ELSIF state_nx_i = LINEREQ THEN
+				request_line := TRUE;
+			END IF;
+		ELSIF state = LINEREPL THEN
+			IF state_nx_i = LINEREQ THEN
+				request_line := TRUE;
+			END IF;
+		ELSIF state = LINEREQ THEN
+			IF state_nx_i = READY THEN
+				target_line := lru_line_num;
+				mem_req <= '0';
+				valid_fields(target_line) <= '1';
+				dirty_fields(target_line) <= '0';
+				tag_fields(target_line) <= addr(31 DOWNTO 4);
+				data_fields(target_line) <= mem_data_in;
+				serve_access := TRUE;
+			END IF;
+		END IF;
+
+		IF serve_access THEN
+			IF we = '1' THEN
+				IF is_byte = '1' THEN
+					data_fields(target_line)(target_byte_msb DOWNTO target_byte_lsb) <= data_in(7 DOWNTO 0);
+				ELSE
+					data_fields(target_line)(target_word_msb DOWNTO target_word_lsb) <= data_in;
+				END IF;
+
+				dirty_fields(target_line) <= '1';
+			END IF;
+			LRU_execute(lru_fields, target_line);
+		ELSIF request_line THEN
+			mem_req <= '1';
+			mem_we <= '0';
+			mem_addr <= addr;
+		END IF;
+	END IF;
+END PROCESS execution_process;
+
+-- For each line, determine if the access has hit
+hit_line(0) <= valid_fields(0) AND to_std_logic(tag_fields(0) = addr(31 DOWNTO 4));
+hit_line(1) <= valid_fields(1) AND to_std_logic(tag_fields(1) = addr(31 DOWNTO 4));
+hit_line(2) <= valid_fields(2) AND to_std_logic(tag_fields(2) = addr(31 DOWNTO 4));
+hit_line(3) <= valid_fields(3) AND to_std_logic(tag_fields(3) = addr(31 DOWNTO 4));
+
+-- Determine which line has hit
+hit_line_num <= 0 WHEN hit_line(0) = '1'
+		ELSE 1 WHEN hit_line(1) = '1'
+		ELSE 2 WHEN hit_line(2) = '1'
+		ELSE 3 WHEN hit_line(3) = '1'
+		ELSE 0;
+
+-- Determine if the access has hit
+hit <= hit_line(0) OR hit_line(1) OR hit_line(2) OR hit_line(3);
+
+-- Determine the least recently used line
+lru_line_num <= 0 WHEN lru_fields(0) = 3
+		ELSE 1 WHEN lru_fields(1) = 3
+		ELSE 2 WHEN lru_fields(2) = 3
+		ELSE 3 WHEN lru_fields(3) = 3
+		ELSE 0;
+
+-- Determine if a replacement is needed
+replacement <= NOT hit AND dirty_fields(lru_line_num) AND valid_fields(0) AND valid_fields(1) AND valid_fields(2) AND valid_fields(3);
+
+-- Logic to determine which word and byte (the interval of bits) is being accessed
+target_byte_num <= to_integer(unsigned(addr(3 DOWNTO 0)));
+target_word_num <= target_byte_num / 4;
+target_word_msb <= (target_word_num + 1) * WORD_BITS - 1;
+target_word_lsb <= target_word_num * WORD_BITS;
+target_byte_msb <= (target_byte_num + 1) * BYTE_BITS - 1;
+target_byte_lsb <= target_byte_num * BYTE_BITS;
+
+-- The accessed word
+target_word_data <= data_fields(hit_line_num)(target_word_msb DOWNTO target_word_lsb);
+
+-- The accessed byte with sign extension
+target_byte_data(7 DOWNTO 0) <= data_fields(hit_line_num)(target_byte_msb DOWNTO target_byte_lsb);
+target_byte_data(31 DOWNTO 8) <= x"FFFFFF" WHEN target_byte_data(7) = '1'
+		ELSE x"000000";
+
+-- The definitive output of the access
+WITH is_byte SELECT data_out <= target_byte_data WHEN '1',
 		target_word_data WHEN OTHERS;
 
--- Set the mem_data_out to the target line
-mem_data_out <= data_fields(target_line);
+-- Send to memory the least recently used line
+mem_data_out <= data_fields(lru_line_num);
+
+-- Logic of the next state
+state_nx <= state_nx_i;
+
+-- The cache has not finished only when a access produces a miss
+done <= hit OR NOT(re OR we);
 
 END cache_data_behavior;

@@ -1,5 +1,6 @@
 library IEEE;
 use IEEE.STD_LOGIC_1164.ALL;
+USE work.utils.ALL;
 
 -- Uncomment the following library declaration if using
 -- arithmetic functions with Signed or Unsigned values
@@ -31,7 +32,9 @@ Port(
 	BusB_EX: in  STD_LOGIC_VECTOR (31 downto 0); -- para los store
 	BusB_MEM: out  STD_LOGIC_VECTOR (31 downto 0); -- para los store
 	RW_EX : in  STD_LOGIC_VECTOR (4 downto 0); -- registro destino de la escritura
-	RW_MEM : out  STD_LOGIC_VECTOR (4 downto 0)  -- PC+4 en la etapa ID
+	RW_MEM : out  STD_LOGIC_VECTOR (4 downto 0); -- PC+4 en la etapa ID
+	state_nx_C : IN data_cache_state_t;
+	state_C : OUT data_cache_state_t
 );
 end Banco_MEM;
 
@@ -50,6 +53,7 @@ begin
             	MemRead_MEM <= '0';
             	MemtoReg_MEM <= '0';
             	RegWrite_MEM <= '0';
+				state_C <= READY;
         	else
             	if (load = '1') then
             		ALU_out_MEM <= ALU_out_EX;
@@ -60,8 +64,9 @@ begin
             		MemRead_MEM <= MemRead_EX;
             		MemtoReg_MEM <= MemtoReg_EX;
             		RegWrite_MEM <= RegWrite_EX;
-	    		end if;	
-        	end if;        
+				end if;
+				state_C <= state_nx_C;
+				end if;
     	end if;
     end process;
 end Behavioral;

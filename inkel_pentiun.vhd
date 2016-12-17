@@ -1,5 +1,6 @@
 LIBRARY IEEE;
 USE IEEE.STD_LOGIC_1164.ALL;
+USE WORK.UTILS.ALL;
 
 ENTITY inkel_pentiun IS
 	PORT(
@@ -72,6 +73,8 @@ ARCHITECTURE structure OF inkel_pentiun IS
 			re       : IN STD_LOGIC;
 			we       : IN STD_LOGIC;
 			is_byte  : IN STD_LOGIC;
+			state    : IN data_cache_state_t;
+			state_nx : OUT data_cache_state_t;
 			done     : OUT STD_LOGIC;
 			mem_req  : OUT STD_LOGIC;
 			mem_addr : OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
@@ -300,7 +303,9 @@ ARCHITECTURE structure OF inkel_pentiun IS
 			BusB_EX : IN STD_LOGIC_VECTOR(31 DOWNTO 0);
 			BusB_MEM : OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
 			RW_EX : IN STD_LOGIC_VECTOR(4 DOWNTO 0);
-			RW_MEM : OUT STD_LOGIC_VECTOR(4 DOWNTO 0)
+			RW_MEM : OUT STD_LOGIC_VECTOR(4 DOWNTO 0);
+			state_nx_C : IN data_cache_state_t;
+			state_C : OUT data_cache_state_t
 		);
 	END COMPONENT;
 
@@ -386,6 +391,8 @@ ARCHITECTURE structure OF inkel_pentiun IS
 	SIGNAL cache_re_C : STD_LOGIC;
 	SIGNAL cache_we_C : STD_LOGIC;
 	SIGNAL byte_C : STD_LOGIC;
+	SIGNAL state_C : data_cache_state_t;
+	SIGNAL state_nx_C : data_cache_state_t;
 	SIGNAL mem_to_reg_C : STD_LOGIC;
 	SIGNAL reg_we_C : STD_LOGIC;
 	SIGNAL reg_dest_C : STD_LOGIC_VECTOR(4 DOWNTO 0);
@@ -701,7 +708,9 @@ BEGIN
 		BusB_EX => mem_data_A,
 		BusB_MEM => cache_data_in_C,
 		RW_EX => reg_dest_A,
-		RW_MEM => reg_dest_C
+		RW_MEM => reg_dest_C,
+		state_nx_C => state_nx_C,
+		state_C => state_C
 	);
 
 	-------------------------------- Memory  ----------------------------------------------
@@ -715,6 +724,8 @@ BEGIN
 		re => cache_re_C,
 		we => cache_we_C,
 		is_byte => byte_C,
+		state => state_C,
+		state_nx => state_nx_C,
 		done => done_C,
 		mem_req => mem_req_C,
 		mem_addr => mem_addr_C,

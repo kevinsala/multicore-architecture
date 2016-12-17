@@ -1,6 +1,7 @@
 LIBRARY ieee;
 USE ieee.std_logic_1164.all;
 USE ieee.numeric_std.all;
+USE work.utils.all;
 
 ENTITY cache_stage IS
 	PORT(
@@ -12,6 +13,8 @@ ENTITY cache_stage IS
 		re       : IN STD_LOGIC;
 		we       : IN STD_LOGIC;
 		is_byte  : IN STD_LOGIC;
+		state    : IN data_cache_state_t;
+		state_nx : OUT data_cache_state_t;
 		done     : OUT STD_LOGIC;
 		mem_req  : OUT STD_LOGIC;
 		mem_addr : OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
@@ -33,6 +36,8 @@ ARCHITECTURE cache_stage_behavior OF cache_stage IS
 			re       : IN STD_LOGIC;
 			we       : IN STD_LOGIC;
 			is_byte  : IN STD_LOGIC;
+			state    : IN data_cache_state_t;
+			state_nx : OUT data_cache_state_t;
 			done     : OUT STD_LOGIC;
 			mem_req  : OUT STD_LOGIC;
 			mem_addr : OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
@@ -52,6 +57,8 @@ BEGIN
 			re => re,
 			we => we,
 			is_byte => is_byte,
+			state => state,
+			state_nx => state_nx,
 			done => done,
 			mem_req => mem_req,
 			mem_addr => mem_addr,
