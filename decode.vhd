@@ -11,7 +11,7 @@ ENTITY decode IS
 		reg_src2 : OUT STD_LOGIC_VECTOR(4 DOWNTO 0);
 		reg_dest : OUT STD_LOGIC_VECTOR(4 DOWNTO 0);
 		inm_ext : OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
-		calc_addr : OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
+		jump_addr : OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
 		ALU_ctrl : OUT STD_LOGIC_VECTOR(2 DOWNTO 0);
 		branch : OUT STD_LOGIC;
 		jump : OUT STD_LOGIC;
@@ -61,7 +61,7 @@ BEGIN
 
 	inm_ext <= inm_ext_int;
 
-	calc_addr <= pc + (inm_ext_int(29 DOWNTO 0) & "00");
+	jump_addr <= pc + (inm_ext_int(29 DOWNTO 0) & "00");
 
 	op_code <= op_code_int;
 	reg_src1 <= inst(19 DOWNTO 15);
