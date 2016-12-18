@@ -89,6 +89,7 @@ BEGIN
 
 	WITH op_code_int SELECT reg_src1_v <=
 		'0' WHEN OP_LI,
+		'0' WHEN OP_NOP,
 		'1' WHEN OTHERS;
 
 	WITH op_code_int SELECT reg_src2_v <=
