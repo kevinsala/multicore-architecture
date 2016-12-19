@@ -6,7 +6,7 @@ ENTITY inkel_pentiun IS
 	PORT(
 		clk     : IN  STD_LOGIC;
 		reset   : IN  STD_LOGIC;
-		output  : OUT STD_LOGIC_VECTOR(31 DOWNTO 0)
+		pc_out  : OUT STD_LOGIC_VECTOR(31 DOWNTO 0)
 	);
 END inkel_pentiun;
 
@@ -835,7 +835,7 @@ BEGIN
 		mem_data_out_out => mem_data_out_WB
 	);
 
-	reg_status_C_WB: reg_status PORT MAP(
+	reg_status_C_W: reg_status PORT MAP(
 		clk => clk,
 		reset => reg_C_W_reset,
 		we => reg_C_W_we,
@@ -858,7 +858,7 @@ BEGIN
 		Dout => reg_data_WB
 	);
 
-	output <= inst_D;
+	pc_out <= pc_WB;
 
 END structure;
 
