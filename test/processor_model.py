@@ -7,11 +7,13 @@ class InkelPentiun:
 
     cache_i_v = [False, False, False, False]
     cache_i_tag = [0, 0, 0, 0]
+    cache_i_data = ["", "", "", ""]
 
     cache_d_v = [False, False, False, False]
     cache_d_d = [False, False, False, False]
     cache_d_tag = [0, 0, 0, 0]
     cache_d_lru = [0, 1, 2, 3]
+    cache_d_data = ["", "", "", ""]
 
     b_reg = [0] * 32
     pc = 0x1000
@@ -33,6 +35,7 @@ class InkelPentiun:
             print "WARNING: Accessing an uninitialized memory position 0x%08x" % addr
             return "0"*32
 
+
     def _write_to_mem(self, data, addr):
         line = addr >> 4
 
@@ -50,6 +53,7 @@ class InkelPentiun:
             self.memory.append((line, data))
             self.memory.sort(key = lambda x: x[0])
 
+
     def _read_from_cache_i(self, addr):
         if addr % 4 != 0:
             print "WARNING: Unaligned cache access to address 0x%08x" % addr
@@ -61,9 +65,10 @@ class InkelPentiun:
         if not self.cache_i_v[line] or self.cache_i_tag[line] != tag:
             self.cache_i_v[line] = True
             self.cache_i_tag[line] = tag
+            self.cache_i_data[line] = self._read_from_mem(addr)
 
-        data = self._read_from_mem(addr)
-        return data[elem * 8 : (elem + 1) * 8]
+        return self.cache_i_data[line][elem * 8 : (elem + 1) * 8]
+
 
     def _update_cache_d(self, addr):
         elem = (addr >> 2) & (2**2 - 1) # Bits 2 and 3
@@ -83,6 +88,8 @@ class InkelPentiun:
 
             if index == -1:
                 index = self.cache_d_lru.index(3)
+                if self.cache_d_d[index]:
+                    self._write_to_mem(self.cache_d_data[index], self.cache_d_tag[index] << 4)
 
             for i in range(4):
                 self.cache_d_lru[i] = self.cache_d_lru[i] + 1
@@ -91,6 +98,10 @@ class InkelPentiun:
             self.cache_d_d[index] = False
             self.cache_d_tag[index] = tag
             self.cache_d_lru[index] = 0
+            self.cache_d_data[index] = self._read_from_mem(addr)
+
+        return index
+
 
     def _read_from_cache_d(self, addr):
         if addr % 4 != 0:
@@ -98,16 +109,16 @@ class InkelPentiun:
 
         elem = (addr >> 2) & (2**2 - 1) # Bits 2 and 3
 
-        self._update_cache_d(addr)
-        data = self._read_from_mem(addr)
-        return data[elem * 8 : (elem + 1) * 8]
+        index = self._update_cache_d(addr)
+        return self.cache_d_data[index][elem * 8 : (elem + 1) * 8]
+
 
     def _write_to_cache_d(self, addr, data, is_byte):
         if not is_byte and addr % 4 != 0:
             print "WARNING: Unaligned cache access to address 0x%08x" % addr
 
-        self._update_cache_d(addr)
-        mem_data = self._read_from_mem(addr)
+        index = self._update_cache_d(addr)
+        cache_line = self.cache_d_data[index]
 
         if is_byte:
             byte = addr & (2**4 - 1)
@@ -120,8 +131,9 @@ class InkelPentiun:
             msb = (elem + 1) * 4
             lsb = elem * 4
 
-        mem_data = mem_data[0:(lsb * 2)] + data_s + mem_data[(msb * 2):len(mem_data)]
-        self._write_to_mem(mem_data, addr)
+        cache_line = cache_line[0:(lsb * 2)] + data_s + cache_line[(msb * 2):len(cache_line)]
+        self.cache_d_data[index] = cache_line
+        self.cache_d_d[index] = True
 
 
     def __init__(self, mem_boot, mem_sys = ""):
@@ -135,7 +147,6 @@ class InkelPentiun:
                 i = i + 1
 
                 if i == 4:
-                    print mem_line
                     self.memory.append((pos, mem_line))
                     mem_line = ""
                     i = 0
@@ -170,6 +181,7 @@ class InkelPentiun:
                         i = i + 1
 
                     self.memory.append((pos, mem_line))
+
 
     def step(self):
         inst_s = self._read_from_cache_i(self.pc)
