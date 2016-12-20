@@ -8,7 +8,7 @@ ENTITY inkel_pentiun IS
 		reset   : IN  STD_LOGIC;
 		output  : OUT STD_LOGIC_VECTOR(31 DOWNTO 0)
 	);
-end inkel_pentiun;
+END inkel_pentiun;
 
 ARCHITECTURE structure OF inkel_pentiun IS
 	COMPONENT mux2_1 IS
@@ -122,17 +122,17 @@ ARCHITECTURE structure OF inkel_pentiun IS
 		);
 	END COMPONENT;
 
-	COMPONENT BReg IS
+	COMPONENT reg_bank IS
 		PORT(
-			clk : IN  STD_LOGIC;
-			reset : IN  STD_LOGIC;
-			RA : IN  STD_LOGIC_VECTOR(4 DOWNTO 0);
-			RB : IN  STD_LOGIC_VECTOR(4 DOWNTO 0);
-			RW : IN  STD_LOGIC_VECTOR(4 DOWNTO 0);
-			BusW : IN  STD_LOGIC_VECTOR(31 DOWNTO 0);
-			RegWrite : IN  STD_LOGIC;
-			BusA : OUT  STD_LOGIC_VECTOR(31 DOWNTO 0);
-			BusB : OUT  STD_LOGIC_VECTOR(31 DOWNTO 0)
+			clk : IN STD_LOGIC;
+			reset : IN STD_LOGIC;
+			src1 : IN STD_LOGIC_VECTOR(4 DOWNTO 0);
+			src2 : IN STD_LOGIC_VECTOR(4 DOWNTO 0);
+			data1 : OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
+			data2 : OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
+			we : IN STD_LOGIC;
+			dest : IN STD_LOGIC_VECTOR(4 DOWNTO 0);
+			data_in : IN STD_LOGIC_VECTOR(31 DOWNTO 0)
 		);
 	END COMPONENT;
 
@@ -616,16 +616,16 @@ BEGIN
 		Mul_out => mul_UD
 	);
 
-	Register_bank: BReg PORT MAP(
+	rb: reg_bank PORT MAP(
 		clk => clk,
 		reset => reset,
-		RA => reg_src1_D,
-		RB => reg_src2_D,
-		RW => reg_dest_WB,
-		BusW => reg_data_WB,
-		RegWrite => reg_we_WB,
-		BusA => reg_data1_D,
-		BusB => reg_data2_D
+		src1 => reg_src1_D,
+		src2 => reg_src2_D,
+		data1 => reg_data1_D,
+		data2 => reg_data2_D,
+		we => reg_we_WB,
+		dest => reg_dest_WB,
+		data_in => reg_data_WB
 	);
 
 	Z <= '1' WHEN (reg_data1_D = reg_data2_D) ELSE '0';
