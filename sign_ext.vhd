@@ -26,7 +26,7 @@ BEGIN
 		ELSE offsethi;
 	inm_ext_int(19 DOWNTO 15) <= offsethi WHEN opcode = "0110001"
 		ELSE "00000" WHEN (offsetm(4)='0' AND opcode(6 DOWNTO 3) = "0010")
-		ELSE "00000" WHEN (offsethi(4)='0' AND opcode = "0110000")
+		ELSE "00000" WHEN (offsethi(4)='0' AND (opcode = "0110000" OR opcode = "0110010"))
 		ELSE inst(19 DOWNTO 15) WHEN opcode = "0001111"
 		ELSE "11111";
 	inm_ext_int(31 DOWNTO 20) <= "000000000000" WHEN inm_ext_int(19) = '0'

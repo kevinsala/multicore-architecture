@@ -14,6 +14,7 @@ ENTITY decode IS
 		jump_addr : OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
 		ALU_ctrl : OUT STD_LOGIC_VECTOR(2 DOWNTO 0);
 		branch : OUT STD_LOGIC;
+		branch_if_eq : OUT STD_LOGIC;
 		jump : OUT STD_LOGIC;
 		reg_src1_v : OUT STD_LOGIC;
 		reg_src2_v : OUT STD_LOGIC;
@@ -45,6 +46,7 @@ ARCHITECTURE structure OF decode IS
 	CONSTANT OP_STW : STD_LOGIC_VECTOR := "0010011";
 	CONSTANT OP_MOV : STD_LOGIC_VECTOR := "0010100";
 	CONSTANT OP_BEQ : STD_LOGIC_VECTOR := "0110000";
+	CONSTANT OP_BNE : STD_LOGIC_VECTOR := "0110010";
 	CONSTANT OP_JMP : STD_LOGIC_VECTOR := "0110001";
 	CONSTANT OP_NOP : STD_LOGIC_VECTOR := "1111111";
 
@@ -81,6 +83,12 @@ BEGIN
 	-- Control signals
 	WITH op_code_int SELECT branch <=
 		'1' WHEN OP_BEQ,
+		'1' WHEN OP_BNE,
+		'0' WHEN OTHERS;
+
+	WITH op_code_int SELECT branch_if_eq <=
+		'1' WHEN OP_BEQ,
+		'0' WHEN OP_BNE,
 		'0' WHEN OTHERS;
 
 	WITH op_code_int SELECT jump <=
@@ -99,6 +107,7 @@ BEGIN
 		'0' WHEN OTHERS;
 
 	WITH op_code_int SELECT inm_src2_v <=
+		'1' WHEN OP_LI,
 		'1' WHEN OP_STW,
 		'1' WHEN OP_STB,
 		'1' WHEN OP_LDW,
