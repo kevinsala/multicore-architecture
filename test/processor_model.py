@@ -306,19 +306,26 @@ class InkelPentiun:
                         error = True
                 c_line = c_line + 1
 
-        with open(dump_folder + "/cache_d", "r") as f:
-            c_line = 0
-            for line in f:
-                if self.old_cache_d_v[c_line]:
-                    line = line[:-1].lower()
-                    cache_line = self._swap_mem_line_endianness(self.old_cache_d_data[c_line])
-                    str_cache_line = "%07x%s" % (self.old_cache_d_tag[c_line], cache_line)
-                    if str_cache_line != line:
-                        print "ERROR: Data cache line %x has not been updated properly" % c_line
-                        print "Expected tag: %s. Received tag: %s" % (str_cache_line[0:7], line[0:7])
-                        print "Expected data: %s. Received data: %s" % (str_cache_line[7:], line[7:])
-                        error = True
-                c_line = c_line + 1
+        f_data = open(dump_folder + "/cache_d", "r")
+        f_tags = open(dump_folder + "/cache_d_tags", "r")
+
+        data_lines = list(f_data)
+        tag_lines = list(f_tags)
+
+        for c_line in range(4):
+            if self.old_cache_d_v[c_line]:
+                line = line[:-1].lower()
+                str_data = self._swap_mem_line_endianness(self.old_cache_d_data[c_line])
+                str_tag = "%07x" % self.old_cache_d_tag[c_line]
+                cache_data = data_lines[c_line][:-1].lower()
+                cache_tags = tag_lines[c_line][:-1].lower()
+                if str_tag != cache_tags or str_data != cache_data:
+                    print "ERROR: Data cache line %x has not been updated properly" % c_line
+                    print "Expected tag: %s. Received tag: %s" % (str_tag, cache_tags)
+                    print "Expected data: %s. Received data: %s" % (str_data, cache_data)
+                    error = True
+        f_data.close()
+        f_tags.close()
 
         with open(dump_folder + "/reg", "r") as f:
             reg_line = 0
@@ -336,6 +343,7 @@ class InkelPentiun:
             os.remove(dump_folder + "/ram")
             os.remove(dump_folder + "/cache_i")
             os.remove(dump_folder + "/cache_d")
+            os.remove(dump_folder + "/cache_d_tags")
             os.remove(dump_folder + "/reg")
 
         return error

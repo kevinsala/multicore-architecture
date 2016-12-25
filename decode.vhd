@@ -15,6 +15,7 @@ ENTITY decode IS
 		jump_addr : OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
 		ALU_ctrl : OUT STD_LOGIC_VECTOR(2 DOWNTO 0);
 		branch : OUT STD_LOGIC;
+		branch_if_eq : OUT STD_LOGIC;
 		jump : OUT STD_LOGIC;
 		reg_src1_v : OUT STD_LOGIC;
 		reg_src2_v : OUT STD_LOGIC;
@@ -46,6 +47,7 @@ ARCHITECTURE structure OF decode IS
 	CONSTANT OP_STW : STD_LOGIC_VECTOR := "0010011";
 	CONSTANT OP_MOV : STD_LOGIC_VECTOR := "0010100";
 	CONSTANT OP_BEQ : STD_LOGIC_VECTOR := "0110000";
+	CONSTANT OP_BNE : STD_LOGIC_VECTOR := "0110010";
 	CONSTANT OP_JMP : STD_LOGIC_VECTOR := "0110001";
 	CONSTANT OP_NOP : STD_LOGIC_VECTOR := "1111111";
 
@@ -77,13 +79,15 @@ BEGIN
 				"000";
 
 	-- Control signals
-	branch <= to_std_logic(op_code_int = OP_BEQ);
+	branch <= to_std_logic(op_code_int = OP_BEQ OR op_code_int = OP_BNE);
+	branch_if_eq <= to_std_logic(op_code_int = OP_BEQ);
 	jump <= to_std_logic(op_code_int = OP_JMP);
 	reg_src1_v <= NOT to_std_logic(op_code_int = OP_LI OR op_code_int = OP_NOP);
 	reg_src2_v <= to_std_logic(op_code_int = OP_ADD OR op_code_int = OP_SUB OR
 								op_code_int = OP_MUL);
-	inm_src2_v <= to_std_logic(op_code_int = OP_STW OR op_code_int = OP_STB OR
-								op_code_int = OP_LDW OR op_code_int = OP_LDB);
+	inm_src2_v <= to_std_logic(op_code_int = OP_LI OR op_code_int = OP_STW OR
+	                            op_code_int = OP_STB OR op_code_int = OP_LDW OR
+	                            op_code_int = OP_LDB);
 	mul <= to_std_logic(op_code_int = OP_MUL);
 	mem_write <= to_std_logic(op_code_int = OP_STW OR op_code_int = OP_STB);
 	byte <= to_std_logic(op_code_int = OP_LDB OR op_code_int = OP_STB);
