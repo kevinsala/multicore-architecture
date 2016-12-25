@@ -9,6 +9,7 @@ USE work.utils.ALL;
 ENTITY fetch IS
     PORT (clk : IN STD_LOGIC;
         reset : IN STD_LOGIC;
+        debug_dump : IN STD_LOGIC;
         pc : IN STD_LOGIC_VECTOR(31 DOWNTO 0);
         branch_taken_D : IN STD_LOGIC;
         inst : OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
@@ -24,6 +25,7 @@ ARCHITECTURE structure OF fetch IS
     COMPONENT cache_inst IS
         PORT (clk : IN STD_LOGIC;
 			reset : IN STD_LOGIC;
+			debug_dump : IN STD_LOGIC;
 			addr : IN STD_LOGIC_VECTOR(31 DOWNTO 0);
 			data_out : OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
 			done : OUT STD_LOGIC;
@@ -56,6 +58,7 @@ BEGIN
     ci: cache_inst PORT MAP(
         clk => clk,
         reset => reset,
+        debug_dump => debug_dump,
         addr => pc,
         data_out => cache_data_out,
         done => cache_done,

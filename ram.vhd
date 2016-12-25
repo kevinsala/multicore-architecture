@@ -1,13 +1,15 @@
 LIBRARY ieee;
-USE ieee.std_logic_1164.all;
-USE ieee.numeric_std.all;
-USE ieee.std_logic_unsigned.all;
-USE ieee.std_logic_textio.all;
-USE std.textio.all;
+USE ieee.std_logic_1164.ALL;
+USE ieee.numeric_std.ALL;
+USE ieee.std_logic_unsigned.ALL;
+USE ieee.std_logic_textio.ALL;
+USE std.textio.ALL;
+USE work.utils.ALL;
 
 ENTITY ram IS
     PORT (clk : IN STD_LOGIC;
         reset : IN STD_LOGIC;
+        debug_dump : IN STD_LOGIC;
         req : IN STD_LOGIC;
         we : IN STD_LOGIC;
         done : OUT STD_LOGIC;
@@ -54,11 +56,28 @@ ARCHITECTURE structure OF ram IS
             END IF;
         END LOOP;
     END PROCEDURE;
+
+	PROCEDURE dump_mem(CONSTANT filename : IN STRING;
+						SIGNAL ram : IN ram_type) IS
+		FILE dumpfile : TEXT OPEN write_mode IS filename;
+		VARIABLE lbuf : LINE;
+	BEGIN
+		FOR n_line IN 0 TO depth - 1 LOOP
+			-- Hex convert
+			hwrite(lbuf, ram(n_line));
+			-- Write to file
+			writeline(dumpfile, lbuf);
+		END LOOP;
+	END PROCEDURE;
 BEGIN
     p : PROCESS(clk)
         VARIABLE mem_line_int : INTEGER RANGE 0 TO depth;
     BEGIN
         IF rising_edge(clk) THEN
+            IF debug_dump = '1' THEN
+                dump_mem("dump/ram", ram);
+            END IF;
+
             IF reset = '1' THEN
                 -- 256: memory line for address 0x1000
                 load_file("memory_boot", 256, ram);

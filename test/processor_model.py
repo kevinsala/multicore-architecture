@@ -1,3 +1,5 @@
+import os
+
 def sign_extend(value, bits):
     sign_bit = 1 << (bits - 1)
     return (value & (sign_bit - 1)) - (value & sign_bit)
@@ -15,8 +17,30 @@ class InkelPentiun:
     cache_d_lru = [0, 1, 2, 3]
     cache_d_data = ["", "", "", ""]
 
-    b_reg = [0] * 32
+    reg_b = [0] * 32
     pc = 0x1000
+
+    def _swap_mem_line_endianness(self, mem_line):
+        if len(mem_line) % 8:
+            print "WARNING: tring to swap endianness of a memory line of wrong size"
+
+        new_mem_line = ""
+        for i in range(0, len(mem_line), 8):
+            new_mem_line = mem_line[i:i+8] + new_mem_line
+
+        return new_mem_line
+
+    def _save_old_memories(self):
+        self.old_memory = list(self.memory)
+        self.old_cache_i_v = list(self.cache_i_v)
+        self.old_cache_i_tag = list(self.cache_i_tag)
+        self.old_cache_i_data = list(self.cache_i_data)
+        self.old_cache_d_v = list(self.cache_d_v)
+        self.old_cache_d_d = list(self.cache_d_d)
+        self.old_cache_d_tag = list(self.cache_d_tag)
+        self.old_cache_d_data = list(self.cache_d_data)
+        self.old_reg_b = list(self.reg_b)
+
 
     def _read_from_mem(self, addr):
         line = addr >> 4
@@ -81,15 +105,9 @@ class InkelPentiun:
                 break
 
         if index == -1:
-            for i in range(4):
-                if not self.cache_d_v[i]:
-                    index = i
-                    break
-
-            if index == -1:
-                index = self.cache_d_lru.index(3)
-                if self.cache_d_d[index]:
-                    self._write_to_mem(self.cache_d_data[index], self.cache_d_tag[index] << 4)
+            index = self.cache_d_lru.index(3)
+            if self.cache_d_d[index]:
+                self._write_to_mem(self.cache_d_data[index], self.cache_d_tag[index] << 4)
 
             for i in range(4):
                 self.cache_d_lru[i] = self.cache_d_lru[i] + 1
@@ -126,7 +144,7 @@ class InkelPentiun:
             msb = (byte + 1) * 2
             lsb = byte * 2
         else:
-            elem = addr & 0xC
+            elem = (addr & 0xC) >> 2
             data_s = "%08x" % data
             msb = (elem + 1) * 4
             lsb = elem * 4
@@ -147,7 +165,7 @@ class InkelPentiun:
                 i = i + 1
 
                 if i == 4:
-                    self.memory.append((pos, mem_line))
+                    self.memory.append((pos, mem_line.lower()))
                     mem_line = ""
                     i = 0
                     pos = pos + 1
@@ -157,7 +175,7 @@ class InkelPentiun:
                     mem_line = mem_line + "00000000"
                     i = i + 1
 
-                self.memory.append((pos, mem_line))
+                self.memory.append((pos, mem_line.lower()))
 
 
         if mem_sys != "":
@@ -166,24 +184,27 @@ class InkelPentiun:
                 i = 0
                 mem_line = ""
                 for l in f:
-                    if i < 3:
-                        mem_line = l + mem_line
-                        i = i + 1
-                    else:
-                        i = 0
+                    l = l[:-1]
+                    mem_line = mem_line + l
+                    i = i + 1
+
+                    if i == 4:
+                        self.memory.append((pos, mem_line.lower()))
                         mem_line = ""
-                        self.memory.append((pos, mem_line))
+                        i = 0
                         pos = pos + 1
 
-                if i != 0:
+                if i != 4:
                     while i < 4:
-                        mem_line = "00000000" + mem_line
+                        mem_line = mem_line + "00000000"
                         i = i + 1
 
-                    self.memory.append((pos, mem_line))
+                    self.memory.append((pos, mem_line.lower()))
 
 
     def step(self):
+        self._save_old_memories()
+
         inst_s = self._read_from_cache_i(self.pc)
         inst = int(inst_s, 16)
 
@@ -203,41 +224,41 @@ class InkelPentiun:
 
         if icode == 0:
             # add
-            self.b_reg[rdest] = self.b_reg[r1] + self.b_reg[r2]
+            self.reg_b[rdest] = self.reg_b[r1] + self.reg_b[r2]
         elif icode == 1:
             # sub
-            self.b_reg[rdest] = self.b_reg[r1] - self.b_reg[r2]
+            self.reg_b[rdest] = self.reg_b[r1] - self.reg_b[r2]
         elif icode == 2:
             # mul
-            data_r1 = sign_extend(self.b_reg[r1] & (2**16 - 1), 16)
-            data_r2 = sign_extend(self.b_reg[r2] & (2**16 - 1), 16)
-            self.b_reg[rdest] = data_r1 * data_r2
+            data_r1 = sign_extend(self.reg_b[r1] & (2**16 - 1), 16)
+            data_r2 = sign_extend(self.reg_b[r2] & (2**16 - 1), 16)
+            self.reg_b[rdest] = data_r1 * data_r2
         elif icode == 15:
             # li
-            self.b_reg[rdest] = sign_extend(offset_i, 20)
+            self.reg_b[rdest] = sign_extend(offset_i, 20)
         elif icode == 16:
             # ldb
-            addr = sign_extend(offsetlo, 15) + self.b_reg[r1]
+            addr = sign_extend(offsetlo, 15) + self.reg_b[r1]
             align_addr = addr & (-1 * 2**2)
             byte = addr & (2**2 - 1)
             data = int(self._read_from_cache_d(align_addr), 16)
-            self.b_reg[rdest] = sign_extend(data & (2**8 - 1), 8)
+            self.reg_b[rdest] = sign_extend(data & (2**8 - 1), 8)
         elif icode == 17:
             # ldw
-            addr = sign_extend(offsetlo, 15) + self.b_reg[r1]
+            addr = sign_extend(offsetlo, 15) + self.reg_b[r1]
             data = int(self._read_from_cache_d(addr), 16)
-            self.b_reg[rdest] = sign_extend(data, 32)
+            self.reg_b[rdest] = sign_extend(data, 32)
         elif icode == 18:
             # stb
-            addr = sign_extend(offsetlo, 15) + self.b_reg[r1]
-            self._write_to_cache_d(addr, self.b_reg[rdest], True)
+            addr = sign_extend(offsetlo, 15) + self.reg_b[r1]
+            self._write_to_cache_d(addr, self.reg_b[rdest], True)
         elif icode == 19:
             # stw
-            addr = sign_extend(offsetlo, 15) + self.b_reg[r1]
-            self._write_to_cache_d(addr, self.b_reg[rdest], False)
+            addr = sign_extend(offsetlo, 15) + self.reg_b[r1]
+            self._write_to_cache_d(addr, self.reg_b[rdest], False)
         elif icode == 48:
             # beq
-            if self.b_reg[r1] == self.b_reg[r2]:
+            if self.reg_b[r1] == self.reg_b[r2]:
                 next_pc = sign_extend((offsethi << 10) | offsetlo_b, 15) + self.pc
         elif icode == 49:
             # jmp
@@ -251,3 +272,71 @@ class InkelPentiun:
         cur_pc = self.pc
         self.pc = next_pc
         return cur_pc
+
+    def check_dump(self, dump_folder):
+        # Dumps must be checked with the previous instruction
+        error = False
+        with open(dump_folder + "/ram", "r") as f:
+            proc_mem_line = 0
+            idx = 0
+            for line in f:
+                if self.old_memory[idx][0] == proc_mem_line:
+                    line = line[:-1].lower()
+                    mem_line = self._swap_mem_line_endianness(self.old_memory[idx][1])
+                    if mem_line != line:
+                        print "ERROR: memory line %08x has not been updated properly" % proc_mem_line
+                        print "Expected data: %s. Received data: %s" % (mem_line, line)
+                        error = True
+                    idx = idx + 1
+                    if idx == len(self.old_memory):
+                        break
+                proc_mem_line = proc_mem_line + 1
+
+        with open(dump_folder + "/cache_i", "r") as f:
+            c_line = 0
+            for line in f:
+                if self.old_cache_i_v[c_line]:
+                    line = line[:-1].lower()
+                    cache_line = self._swap_mem_line_endianness(self.old_cache_i_data[c_line])
+                    str_cache_line = "%07x%s" % (self.old_cache_i_tag[c_line], cache_line)
+                    if str_cache_line != line:
+                        print "ERROR: Instruction cache line %x has not been updated properly" % c_line
+                        print "Expected tag: %s. Received tag: %s" % (str_cache_line[0:7], line[0:7])
+                        print "Expected data: %s. Received data: %s" % (str_cache_line[7:], line[7:])
+                        error = True
+                c_line = c_line + 1
+
+        with open(dump_folder + "/cache_d", "r") as f:
+            c_line = 0
+            for line in f:
+                if self.old_cache_d_v[c_line]:
+                    line = line[:-1].lower()
+                    cache_line = self._swap_mem_line_endianness(self.old_cache_d_data[c_line])
+                    str_cache_line = "%07x%s" % (self.old_cache_d_tag[c_line], cache_line)
+                    if str_cache_line != line:
+                        print "ERROR: Data cache line %x has not been updated properly" % c_line
+                        print "Expected tag: %s. Received tag: %s" % (str_cache_line[0:7], line[0:7])
+                        print "Expected data: %s. Received data: %s" % (str_cache_line[7:], line[7:])
+                        error = True
+                c_line = c_line + 1
+
+        with open(dump_folder + "/reg", "r") as f:
+            reg_line = 0
+            for line in f:
+                if self.old_reg_b[reg_line]:
+                    line = line[:-1].lower()
+                    str_reg_line = "%08x" % self.old_reg_b[reg_line]
+                    if str_reg_line != line:
+                        print "ERROR: Register %d has not been updated properly" % reg_line
+                        print "Expected data: %s. Received data: %s" % (str_reg_line, line)
+                        error = True
+                reg_line = reg_line + 1
+
+        if not error:
+            os.remove(dump_folder + "/ram")
+            os.remove(dump_folder + "/cache_i")
+            os.remove(dump_folder + "/cache_d")
+            os.remove(dump_folder + "/reg")
+
+        return error
+

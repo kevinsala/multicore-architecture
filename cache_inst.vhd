@@ -1,11 +1,14 @@
 LIBRARY ieee;
 USE ieee.std_logic_1164.ALL;
 USE ieee.numeric_std.ALL;
+USE ieee.std_logic_textio.ALL;
+USE std.textio.ALL;
 USE work.utils.ALL;
 
 ENTITY cache_inst IS
 	PORT (clk : IN STD_LOGIC;
 		reset : IN STD_LOGIC;
+		debug_dump : IN STD_LOGIC;
 		addr : IN STD_LOGIC_VECTOR(31 DOWNTO 0);
 		data_out : OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
 		done : OUT STD_LOGIC;
@@ -37,10 +40,35 @@ ARCHITECTURE structure OF cache_inst IS
 	SIGNAL hit_cache : STD_LOGIC;
 	SIGNAL cache_line : INTEGER RANGE 0 TO CACHE_LINES - 1;
 	SIGNAL req_word : STD_LOGIC_VECTOR(1 DOWNTO 0);
+
+	PROCEDURE dump_cache_i(CONSTANT filename : IN STRING;
+						SIGNAL cache_valid : IN valid_fields_t;
+						SIGNAL cache_tags : IN tag_fields_t;
+						SIGNAL cache_data : IN data_fields_t) IS
+		FILE dumpfile : TEXT OPEN write_mode IS filename;
+		VARIABLE lbuf : LINE;
+		VARIABLE dummy_line : STD_LOGIC_VECTOR(TAG_BITS + DATA_BITS + 2 - 1 DOWNTO 0) := (OTHERS => 'X');
+	BEGIN
+		FOR n_line IN 0 TO CACHE_LINES - 1 LOOP
+			IF cache_valid(n_line) = '1' THEN
+				-- Hex convert
+				hwrite(lbuf, "00" & cache_tags(n_line));
+				hwrite(lbuf, cache_data(n_line));
+			ELSE
+				hwrite(lbuf, dummy_line);
+			END IF;
+			-- Write to file
+			writeline(dumpfile, lbuf);
+		END LOOP;
+	END PROCEDURE;
 BEGIN
 	p : PROCESS(clk)
 	BEGIN
 		IF falling_edge(clk) THEN
+			IF debug_dump = '1' THEN
+				dump_cache_i("dump/cache_i", valid_fields, tag_fields, data_fields);
+			END IF;
+
 			IF reset = '1' THEN
 				FOR i IN 0 TO CACHE_LINES - 1 LOOP
 					valid_fields(i) <= '0';

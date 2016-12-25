@@ -1,12 +1,15 @@
 LIBRARY ieee;
 USE ieee.std_logic_1164.ALL;
 USE ieee.numeric_std.ALL;
+USE ieee.std_logic_textio.ALL;
+USE std.textio.ALL;
 USE work.utils.ALL;
 
 ENTITY cache_data IS
 	PORT(
 		clk      : IN STD_LOGIC;
 		reset    : IN STD_LOGIC;
+		debug_dump : IN STD_LOGIC;
 		addr     : IN STD_LOGIC_VECTOR(31 DOWNTO 0);
 		data_in  : IN STD_LOGIC_VECTOR(31 DOWNTO 0);
 		data_out : OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
@@ -105,6 +108,27 @@ ARCHITECTURE cache_data_behavior OF cache_data IS
 		lru_fields(line_id) <= 0;
 		END LOOP;
 	END PROCEDURE;
+
+	PROCEDURE dump_cache_d(CONSTANT filename : IN STRING;
+						SIGNAL cache_valid : IN valid_fields_t;
+						SIGNAL cache_tags : IN tag_fields_t;
+						SIGNAL cache_data : IN data_fields_t) IS
+		FILE dumpfile : TEXT OPEN write_mode IS filename;
+		VARIABLE lbuf : LINE;
+		VARIABLE dummy_line : STD_LOGIC_VECTOR(TAG_BITS + DATA_BITS - 1 DOWNTO 0) := (OTHERS => 'X');
+	BEGIN
+		FOR n_line IN 0 TO CACHE_LINES - 1 LOOP
+			IF cache_valid(n_line) = '1' THEN
+				-- Hex convert
+				hwrite(lbuf, cache_tags(n_line));
+				hwrite(lbuf, cache_data(n_line));
+			ELSE
+				hwrite(lbuf, dummy_line);
+			END IF;
+			-- Write to file
+			writeline(dumpfile, lbuf);
+		END LOOP;
+	END PROCEDURE;
 BEGIN
 
 -- Process that computes the next state of the cache
@@ -139,7 +163,7 @@ BEGIN
 END PROCESS next_state_process;
 
 -- Process that sets the output signals of the cache
-execution_process : process(clk)
+execution_process : PROCESS(clk)
 	VARIABLE serve_access : BOOLEAN;
 	VARIABLE request_line : BOOLEAN;
 	VARIABLE target_line : INTEGER RANGE 0 TO 3;
@@ -148,6 +172,10 @@ BEGIN
 		reset_cache(lru_fields, valid_fields, dirty_fields, mem_req);
 
 	ELSIF falling_edge(clk) AND reset = '0' THEN
+		IF debug_dump = '1' THEN
+			dump_cache_d("dump/cache_d", valid_fields, tag_fields, data_fields);
+		END IF;
+
 		serve_access := FALSE;
 		request_line := FALSE;
 
