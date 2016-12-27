@@ -42,11 +42,11 @@ BEGIN
                     state <= REQI;
                 END IF;
             ELSIF state = REQD THEN
-                IF mem_done = '1' THEN
+                IF mem_done = '1' OR d_req = '0' THEN
                     state <= IDLE;
                 END IF;
             ELSIF state = REQI THEN
-                IF mem_done = '1' THEN
+                IF mem_done = '1' OR f_req = '0' THEN
                     state <= IDLE;
                 END IF;
             END IF;

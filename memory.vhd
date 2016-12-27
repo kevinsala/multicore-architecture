@@ -8,6 +8,7 @@ ENTITY memory IS
     --  - Instruction cache never writes to memory
     PORT (clk : IN STD_LOGIC;
           reset : IN STD_LOGIC;
+          debug_dump : IN STD_LOGIC;
           f_req : IN STD_LOGIC;
           d_req : IN STD_LOGIC;
           d_we : IN STD_LOGIC;
@@ -47,6 +48,7 @@ ARCHITECTURE structure OF memory IS
     COMPONENT ram IS
         PORT (clk : IN STD_LOGIC;
             reset : IN STD_LOGIC;
+            debug_dump : IN STD_LOGIC;
             req : IN STD_LOGIC;
             we : IN STD_LOGIC;
             done : OUT STD_LOGIC;
@@ -66,6 +68,7 @@ BEGIN
     r: ram PORT MAP (
         clk => clk,
         reset => reset,
+        debug_dump => debug_dump,
         req => mem_req,
         we => mem_we,
         done => mem_done,

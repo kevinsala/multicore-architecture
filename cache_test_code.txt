@@ -1,0 +1,17 @@
+Code					Instruction
+----					-----------
+
+	li  R0, 0			1e000000
+	li  R1, 0x10000		1e110000
+	li  R2, 0x07C		1e20007c
+	li  R3, 4			1e300004
+	li  R5, 1			1e500001
+	stw R0, 0(R1)		26008000
+
+loop:
+	add R0, R0, R3		00000C00
+	add R1, R1, R3		00108C00
+	ldw R4, -4(R1)		2240FFFC
+	add R4, R4, R5		00421400
+	stw R4, 0(R1)		26408000
+	jump loop			63f07ffb

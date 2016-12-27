@@ -1,13 +1,15 @@
 LIBRARY ieee;
-USE ieee.std_logic_1164.all;
-USE ieee.numeric_std.all;
-USE ieee.std_logic_unsigned.all;
-USE ieee.std_logic_textio.all;
-USE std.textio.all;
+USE ieee.std_logic_1164.ALL;
+USE ieee.numeric_std.ALL;
+USE ieee.std_logic_unsigned.ALL;
+USE ieee.std_logic_textio.ALL;
+USE std.textio.ALL;
+USE work.utils.ALL;
 
 ENTITY ram IS
     PORT (clk : IN STD_LOGIC;
         reset : IN STD_LOGIC;
+        debug_dump : IN STD_LOGIC;
         req : IN STD_LOGIC;
         we : IN STD_LOGIC;
         done : OUT STD_LOGIC;
@@ -22,7 +24,7 @@ ARCHITECTURE structure OF ram IS
     CONSTANT data_bits : INTEGER := 128;
     CONSTANT mem_line_bits: INTEGER := 4;
     CONSTANT depth : INTEGER := 16384;
-    CONSTANT depth_bits : INTEGER := 16;
+    CONSTANT depth_bits : INTEGER := 14;
     CONSTANT op_delay : INTEGER := 5; -- In cycles
 
     TYPE ram_type IS ARRAY(depth - 1 DOWNTO 0) OF STD_LOGIC_VECTOR(data_bits - 1 DOWNTO 0);
@@ -30,7 +32,6 @@ ARCHITECTURE structure OF ram IS
 
     SIGNAL mem_line : INTEGER := 0;
     SIGNAL cycle : INTEGER RANGE 0 TO op_delay - 1;
-    SIGNAL done_int : STD_LOGIC := '0';
 
     PROCEDURE load_file(CONSTANT filename : IN STRING;
                         CONSTANT mem_line : IN INTEGER;
@@ -55,11 +56,28 @@ ARCHITECTURE structure OF ram IS
             END IF;
         END LOOP;
     END PROCEDURE;
-BEGIN
 
+	PROCEDURE dump_mem(CONSTANT filename : IN STRING;
+						SIGNAL ram : IN ram_type) IS
+		FILE dumpfile : TEXT OPEN write_mode IS filename;
+		VARIABLE lbuf : LINE;
+	BEGIN
+		FOR n_line IN 0 TO depth - 1 LOOP
+			-- Hex convert
+			hwrite(lbuf, ram(n_line));
+			-- Write to file
+			writeline(dumpfile, lbuf);
+		END LOOP;
+	END PROCEDURE;
+BEGIN
     p : PROCESS(clk)
+        VARIABLE mem_line_int : INTEGER RANGE 0 TO depth;
     BEGIN
         IF rising_edge(clk) THEN
+            IF debug_dump = '1' THEN
+                dump_mem("dump/ram", ram);
+            END IF;
+
             IF reset = '1' THEN
                 -- 256: memory line for address 0x1000
                 load_file("memory_boot", 256, ram);
@@ -67,27 +85,26 @@ BEGIN
                 load_file("memory_exc", 2048, ram);
                 cycle <= op_delay - 1;
             ELSE
-                IF rising_edge(req) THEN
-                    -- If some transaction stopped at the middle, restart the memory state machine
-                    cycle <= cycle - 1;
-                    done_int <= '0';
-                ELSIF req = '1' THEN
+                IF req = '1' THEN
                     IF cycle = 0 THEN
-                        done_int <= '1';
+                        done <= '1';
                         cycle <= op_delay - 1;
-                        mem_line <= to_integer(unsigned(addr(depth_bits + mem_line_bits DOWNTO mem_line_bits)));
+                        mem_line_int := to_integer(unsigned(addr(depth_bits + mem_line_bits DOWNTO mem_line_bits)));
+                        mem_line <= mem_line_int;
                         IF we = '1' THEN
-                            ram(mem_line) <= data_in;
+                            ram(mem_line_int) <= data_in;
                         END IF;
                     ELSE
                         cycle <= cycle - 1;
-                        done_int <= '0';
+                        done <= '0';
                     END IF;
+                ELSE
+                    cycle <= op_delay - 1;
+                    done <= '0';
                 END IF;
             END IF;
         END IF;
     END PROCESS p;
 
     data_out <= ram(mem_line);
-    done <= done_int;
 END structure;

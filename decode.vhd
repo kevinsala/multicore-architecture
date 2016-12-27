@@ -1,6 +1,7 @@
 LIBRARY ieee;
-USE ieee.std_logic_1164.all;
-USE ieee.std_logic_unsigned.all;
+USE ieee.std_logic_1164.ALL;
+USE ieee.std_logic_unsigned.ALL;
+USE work.utils.ALL;
 
 ENTITY decode IS
 	PORT (
@@ -14,9 +15,11 @@ ENTITY decode IS
 		jump_addr : OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
 		ALU_ctrl : OUT STD_LOGIC_VECTOR(2 DOWNTO 0);
 		branch : OUT STD_LOGIC;
+		branch_if_eq : OUT STD_LOGIC;
 		jump : OUT STD_LOGIC;
 		reg_src1_v : OUT STD_LOGIC;
 		reg_src2_v : OUT STD_LOGIC;
+		inm_src2_v : OUT STD_LOGIC;
 		mul : OUT STD_LOGIC;
 		mem_write : OUT STD_LOGIC;
 		byte : OUT STD_LOGIC;
@@ -44,6 +47,7 @@ ARCHITECTURE structure OF decode IS
 	CONSTANT OP_STW : STD_LOGIC_VECTOR := "0010011";
 	CONSTANT OP_MOV : STD_LOGIC_VECTOR := "0010100";
 	CONSTANT OP_BEQ : STD_LOGIC_VECTOR := "0110000";
+	CONSTANT OP_BNE : STD_LOGIC_VECTOR := "0110010";
 	CONSTANT OP_JMP : STD_LOGIC_VECTOR := "0110001";
 	CONSTANT OP_NOP : STD_LOGIC_VECTOR := "1111111";
 
@@ -66,69 +70,33 @@ BEGIN
 	reg_src1 <= inst(19 DOWNTO 15);
 	reg_dest <= inst(24 DOWNTO 20);
 
-	WITH op_code_int SELECT reg_src2 <=
-		inst(24 DOWNTO 20) WHEN OP_STW,
-		inst(24 DOWNTO 20) WHEN OP_STB,
-		inst(14 DOWNTO 10) WHEN OTHERS;
+	reg_src2 <= inst(24 DOWNTO 20) WHEN op_code_int = OP_STW OR op_code_int = OP_STB ELSE
+				inst(14 DOWNTO 10);
 
-	WITH op_code_INT SELECT ALU_ctrl <=
-		"000" WHEN OP_ADD,
-		"001" WHEN OP_SUB,
-		"100" WHEN OP_LI,
-		"000" WHEN OTHERS;
+	ALU_ctrl <= "000" WHEN op_code_int = OP_ADD ELSE
+				"001" WHEN op_code_int = OP_SUB ELSE
+				"100" WHEN op_code_int = OP_LI ELSE
+				"000";
 
 	-- Control signals
-	WITH op_code_int SELECT branch <=
-		'1' WHEN OP_BEQ,
-		'0' WHEN OTHERS;
-
-	WITH op_code_int SELECT jump <=
-		'1' WHEN OP_JMP,
-		'0' WHEN OTHERS;
-
-	WITH op_code_int SELECT reg_src1_v <=
-		'0' WHEN OP_LI,
-		'1' WHEN OTHERS;
-
-	WITH op_code_int SELECT reg_src2_v <=
-		'1' WHEN OP_ADD,
-		'1' WHEN OP_SUB,
-		'1' WHEN OP_MUL,
-		'0' WHEN OTHERS;
-
-	WITH op_code_int SELECT mul <=
-		'1' WHEN OP_MUL,
-		'0' WHEN OTHERS;
-
-	WITH op_code_int SELECT mem_write <=
-		'1' WHEN OP_STW,
-		'1' WHEN OP_STB,
-		'0' WHEN OTHERS;
-
-	WITH op_code_int SELECT byte <=
-		'1' WHEN OP_LDB,
-		'1' WHEN OP_STB,
-		'0' WHEN OTHERS;
-
-	WITH op_code_int SELECT mem_read <=
-		'1' WHEN OP_LDW,
-		'1' WHEN OP_LDB,
-		'0' WHEN OTHERS;
-
-	WITH op_code_int SELECT mem_to_reg <=
-		'1' WHEN OP_LDW,
-		'1' WHEN OP_LDB,
-		'0' WHEN OTHERS;
-
-	WITH op_code_int SELECT reg_we <=
-		'1' WHEN OP_ADD,
-		'1' WHEN OP_SUB,
-		'1' WHEN OP_MUL,
-		'1' WHEN OP_LDW,
-		'1' WHEN OP_LDB,
-		'1' WHEN OP_LI,
-		'1' WHEN OP_MOV,
-		'0' WHEN OTHERS;
+	branch <= to_std_logic(op_code_int = OP_BEQ OR op_code_int = OP_BNE);
+	branch_if_eq <= to_std_logic(op_code_int = OP_BEQ);
+	jump <= to_std_logic(op_code_int = OP_JMP);
+	reg_src1_v <= NOT to_std_logic(op_code_int = OP_LI OR op_code_int = OP_NOP);
+	reg_src2_v <= to_std_logic(op_code_int = OP_ADD OR op_code_int = OP_SUB OR
+								op_code_int = OP_MUL);
+	inm_src2_v <= to_std_logic(op_code_int = OP_LI OR op_code_int = OP_STW OR
+	                            op_code_int = OP_STB OR op_code_int = OP_LDW OR
+	                            op_code_int = OP_LDB);
+	mul <= to_std_logic(op_code_int = OP_MUL);
+	mem_write <= to_std_logic(op_code_int = OP_STW OR op_code_int = OP_STB);
+	byte <= to_std_logic(op_code_int = OP_LDB OR op_code_int = OP_STB);
+	mem_read <= to_std_logic(op_code_int = OP_LDW OR op_code_int = OP_LDB);
+	mem_to_reg <= to_std_logic(op_code_int = OP_LDW OR op_code_int = OP_LDB);
+	reg_we <= to_std_logic(op_code_int = OP_ADD OR op_code_int = OP_SUB OR
+							op_code_int = OP_MUL OR op_code_int = OP_LDW OR
+							op_code_int = OP_LDB OR op_code_int = OP_LI OR
+							op_code_int = OP_MOV);
 
 END structure;
 

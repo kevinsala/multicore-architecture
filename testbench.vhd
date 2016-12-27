@@ -5,22 +5,22 @@ USE ieee.numeric_std.ALL;
 ENTITY testbench IS
 END testbench;
 
-ARCHITECTURE structure OF testbench IS 
+ARCHITECTURE structure OF testbench IS
     COMPONENT inkel_pentiun is
         PORT(
     		clk     : IN  STD_LOGIC;
     		reset   : IN  STD_LOGIC;
-    		output  : OUT STD_LOGIC_VECTOR(31 DOWNTO 0)
+    		pc_out  : OUT STD_LOGIC_VECTOR(31 DOWNTO 0)
     	);
 	END COMPONENT;
 
     SIGNAL clk, reset :  STD_LOGIC;
-    SIGNAL output :  STD_LOGIC_VECTOR(31 DOWNTO 0);
-          
+    SIGNAL pc :  STD_LOGIC_VECTOR(31 DOWNTO 0);
+
     CONSTANT CLK_period : TIME := 1 ns;
 BEGIN
     -- Component Instantiation
-    uut: inkel_pentiun PORT MAP(clk => clk, reset => reset, output => output);
+    uut: inkel_pentiun PORT MAP(clk => clk, reset => reset, pc_out => pc);
 
     -- Clock process definitions
     CLK_process : PROCESS
@@ -32,7 +32,7 @@ BEGIN
     END PROCESS;
 
     stim_proc: PROCESS
-    BEGIN		
+    BEGIN
         reset <= '1';
         WAIT FOR CLK_period * 2;
 	    reset <= '0';

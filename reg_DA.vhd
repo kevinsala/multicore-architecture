@@ -15,6 +15,7 @@ ENTITY reg_DA IS
 		ALU_ctrl_in : IN STD_LOGIC_VECTOR(2 DOWNTO 0);
 		reg_src1_v_in : IN STD_LOGIC;
 		reg_src2_v_in : IN STD_LOGIC;
+		inm_src2_v_in : IN STD_LOGIC;
 		reg_src1_in : IN STD_LOGIC_VECTOR(4 DOWNTO 0);
 		reg_src2_in : IN STD_LOGIC_VECTOR(4 DOWNTO 0);
 		reg_dest_in : IN STD_LOGIC_VECTOR(4 DOWNTO 0);
@@ -30,6 +31,7 @@ ENTITY reg_DA IS
 		ALU_ctrl_out : OUT STD_LOGIC_VECTOR(2 DOWNTO 0);
 		reg_src1_v_out : OUT STD_LOGIC;
 		reg_src2_v_out : OUT STD_LOGIC;
+		inm_src2_v_out : OUT STD_LOGIC;
 		reg_src1_out : OUT STD_LOGIC_VECTOR(4 DOWNTO 0);
 		reg_src2_out : OUT STD_LOGIC_VECTOR(4 DOWNTO 0);
 		reg_dest_out : OUT STD_LOGIC_VECTOR(4 DOWNTO 0);
@@ -54,6 +56,7 @@ BEGIN
 				ALU_ctrl_out <= (OTHERS => '0');
 				reg_src1_v_out <= '0';
 				reg_src2_v_out <= '0';
+				inm_src2_v_out <= '0';
 				reg_src1_out <= (OTHERS => '0');
 				reg_src2_out <= (OTHERS => '0');
 				reg_dest_out <= (OTHERS => '0');
@@ -71,6 +74,7 @@ BEGIN
 					ALU_ctrl_out <= ALU_ctrl_in;
 					reg_src1_v_out <= reg_src1_v_in;
 					reg_src2_v_out <= reg_src2_v_in;
+					inm_src2_v_out <= inm_src2_v_in;
 					reg_src1_out <= reg_src1_in;
 					reg_src2_out <= reg_src2_in;
 					reg_dest_out <= reg_dest_in;
