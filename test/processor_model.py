@@ -256,6 +256,9 @@ class InkelPentiun:
             # stw
             addr = sign_extend(offsetlo, 15) + self.reg_b[r1]
             self._write_to_cache_d(addr, self.reg_b[rdest], False)
+        elif icode == 20:
+            # mov
+            self.reg_b[rdest] = self.reg_b[r1]
         elif icode == 48:
             # beq
             if self.reg_b[r1] == self.reg_b[r2]:
@@ -263,6 +266,10 @@ class InkelPentiun:
         elif icode == 49:
             # jmp
             next_pc = (sign_extend((offsethi << 15) | offsetlo, 20) * 4) + self.pc
+        elif icode == 50:
+            # bne
+            if self.reg_b[r1] != self.reg_b[r2]:
+                next_pc = sign_extend((offsethi << 10) | offsetlo_b, 15) + self.pc
         else:
             # nop / error
             if icode != (2**7 - 1):
