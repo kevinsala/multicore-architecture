@@ -425,16 +425,12 @@ ARCHITECTURE structure OF inkel_pentiun IS
 			clk : IN STD_LOGIC;
 			reset : IN STD_LOGIC;
 			we : IN STD_LOGIC;
-			mem_to_reg_in : IN STD_LOGIC;
 			reg_we_in : IN STD_LOGIC;
 			reg_dest_in : IN STD_LOGIC_VECTOR(4 DOWNTO 0);
-			ALU_out_in : IN STD_LOGIC_VECTOR(31 DOWNTO 0);
-			mem_data_out_in : IN STD_LOGIC_VECTOR(31 DOWNTO 0);
-			mem_to_reg_out : OUT STD_LOGIC;
+			reg_data_in : IN STD_LOGIC_VECTOR(31 DOWNTO 0);
 			reg_we_out : OUT STD_LOGIC;
 			reg_dest_out : OUT STD_LOGIC_VECTOR(4 DOWNTO 0);
-			ALU_out_out : OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
-			mem_data_out_out : OUT STD_LOGIC_VECTOR(31 DOWNTO 0)
+			reg_data_out : OUT STD_LOGIC_VECTOR(31 DOWNTO 0)
 		);
 	END COMPONENT;
 
@@ -547,28 +543,26 @@ ARCHITECTURE structure OF inkel_pentiun IS
 	SIGNAL reg_we_C : STD_LOGIC;
 	SIGNAL priv_status_C : STD_LOGIC;
 	SIGNAL debug_dump_C : STD_LOGIC;
+	SIGNAL hit_C : STD_LOGIC;
+	SIGNAL line_we_C : STD_LOGIC;
+	SIGNAL line_num_C : INTEGER RANGE 0 TO 3;
+	SIGNAL lru_line_num_C : INTEGER RANGE 0 TO 3;
 	SIGNAL reg_dest_C : STD_LOGIC_VECTOR(4 DOWNTO 0);
 	SIGNAL pc_C : STD_LOGIC_VECTOR(31 DOWNTO 0);
 	SIGNAL ALU_out_C : STD_LOGIC_VECTOR(31 DOWNTO 0);
-	SIGNAL hit_C : STD_LOGIC;
-	SIGNAL line_num_C : INTEGER RANGE 0 TO 3;
-	SIGNAL line_we_C : STD_LOGIC;
-	SIGNAL line_data_C : STD_LOGIC_VECTOR(127 DOWNTO 0);
-	SIGNAL lru_line_num_C : INTEGER RANGE 0 TO 3;
 	SIGNAL cache_data_in_C : STD_LOGIC_VECTOR(31 DOWNTO 0);
 	SIGNAL cache_data_out_C : STD_LOGIC_VECTOR(31 DOWNTO 0);
+	SIGNAL reg_data_C : STD_LOGIC_VECTOR(31 DOWNTO 0);
 	SIGNAL mem_data_C_BP : STD_LOGIC_VECTOR(31 DOWNTO 0);
+	SIGNAL line_data_C : STD_LOGIC_VECTOR(127 DOWNTO 0);
 
 	-- Writeback stage signals
 	SIGNAL reg_we_WB : STD_LOGIC;
-	SIGNAL mem_to_reg_WB: STD_LOGIC;
 	SIGNAL priv_status_WB : STD_LOGIC;
 	SIGNAL debug_dump_WB : STD_LOGIC;
 	SIGNAL reg_dest_WB : STD_LOGIC_VECTOR(4 DOWNTO 0);
 	SIGNAL pc_WB : STD_LOGIC_VECTOR(31 DOWNTO 0);
 	SIGNAL reg_data_WB : STD_LOGIC_VECTOR(31 DOWNTO 0);
-	SIGNAL mem_data_out_WB : STD_LOGIC_VECTOR(31 DOWNTO 0);
-	SIGNAL ALU_out_WB : STD_LOGIC_VECTOR(31 DOWNTO 0);
 
 	-- Segmentation registers signals
 	SIGNAL reg_F_D_reset : STD_LOGIC;
@@ -1081,20 +1075,23 @@ BEGIN
 		mem_data_out => mem_data_out_L
 	);
 
+	mux_reg_data_C: mux2_1 PORT MAP(
+		Din0 => ALU_out_C,
+		DIn1 => cache_data_out_C,
+		ctrl => mem_to_reg_C,
+		Dout => reg_data_C
+	);
+
 	reg_C_W: reg_CW PORT MAP(
 		clk => clk,
 		reset => reg_C_W_reset,
 		we => reg_C_W_we,
-		mem_to_reg_in => mem_to_reg_C,
 		reg_we_in => reg_we_C,
 		reg_dest_in => reg_dest_C,
-		ALU_out_in => ALU_out_C,
-		mem_data_out_in => cache_data_out_C,
-		mem_to_reg_out => mem_to_reg_WB,
+		reg_data_in => reg_data_C,
 		reg_we_out => reg_we_WB,
 		reg_dest_out => reg_dest_WB,
-		ALU_out_out => ALU_out_WB,
-		mem_data_out_out => mem_data_out_WB
+		reg_data_out => reg_data_WB
 	);
 
 	reg_status_C_W: reg_status PORT MAP(
@@ -1113,13 +1110,6 @@ BEGIN
 		exc_code_out => open,
 		exc_data_out => open,
 		debug_dump_out => debug_dump_WB
-	);
-
-	mux_busW: mux2_1 PORT MAP(
-		Din0 => ALU_out_WB,
-		DIn1 => mem_data_out_WB,
-		ctrl => mem_to_reg_WB,
-		Dout => reg_data_WB
 	);
 
 	pc_out <= pc_WB;
