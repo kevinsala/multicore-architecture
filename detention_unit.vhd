@@ -52,15 +52,11 @@ ARCHITECTURE detention_unit_behavior OF detention_unit IS
 	SIGNAL conflict_MUL : STD_LOGIC;
 	SIGNAL conflict_i : STD_LOGIC;
 BEGIN
-	conflict_branch_A <= '1' WHEN branch_D = '1' AND (reg_we_A = '1' AND (reg_src1_D = reg_dest_A OR reg_src2_D = reg_dest_A)) ELSE '0';
-	conflict_branch_L <= '1' WHEN branch_D = '1' AND (mem_read_L = '1' AND (reg_src1_D = reg_dest_L OR reg_src2_D = reg_dest_L)) ELSE '0';
-	conflict_branch <= conflict_branch_A OR conflict_branch_L;
-
 	conflict_ALU_A <= '1' WHEN mem_read_A = '1' AND ((reg_src1_D = reg_dest_A AND reg_src1_v_D = '1') OR (reg_src2_D = reg_dest_A AND reg_src2_v_D = '1')) ELSE '0';
 	conflict_ALU_L <= '1' WHEN mem_read_L = '1' AND ((reg_src1_D = reg_dest_L AND reg_src1_v_D = '1') OR (reg_src2_D = reg_dest_L AND reg_src2_v_D = '1')) ELSE '0';
 	conflict_ALU <= conflict_ALU_A OR conflict_ALU_L;
 	conflict_MUL <= mul_det_A;
-	conflict_i <= conflict_ALU OR conflict_MUL OR conflict_branch;
+	conflict_i <= conflict_ALU OR conflict_MUL;
 
 	switch_ctrl <= NOT conflict_i;
 
@@ -72,8 +68,8 @@ BEGIN
 	reg_C_W_we <= '1';
 
 	reg_PC_reset <= reset;
-	reg_F_D_reset <= reset OR (branch_taken_A AND NOT conflict_branch) OR (NOT done_F AND done_L); -- check branch_taken_D
-	reg_D_A_reset <= reset OR conflict_i;
+	reg_F_D_reset <= reset OR branch_taken_A OR (NOT done_F AND done_L);
+	reg_D_A_reset <= reset OR branch_taken_A OR conflict_i;
 	reg_A_L_reset <= reset OR conflict_MUL;
 	reg_L_C_reset <= reset OR NOT done_L;
 	reg_C_W_reset <= reset;
