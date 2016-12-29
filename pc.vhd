@@ -6,7 +6,7 @@ ENTITY pc IS
     PORT (clk : IN STD_LOGIC;
         reset : IN STD_LOGIC;
         addr_jump : IN STD_LOGIC_VECTOR(31 DOWNTO 0);
-        branch_taken_D : IN STD_LOGIC;
+        branch_taken : IN STD_LOGIC;
         load_PC : IN STD_LOGIC;
         pc : OUT STD_LOGIC_VECTOR(31 DOWNTO 0)
     );
@@ -31,7 +31,7 @@ BEGIN
     END PROCESS p;
 
 
-    pc_next <= addr_jump WHEN branch_taken_D = '1'
+    pc_next <= addr_jump WHEN branch_taken = '1'
                 ELSE pc_int + 4 WHEN load_PC = '1'
                 ELSE pc_int;
 

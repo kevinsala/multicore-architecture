@@ -63,7 +63,7 @@ ARCHITECTURE structure OF inkel_pentiun IS
 			clk : IN STD_LOGIC;
 			reset : IN STD_LOGIC;
 			addr_jump : IN STD_LOGIC_VECTOR(31 DOWNTO 0);
-			branch_taken_D : IN STD_LOGIC;
+			branch_taken : IN STD_LOGIC;
 			load_PC : IN STD_LOGIC;
 			pc : OUT STD_LOGIC_VECTOR(31 DOWNTO 0)
 		);
@@ -75,7 +75,7 @@ ARCHITECTURE structure OF inkel_pentiun IS
 			reset : IN STD_LOGIC;
 			debug_dump : IN STD_LOGIC;
 			pc : IN STD_LOGIC_VECTOR(31 DOWNTO 0);
-			branch_taken_D : IN STD_LOGIC;
+			branch_taken : IN STD_LOGIC;
 			inst : OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
 			inst_v : OUT STD_LOGIC;
 			mem_req : OUT STD_LOGIC;
@@ -231,13 +231,13 @@ ARCHITECTURE structure OF inkel_pentiun IS
 		PORT(
 			reset          : IN STD_LOGIC;
 			branch_D       : IN STD_LOGIC;
-			branch_taken_D : IN STD_LOGIC;
 			reg_src1_D     : IN STD_LOGIC_VECTOR(4 DOWNTO 0);
 			reg_src2_D     : IN STD_LOGIC_VECTOR(4 DOWNTO 0);
 			reg_dest_D     : IN STD_LOGIC_VECTOR(4 DOWNTO 0);
 			reg_src1_v_D   : IN STD_LOGIC;
 			reg_src2_v_D   : IN STD_LOGIC;
 			mem_we_D       : IN STD_LOGIC;
+			branch_taken_A : IN STD_LOGIC;
 			reg_dest_A     : IN STD_LOGIC_VECTOR(4 DOWNTO 0);
 			reg_we_A       : IN STD_LOGIC;
 			mem_read_A     : IN STD_LOGIC;
@@ -276,7 +276,11 @@ ARCHITECTURE structure OF inkel_pentiun IS
 			mem_read_in : IN STD_LOGIC;
 			mem_to_reg_in : IN STD_LOGIC;
 			reg_we_in : IN STD_LOGIC;
+			branch_in : IN STD_LOGIC;
+			branch_if_eq_in : IN STD_LOGIC;
+			jump_in : IN STD_LOGIC;
 			inm_ext_in : IN STD_LOGIC_VECTOR(31 DOWNTO 0);
+			jump_addr_in : IN STD_LOGIC_VECTOR(31 DOWNTO 0);
 			ALU_ctrl_in : IN STD_LOGIC_VECTOR(2 DOWNTO 0);
 			reg_src1_v_in : IN STD_LOGIC;
 			reg_src2_v_in : IN STD_LOGIC;
@@ -292,7 +296,11 @@ ARCHITECTURE structure OF inkel_pentiun IS
 			mem_read_out : OUT STD_LOGIC;
 			mem_to_reg_out : OUT STD_LOGIC;
 			reg_we_out : OUT STD_LOGIC;
+			branch_out : OUT STD_LOGIC;
+			branch_if_eq_out : OUT STD_LOGIC;
+			jump_out : OUT STD_LOGIC;
 			inm_ext_out : OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
+			jump_addr_out : OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
 			ALU_ctrl_out : OUT STD_LOGIC_VECTOR(2 DOWNTO 0);
 			reg_src1_v_out : OUT STD_LOGIC;
 			reg_src2_v_out : OUT STD_LOGIC;
@@ -449,7 +457,6 @@ ARCHITECTURE structure OF inkel_pentiun IS
 	-- Decode stage signals
 	SIGNAL branch_D : STD_LOGIC;
 	SIGNAL jump_D : STD_LOGIC;
-	SIGNAL branch_taken_D : STD_LOGIC;
 	SIGNAL branch_if_eq_D : STD_LOGIC;
 	SIGNAL reg_we_D : STD_LOGIC;
 	SIGNAL mem_read_D : STD_LOGIC;
@@ -480,6 +487,10 @@ ARCHITECTURE structure OF inkel_pentiun IS
 	SIGNAL conflict_D : STD_LOGIC;
 
 	-- ALU stage signals
+	SIGNAL branch_A : STD_LOGIC;
+	SIGNAL jump_A : STD_LOGIC;
+	SIGNAL branch_if_eq_A : STD_LOGIC;
+	SIGNAL branch_taken_A : STD_LOGIC;
 	SIGNAL mem_read_A : STD_LOGIC;
 	SIGNAL mem_to_reg_A : STD_LOGIC;
 	SIGNAL mul_det_A : STD_LOGIC;
@@ -498,6 +509,7 @@ ARCHITECTURE structure OF inkel_pentiun IS
 	SIGNAL reg_src1_A : STD_LOGIC_VECTOR(4 DOWNTO 0);
 	SIGNAL reg_src2_A : STD_LOGIC_VECTOR(4 DOWNTO 0);
 	SIGNAL pc_A : STD_LOGIC_VECTOR(31 DOWNTO 0);
+	SIGNAL jump_addr_A : STD_LOGIC_VECTOR(31 DOWNTO 0);
 	SIGNAL reg_data1_A : STD_LOGIC_VECTOR(31 DOWNTO 0);
 	SIGNAL reg_data2_A : STD_LOGIC_VECTOR(31 DOWNTO 0);
 	SIGNAL inm_ext_A : STD_LOGIC_VECTOR(31 DOWNTO 0);
@@ -605,8 +617,8 @@ BEGIN
 	reg_pc: pc PORT MAP(
 		clk => clk,
 		reset => reset_PC,
-		addr_jump => jump_addr_D,
-		branch_taken_D => branch_taken_D,
+		addr_jump => jump_addr_A,
+		branch_taken => branch_taken_A,
 		load_PC => load_PC,
 		pc => pc_F
 	);
@@ -632,7 +644,7 @@ BEGIN
 		reset => reset,
 		debug_dump => debug_dump_F,
 		pc => pc_F,
-		branch_taken_D => branch_taken_D,
+		branch_taken => branch_taken_A,
 		inst => inst_F,
 		inst_v => inst_v_F,
 		mem_req => mem_req_F,
@@ -674,13 +686,13 @@ BEGIN
 	UD : detention_unit PORT MAP(
 		reset => reset,
 		branch_D => branch_D,
-		branch_taken_D => branch_taken_D,
 		reg_src1_D => reg_src1_D,
 		reg_src2_D => reg_src2_D,
 		reg_dest_D => reg_dest_D,
 		reg_src1_v_D => reg_src1_v_D,
 		reg_src2_v_D => reg_src2_v_D,
 		mem_we_D => mem_we_D,
+		branch_taken_A => branch_taken_A,
 		reg_dest_A => reg_dest_A,
 		reg_we_A => reg_we_A,
 		mem_read_A => mem_read_A,
@@ -784,9 +796,6 @@ BEGIN
 		Dout => data2_BP_D
 	);
 
-	Z <= '1' WHEN ((branch_if_eq_D = '1' AND data1_BP_D = data2_BP_D) OR (branch_if_eq_D = '0' AND data1_BP_D /= data2_BP_D)) ELSE '0';
-	branch_taken_D <= (Z AND branch_D AND NOT conflict_D) OR jump_D;
-
 	reg_D_A: reg_DA PORT MAP(
 		clk => clk,
 		reset => reg_D_A_reset,
@@ -797,7 +806,11 @@ BEGIN
 		mem_read_in => mem_read_UD,
 		mem_to_reg_in => mem_to_reg_UD,
 		reg_we_in => reg_we_UD,
+		branch_in => branch_D,
+		branch_if_eq_in => branch_if_eq_D,
+		jump_in => jump_D,
 		inm_ext_in => inm_ext_D,
+		jump_addr_in => jump_addr_D,
 		ALU_ctrl_in => ALU_ctrl_D,
 		reg_src1_v_in => reg_src1_v_UD,
 		reg_src2_v_in => reg_src2_v_UD,
@@ -813,7 +826,11 @@ BEGIN
 		mem_read_out => mem_read_A,
 		mem_to_reg_out => mem_to_reg_A,
 		reg_we_out => reg_we_A,
+		branch_out => branch_A,
+		branch_if_eq_out => branch_if_eq_A,
+		jump_out => jump_A,
 		inm_ext_out => inm_ext_A,
+		jump_addr_out => jump_addr_A,
 		ALU_ctrl_out => ALU_ctrl_A,
 		reg_src1_v_out => reg_src1_v_A,
 		reg_src2_v_out => reg_src2_v_A,
@@ -890,6 +907,10 @@ BEGIN
 		ctrl => mux_src2_A_BP_ctrl,
 		Dout => data2_BP_A
 	);
+
+	-- Z = '1' when operands equal
+	Z <= to_std_logic(data1_BP_A = data2_BP_A);
+	branch_taken_A <= (to_std_logic(Z = branch_if_eq_A) AND branch_A) OR jump_A;
 
 	ALU_MIPs: ALU PORT MAP(
 		DA => data1_BP_A,
