@@ -18,7 +18,6 @@ VHDL_SOURCES = $(PWD)/../utils.vhd \
                 $(PWD)/../mux2_1.vhd \
                 $(PWD)/../mux2_32bits.vhd \
                 $(PWD)/../mux4_32bits.vhd \
-                $(PWD)/../mux8_32bits.vhd \
                 $(PWD)/../Mux_2_3bits.vhd \
                 $(PWD)/../pc.vhd \
                 $(PWD)/../ram.vhd \

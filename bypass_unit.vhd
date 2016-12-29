@@ -16,7 +16,7 @@ ENTITY bypass_unit IS
 		reg_dest_C        : IN STD_LOGIC_VECTOR (4 DOWNTO 0);
 		reg_we_C          : IN STD_LOGIC;
 		mux_src1_D_BP     : OUT STD_LOGIC_VECTOR (1 DOWNTO 0);
-		mux_src2_D_BP     : OUT STD_LOGIC_VECTOR (2 DOWNTO 0);
+		mux_src2_D_BP     : OUT STD_LOGIC_VECTOR (1 DOWNTO 0);
 		mux_mem_data_D_BP : OUT STD_LOGIC_VECTOR (1 DOWNTO 0);
 		mux_mem_data_A_BP : OUT STD_LOGIC_VECTOR (1 DOWNTO 0);
 		mux_mem_data_L_BP : OUT STD_LOGIC
@@ -31,12 +31,11 @@ BEGIN
 			ELSE "00" WHEN (reg_src1_v_D = '1')
 			ELSE "00";
 
-	mux_src2_D_BP <= "100" WHEN (inm_src2_v_D = '1')
-			ELSE "011" WHEN (reg_src2_D = reg_dest_A AND reg_src2_v_D = '1' AND reg_we_A = '1')
-			ELSE "010" WHEN (reg_src2_D = reg_dest_L AND reg_src2_v_D = '1' AND reg_we_L = '1')
-			ELSE "001" WHEN (reg_src2_D = reg_dest_C AND reg_src2_v_D = '1' AND reg_we_C = '1')
-			ELSE "000" WHEN (reg_src2_v_D = '1')
-			ELSE "100";
+	mux_src2_D_BP <= "11" WHEN (reg_src2_D = reg_dest_A AND reg_src2_v_D = '1' AND reg_we_A = '1')
+			ELSE "10" WHEN (reg_src2_D = reg_dest_L AND reg_src2_v_D = '1' AND reg_we_L = '1')
+			ELSE "01" WHEN (reg_src2_D = reg_dest_C AND reg_src2_v_D = '1' AND reg_we_C = '1')
+			ELSE "00" WHEN (reg_src2_v_D = '1')
+			ELSE "00";
 
 	mux_mem_data_D_BP <= "11" WHEN (reg_src2_D = reg_dest_A AND reg_we_A = '1')
 			ELSE "10" WHEN (reg_src2_D = reg_dest_L AND reg_we_L = '1')
