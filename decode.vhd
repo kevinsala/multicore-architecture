@@ -12,7 +12,6 @@ ENTITY decode IS
 		reg_src2 : OUT STD_LOGIC_VECTOR(4 DOWNTO 0);
 		reg_dest : OUT STD_LOGIC_VECTOR(4 DOWNTO 0);
 		inm_ext : OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
-		jump_addr : OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
 		ALU_ctrl : OUT STD_LOGIC_VECTOR(2 DOWNTO 0);
 		branch : OUT STD_LOGIC;
 		branch_if_eq : OUT STD_LOGIC;
@@ -64,8 +63,6 @@ BEGIN
 
 	inm_ext <= inm_ext_int;
 
-	jump_addr <= pc + (inm_ext_int(29 DOWNTO 0) & "00");
-
 	op_code <= op_code_int;
 	reg_src1 <= inst(19 DOWNTO 15);
 	reg_dest <= inst(24 DOWNTO 20);
@@ -76,6 +73,7 @@ BEGIN
 	ALU_ctrl <= "000" WHEN op_code_int = OP_ADD ELSE
 				"001" WHEN op_code_int = OP_SUB ELSE
 				"100" WHEN op_code_int = OP_LI ELSE
+				"101" WHEN op_code_int = OP_BEQ OR op_code_int = OP_BNE OR op_code_int = OP_JMP ELSE
 				"000";
 
 	-- Control signals
@@ -87,7 +85,8 @@ BEGIN
 								op_code_int = OP_MUL);
 	inm_src2_v <= to_std_logic(op_code_int = OP_LI OR op_code_int = OP_STW OR
 	                            op_code_int = OP_STB OR op_code_int = OP_LDW OR
-	                            op_code_int = OP_LDB);
+	                            op_code_int = OP_LDB OR op_code_int = OP_BEQ OR
+	                            op_code_int = OP_BNE OR op_code_int = OP_JMP);
 	mul <= to_std_logic(op_code_int = OP_MUL);
 	mem_write <= to_std_logic(op_code_int = OP_STW OR op_code_int = OP_STB);
 	byte <= to_std_logic(op_code_int = OP_LDB OR op_code_int = OP_STB);

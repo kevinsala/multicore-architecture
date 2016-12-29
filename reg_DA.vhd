@@ -15,7 +15,6 @@ ENTITY reg_DA IS
 		branch_if_eq_in : IN STD_LOGIC;
 		jump_in : IN STD_LOGIC;
 		inm_ext_in : IN STD_LOGIC_VECTOR(31 DOWNTO 0);
-		jump_addr_in : IN STD_LOGIC_VECTOR(31 DOWNTO 0);
 		ALU_ctrl_in : IN STD_LOGIC_VECTOR(2 DOWNTO 0);
 		reg_src1_v_in : IN STD_LOGIC;
 		reg_src2_v_in : IN STD_LOGIC;
@@ -36,7 +35,6 @@ ENTITY reg_DA IS
 		branch_if_eq_out : OUT STD_LOGIC;
 		jump_out : OUT STD_LOGIC;
 		inm_ext_out : OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
-		jump_addr_out : OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
 		ALU_ctrl_out : OUT STD_LOGIC_VECTOR(2 DOWNTO 0);
 		reg_src1_v_out : OUT STD_LOGIC;
 		reg_src2_v_out : OUT STD_LOGIC;
@@ -66,7 +64,6 @@ BEGIN
 				branch_if_eq_out <= '0';
 				jump_out <= '0';
 				inm_ext_out <= (OTHERS => '0');
-				jump_addr_out <= (OTHERS => '0');
 				reg_src1_out <= (OTHERS => '0');
 				ALU_ctrl_out <= (OTHERS => '0');
 				reg_src1_v_out <= '0';
@@ -89,7 +86,6 @@ BEGIN
 					branch_if_eq_out <= branch_if_eq_in;
 					jump_out <= jump_in;
 					inm_ext_out <= inm_ext_in;
-					jump_addr_out <= jump_addr_in;
 					ALU_ctrl_out <= ALU_ctrl_in;
 					reg_src1_v_out <= reg_src1_v_in;
 					reg_src2_v_out <= reg_src2_v_in;
