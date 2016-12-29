@@ -3,8 +3,6 @@ USE IEEE.std_logic_1164.ALL;
 
 ENTITY bypass_unit IS
 	PORT(
-		reg_src1_D        : IN STD_LOGIC_VECTOR (4 DOWNTO 0);
-		reg_src2_D        : IN STD_LOGIC_VECTOR (4 DOWNTO 0);
 		reg_src1_A        : IN STD_LOGIC_VECTOR (4 DOWNTO 0);
 		reg_src2_A        : IN STD_LOGIC_VECTOR (4 DOWNTO 0);
 		reg_src1_v_A      : IN STD_LOGIC;
@@ -17,8 +15,6 @@ ENTITY bypass_unit IS
 		reg_we_C          : IN STD_LOGIC;
 		reg_dest_W        : IN STD_LOGIC_VECTOR (4 DOWNTO 0);
 		reg_we_W          : IN STD_LOGIC;
-		mux_src1_D_BP     : OUT STD_LOGIC_VECTOR (1 DOWNTO 0);
-		mux_src2_D_BP     : OUT STD_LOGIC_VECTOR (1 DOWNTO 0);
 		mux_src1_A_BP     : OUT STD_LOGIC_VECTOR (1 DOWNTO 0);
 		mux_src2_A_BP     : OUT STD_LOGIC_VECTOR (2 DOWNTO 0);
 		mux_mem_data_A_BP : OUT STD_LOGIC_VECTOR (1 DOWNTO 0);
@@ -29,14 +25,6 @@ END bypass_unit;
 
 ARCHITECTURE bypass_unit_behavior OF bypass_unit IS
 BEGIN
-	mux_src1_D_BP <= "11" WHEN (reg_src1_D = reg_dest_L AND reg_we_L = '1')
-			ELSE "10" WHEN (reg_src1_D = reg_dest_C AND reg_we_C = '1')
-			ELSE "00";
-
-	mux_src2_D_BP <= "11" WHEN (reg_src2_D = reg_dest_L AND reg_we_L = '1')
-			ELSE "10" WHEN (reg_src2_D = reg_dest_C AND reg_we_C = '1')
-			ELSE "00";
-
 	mux_src1_A_BP <= "11" WHEN (reg_src1_A = reg_dest_L AND reg_src1_v_A = '1' AND reg_we_L = '1')
 			ELSE "10" WHEN (reg_src1_A = reg_dest_C AND reg_src1_v_A = '1' AND reg_we_C = '1')
 			ELSE "01" WHEN (reg_src1_A = reg_dest_W AND reg_src1_v_A = '1' AND reg_we_W = '1')

@@ -203,8 +203,6 @@ ARCHITECTURE structure OF inkel_pentiun IS
 
 	COMPONENT bypass_unit IS
 		PORT(
-			reg_src1_D        : IN STD_LOGIC_VECTOR (4 DOWNTO 0);
-			reg_src2_D        : IN STD_LOGIC_VECTOR (4 DOWNTO 0);
 			reg_src1_A        : IN STD_LOGIC_VECTOR (4 DOWNTO 0);
 			reg_src2_A        : IN STD_LOGIC_VECTOR (4 DOWNTO 0);
 			reg_src1_v_A      : IN STD_LOGIC;
@@ -217,8 +215,6 @@ ARCHITECTURE structure OF inkel_pentiun IS
 			reg_we_C          : IN STD_LOGIC;
 			reg_dest_W        : IN STD_LOGIC_VECTOR (4 DOWNTO 0);
 			reg_we_W          : IN STD_LOGIC;
-			mux_src1_D_BP     : OUT STD_LOGIC_VECTOR (1 DOWNTO 0);
-			mux_src2_D_BP     : OUT STD_LOGIC_VECTOR (1 DOWNTO 0);
 			mux_src1_A_BP     : OUT STD_LOGIC_VECTOR (1 DOWNTO 0);
 			mux_src2_A_BP     : OUT STD_LOGIC_VECTOR (2 DOWNTO 0);
 			mux_mem_data_A_BP : OUT STD_LOGIC_VECTOR (1 DOWNTO 0);
@@ -482,8 +478,6 @@ ARCHITECTURE structure OF inkel_pentiun IS
 	SIGNAL reg_data1_D : STD_LOGIC_VECTOR(31 DOWNTO 0);
 	SIGNAL reg_data2_D : STD_LOGIC_VECTOR(31 DOWNTO 0);
 	SIGNAL inm_ext_D : STD_LOGIC_VECTOR(31 DOWNTO 0);
-	SIGNAL data1_BP_D : STD_LOGIC_VECTOR(31 DOWNTO 0);
-	SIGNAL data2_BP_D : STD_LOGIC_VECTOR(31 DOWNTO 0);
 	SIGNAL conflict_D : STD_LOGIC;
 
 	-- ALU stage signals
@@ -602,8 +596,6 @@ ARCHITECTURE structure OF inkel_pentiun IS
 	SIGNAL mul_UD : STD_LOGIC;
 
 	-- Bypass unit signals
-	SIGNAL mux_src1_D_BP_ctrl : STD_LOGIC_VECTOR(1 DOWNTO 0);
-	SIGNAL mux_src2_D_BP_ctrl : STD_LOGIC_VECTOR(1 DOWNTO 0);
 	SIGNAL mux_src1_A_BP_ctrl : STD_LOGIC_VECTOR(1 DOWNTO 0);
 	SIGNAL mux_src2_A_BP_ctrl : STD_LOGIC_VECTOR(2 DOWNTO 0);
 	SIGNAL mux_mem_data_A_BP_ctrl : STD_LOGIC_VECTOR(1 DOWNTO 0);
@@ -778,24 +770,6 @@ BEGIN
 		data_in => reg_data_WB
 	);
 
-	mux_src1_D_BP : mux4_32bits PORT MAP(
-		Din0 => reg_data1_D,
-		Din1 => x"00000000",
-		Din2 => ALU_out_C,
-		Din3 => ALU_out_L,
-		ctrl => mux_src1_D_BP_ctrl,
-		Dout => data1_BP_D
-	);
-
-	mux_src2_D_BP : mux4_32bits PORT MAP(
-		Din0 => reg_data2_D,
-		Din1 => x"00000000",
-		Din2 => ALU_out_C,
-		Din3 => ALU_out_L,
-		ctrl => mux_src2_D_BP_ctrl,
-		Dout => data2_BP_D
-	);
-
 	reg_D_A: reg_DA PORT MAP(
 		clk => clk,
 		reset => reg_D_A_reset,
@@ -863,8 +837,6 @@ BEGIN
 	--------------------------------- Execution ------------------------------------------
 
 	UB : bypass_unit PORT MAP(
-		reg_src1_D => reg_src1_D,
-		reg_src2_D => reg_src2_D,
 		reg_src1_A => reg_src1_A,
 		reg_src2_A => reg_src2_A,
 		reg_src1_v_A => reg_src1_v_A,
@@ -877,8 +849,6 @@ BEGIN
 		reg_we_C => reg_we_C,
 		reg_dest_W => reg_dest_WB,
 		reg_we_W => reg_we_WB,
-		mux_src1_D_BP => mux_src1_D_BP_ctrl,
-		mux_src2_D_BP => mux_src2_D_BP_ctrl,
 		mux_src1_A_BP => mux_src1_A_BP_ctrl,
 		mux_src2_A_BP => mux_src2_A_BP_ctrl,
 		mux_mem_data_A_BP => mux_mem_data_A_BP_ctrl,
