@@ -11,11 +11,11 @@ add r5, r2, r5
 add r3, r1, r3
 bne r3, r4, init
 
+mov r3, r0
 mov r6, r0
 li r5, 0x10000
 
 add:
-mov r3, r0
 ldw r7, 0(r5)
 add r6, r7, r6
 add r5, r2, r5
