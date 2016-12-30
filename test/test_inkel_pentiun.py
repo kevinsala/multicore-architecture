@@ -44,7 +44,7 @@ def init_test(dut):
 
         # One instruction may take many cycles
         count = 1
-        while count < 20 and dut.pc_out == 0:
+        while count < 30 and dut.pc_out == 0:
             yield clk_rising
 
             # Signals in stage F are not propagated in case of stalling
@@ -54,7 +54,7 @@ def init_test(dut):
 
             count = count + 1
 
-        if count == 20:
+        if count == 30:
             raise TestFailure("Processor is in an infinite loop at PC 0x%08x" % mod_pc)
 
         if first:
