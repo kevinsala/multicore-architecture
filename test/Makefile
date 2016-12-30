@@ -11,6 +11,7 @@ VHDL_SOURCES = $(PWD)/../utils.vhd \
                 $(PWD)/../comp_28bits.vhd \
                 $(PWD)/../decode.vhd \
                 $(PWD)/../detention_unit.vhd \
+                $(PWD)/../exception.vhd \
                 $(PWD)/../fetch.vhd \
                 $(PWD)/../inkel_pentiun.vhd \
                 $(PWD)/../lookup_stage.vhd \

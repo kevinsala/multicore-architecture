@@ -7,9 +7,12 @@ ENTITY reg_status IS
 		we : IN STD_LOGIC;
 		pc_in : IN STD_LOGIC_VECTOR(31 DOWNTO 0);
 		priv_status_in : IN STD_LOGIC;
-		exc_in : IN STD_LOGIC;
-		exc_code_in : IN STD_LOGIC_VECTOR(1 DOWNTO 0);
-		exc_data_in : IN STD_LOGIC_VECTOR(31 DOWNTO 0);
+		exc_new : IN STD_LOGIC;
+		exc_code_new : IN STD_LOGIC_VECTOR(1 DOWNTO 0);
+		exc_data_new : IN STD_LOGIC_VECTOR(31 DOWNTO 0);
+		exc_old : IN STD_LOGIC;
+		exc_code_old : IN STD_LOGIC_VECTOR(1 DOWNTO 0);
+		exc_data_old : IN STD_LOGIC_VECTOR(31 DOWNTO 0);
 		debug_dump_in : IN STD_LOGIC;
 		pc_out : OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
 		priv_status_out : OUT STD_LOGIC;
@@ -34,10 +37,17 @@ BEGIN
 				IF we = '1' THEN
 					pc_out <= pc_in;
 					priv_status_out <= priv_status_in;
-					exc_out <= exc_in;
-					exc_code_out <= exc_code_in;
-					exc_data_out <= exc_data_in;
 					debug_dump_out <= debug_dump_in;
+
+					IF exc_new = '1' THEN
+						exc_out <= exc_new;
+						exc_code_out <= exc_code_new;
+						exc_data_out <= exc_data_new;
+					ELSE
+						exc_out <= exc_old;
+						exc_code_out <= exc_code_old;
+						exc_data_out <= exc_data_old;
+					END IF;
 				END IF;
 			END IF;
 		END IF;
