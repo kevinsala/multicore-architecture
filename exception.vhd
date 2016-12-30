@@ -3,7 +3,10 @@ USE ieee.std_logic_1164.ALL;
 USE ieee.std_logic_unsigned.ALL;
 
 ENTITY exception_unit IS
-	PORT (invalid_inst_D : IN STD_LOGIC;
+	PORT (
+		invalid_access_F : IN STD_LOGIC;
+		mem_addr_F : IN STD_LOGIC_VECTOR(31 DOWNTO 0);
+		invalid_inst_D : IN STD_LOGIC;
 		inst_D : IN STD_LOGIC_VECTOR(31 DOWNTO 0);
 		invalid_access_L : IN STD_LOGIC;
 		mem_addr_L : IN STD_LOGIC_VECTOR(31 DOWNTO 0);

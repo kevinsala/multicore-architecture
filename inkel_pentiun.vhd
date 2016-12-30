@@ -63,6 +63,8 @@ ARCHITECTURE structure OF inkel_pentiun IS
 
 	COMPONENT exception_unit IS
 		PORT(
+			invalid_access_F : IN STD_LOGIC;
+			mem_addr_F : IN STD_LOGIC_VECTOR(31 DOWNTO 0);
 			invalid_inst_D : IN STD_LOGIC;
 			inst_D : IN STD_LOGIC_VECTOR(31 DOWNTO 0);
 			invalid_access_L : IN STD_LOGIC;
@@ -106,6 +108,7 @@ ARCHITECTURE structure OF inkel_pentiun IS
 			branch_taken : IN STD_LOGIC;
 			inst : OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
 			inst_v : OUT STD_LOGIC;
+			invalid_access : OUT STD_LOGIC;
 			mem_req : OUT STD_LOGIC;
 			mem_addr : OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
 			mem_done : IN STD_LOGIC;
@@ -463,6 +466,7 @@ ARCHITECTURE structure OF inkel_pentiun IS
 	SIGNAL mem_req_F : STD_LOGIC;
 	SIGNAL mem_done_F : STD_LOGIC;
 	SIGNAL priv_status_F : STD_LOGIC;
+	SIGNAL invalid_access_F : STD_LOGIC;
 	SIGNAL debug_dump_F : STD_LOGIC := '0';
 	SIGNAL pc_F : STD_LOGIC_VECTOR(31 DOWNTO 0);
 	SIGNAL inst_F : STD_LOGIC_VECTOR(31 DOWNTO 0);
@@ -683,6 +687,8 @@ BEGIN
 	----------------------------- Control -------------------------------
 
 	exc : exception_unit PORT MAP(
+		invalid_access_F => invalid_access_F,
+		mem_addr_F => pc_F,
 		invalid_inst_D => invalid_inst_D,
 		inst_D => inst_D,
 		invalid_access_L => invalid_access_L,
@@ -781,6 +787,7 @@ BEGIN
 		branch_taken => branch_taken_A,
 		inst => inst_F,
 		inst_v => inst_v_F,
+		invalid_access => invalid_access_F,
 		mem_req => mem_req_F,
 		mem_addr => mem_addr_F,
 		mem_done => mem_done_F,
