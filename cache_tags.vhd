@@ -7,23 +7,25 @@ USE work.utils.ALL;
 
 ENTITY cache_tags IS
 	PORT(
-		clk          : IN  STD_LOGIC;
-		reset        : IN  STD_LOGIC;
-		debug_dump   : IN  STD_LOGIC;
-		addr         : IN  STD_LOGIC_VECTOR(31 DOWNTO 0);
-		re           : IN  STD_LOGIC;
-		we           : IN  STD_LOGIC;
-		state        : IN  data_cache_state_t;
-		state_nx     : OUT data_cache_state_t;
-		hit          : OUT STD_LOGIC;
-		done         : OUT STD_LOGIC;
-		line_num     : OUT INTEGER RANGE 0 TO 3;
-		line_we      : OUT STD_LOGIC;
-		lru_line_num : OUT INTEGER RANGE 0 TO 3;
-		mem_req      : OUT STD_LOGIC;
-		mem_addr     : OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
-		mem_we       : OUT STD_LOGIC;
-		mem_done     : IN  STD_LOGIC
+		clk            : IN  STD_LOGIC;
+		reset          : IN  STD_LOGIC;
+		debug_dump     : IN  STD_LOGIC;
+		addr           : IN  STD_LOGIC_VECTOR(31 DOWNTO 0);
+		re             : IN  STD_LOGIC;
+		we             : IN  STD_LOGIC;
+		is_byte        : IN  STD_LOGIC;
+		state          : IN  data_cache_state_t;
+		state_nx       : OUT data_cache_state_t;
+		hit            : OUT STD_LOGIC;
+		done           : OUT STD_LOGIC;
+		line_num       : OUT INTEGER RANGE 0 TO 3;
+		line_we        : OUT STD_LOGIC;
+		lru_line_num   : OUT INTEGER RANGE 0 TO 3;
+		invalid_access : OUT STD_LOGIC;
+		mem_req        : OUT STD_LOGIC;
+		mem_addr       : OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
+		mem_we         : OUT STD_LOGIC;
+		mem_done       : IN  STD_LOGIC
 	);
 END cache_tags;
 
@@ -40,6 +42,9 @@ ARCHITECTURE cache_tags_behavior OF cache_tags IS
 	SIGNAL valid_fields : valid_fields_t;
 	SIGNAL dirty_fields : dirty_fields_t;
 	SIGNAL tag_fields   : tag_fields_t;
+
+	-- Invalid address
+	SIGNAL invalid_access_i : STD_LOGIC;
 
 	-- The next state of the cache
 	SIGNAL state_nx_i : data_cache_state_t;
@@ -108,14 +113,14 @@ ARCHITECTURE cache_tags_behavior OF cache_tags IS
 BEGIN
 
 -- Process that computes the next state of the cache
-next_state_process : process(reset, state, re, we, hit_i, replacement_i, mem_done)
+next_state_process : process(reset, state, re, we, invalid_access_i, hit_i, replacement_i, mem_done)
 BEGIN
 	IF reset = '1' THEN
 		state_nx_i <= READY;
 	ELSE
 		state_nx_i <= state;
 		IF state = READY THEN
-			IF re = '1' OR we = '1' THEN
+			IF (re = '1' OR we = '1') AND invalid_access_i = '0' THEN
 				IF hit_i = '1' THEN
 					state_nx_i <= READY;
 				ELSIF replacement_i = '1' THEN
@@ -196,6 +201,10 @@ BEGIN
 	END IF;
 END PROCESS execution_process;
 
+-- Check if the access is invalid
+invalid_access_i <= '1' WHEN (re = '1' OR we = '1') AND is_byte = '0' AND addr(1 DOWNTO 0) /= "00"
+					ELSE '0';
+
 -- For each line, determine if the access has hit
 hit_line_i(0) <= valid_fields(0) AND to_std_logic(tag_fields(0) = addr(31 DOWNTO 4));
 hit_line_i(1) <= valid_fields(1) AND to_std_logic(tag_fields(1) = addr(31 DOWNTO 4));
@@ -236,5 +245,6 @@ line_we <= '1' WHEN state = LINEREQ AND state_nx_i = READY
 -- Other output signals
 hit <= hit_i;
 lru_line_num <= lru_line_num_i;
+invalid_access <= invalid_access_i;
 
 END cache_tags_behavior;

@@ -27,9 +27,12 @@ ARCHITECTURE structure OF inkel_pentiun IS
 			we : IN STD_LOGIC;
 			pc_in : IN STD_LOGIC_VECTOR(31 DOWNTO 0);
 			priv_status_in : IN STD_LOGIC;
-			exc_in : IN STD_LOGIC;
-			exc_code_in : IN STD_LOGIC_VECTOR(1 DOWNTO 0);
-			exc_data_in : IN STD_LOGIC_VECTOR(31 DOWNTO 0);
+			exc_new : IN STD_LOGIC;
+			exc_code_new : IN STD_LOGIC_VECTOR(1 DOWNTO 0);
+			exc_data_new : IN STD_LOGIC_VECTOR(31 DOWNTO 0);
+			exc_old : IN STD_LOGIC;
+			exc_code_old : IN STD_LOGIC_VECTOR(1 DOWNTO 0);
+			exc_data_old : IN STD_LOGIC_VECTOR(31 DOWNTO 0);
 			debug_dump_in : IN STD_LOGIC;
 			pc_out : OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
 			priv_status_out : OUT STD_LOGIC;
@@ -58,12 +61,39 @@ ARCHITECTURE structure OF inkel_pentiun IS
 		);
 	END COMPONENT;
 
+	COMPONENT exception_unit IS
+		PORT(
+			invalid_access_F : IN STD_LOGIC;
+			mem_addr_F : IN STD_LOGIC_VECTOR(31 DOWNTO 0);
+			invalid_inst_D : IN STD_LOGIC;
+			inst_D : IN STD_LOGIC_VECTOR(31 DOWNTO 0);
+			invalid_access_L : IN STD_LOGIC;
+			mem_addr_L : IN STD_LOGIC_VECTOR(31 DOWNTO 0);
+			exc_F : OUT STD_LOGIC;
+			exc_code_F : OUT STD_LOGIC_VECTOR(1 DOWNTO 0);
+			exc_data_F : OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
+			exc_D : OUT STD_LOGIC;
+			exc_code_D : OUT STD_LOGIC_VECTOR(1 DOWNTO 0);
+			exc_data_D : OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
+			exc_A : OUT STD_LOGIC;
+			exc_code_A : OUT STD_LOGIC_VECTOR(1 DOWNTO 0);
+			exc_data_A : OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
+			exc_L : OUT STD_LOGIC;
+			exc_code_L : OUT STD_LOGIC_VECTOR(1 DOWNTO 0);
+			exc_data_L : OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
+			exc_C : OUT STD_LOGIC;
+			exc_code_C : OUT STD_LOGIC_VECTOR(1 DOWNTO 0);
+			exc_data_C : OUT STD_LOGIC_VECTOR(31 DOWNTO 0)
+		);
+	END COMPONENT;
+
 	COMPONENT pc IS
 		PORT(
 			clk : IN STD_LOGIC;
 			reset : IN STD_LOGIC;
 			addr_jump : IN STD_LOGIC_VECTOR(31 DOWNTO 0);
 			branch_taken : IN STD_LOGIC;
+			exception : IN STD_LOGIC;
 			load_PC : IN STD_LOGIC;
 			pc : OUT STD_LOGIC_VECTOR(31 DOWNTO 0)
 		);
@@ -78,6 +108,7 @@ ARCHITECTURE structure OF inkel_pentiun IS
 			branch_taken : IN STD_LOGIC;
 			inst : OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
 			inst_v : OUT STD_LOGIC;
+			invalid_access : OUT STD_LOGIC;
 			mem_req : OUT STD_LOGIC;
 			mem_addr : OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
 			mem_done : IN STD_LOGIC;
@@ -87,23 +118,25 @@ ARCHITECTURE structure OF inkel_pentiun IS
 
 	COMPONENT lookup_stage IS
 		PORT(
-			clk          : IN  STD_LOGIC;
-			reset        : IN  STD_LOGIC;
-			debug_dump   : IN  STD_LOGIC;
-			addr         : IN  STD_LOGIC_VECTOR(31 DOWNTO 0);
-			re           : IN  STD_LOGIC;
-			we           : IN  STD_LOGIC;
-			state        : IN  data_cache_state_t;
-			state_nx     : OUT data_cache_state_t;
-			hit          : OUT STD_LOGIC;
-			done         : OUT STD_LOGIC;
-			line_num     : OUT INTEGER RANGE 0 TO 3;
-			line_we      : OUT STD_LOGIC;
-			lru_line_num : OUT INTEGER RANGE 0 TO 3;
-			mem_req      : OUT STD_LOGIC;
-			mem_addr     : OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
-			mem_we       : OUT STD_LOGIC;
-			mem_done     : IN  STD_LOGIC
+			clk            : IN  STD_LOGIC;
+			reset          : IN  STD_LOGIC;
+			debug_dump     : IN  STD_LOGIC;
+			addr           : IN  STD_LOGIC_VECTOR(31 DOWNTO 0);
+			re             : IN  STD_LOGIC;
+			we             : IN  STD_LOGIC;
+			is_byte        : IN  STD_LOGIC;
+			state          : IN  data_cache_state_t;
+			state_nx       : OUT data_cache_state_t;
+			hit            : OUT STD_LOGIC;
+			done           : OUT STD_LOGIC;
+			line_num       : OUT INTEGER RANGE 0 TO 3;
+			line_we        : OUT STD_LOGIC;
+			lru_line_num   : OUT INTEGER RANGE 0 TO 3;
+			invalid_access : OUT STD_LOGIC;
+			mem_req        : OUT STD_LOGIC;
+			mem_addr       : OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
+			mem_we         : OUT STD_LOGIC;
+			mem_done       : IN  STD_LOGIC
 		);
 	END COMPONENT;
 
@@ -161,11 +194,16 @@ ARCHITECTURE structure OF inkel_pentiun IS
 			debug_dump : IN STD_LOGIC;
 			src1 : IN STD_LOGIC_VECTOR(4 DOWNTO 0);
 			src2 : IN STD_LOGIC_VECTOR(4 DOWNTO 0);
+			srcctrl : IN STD_LOGIC_VECTOR(1 DOWNTO 0);
 			data1 : OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
 			data2 : OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
+			datactrl : OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
 			we : IN STD_LOGIC;
 			dest : IN STD_LOGIC_VECTOR(4 DOWNTO 0);
-			data_in : IN STD_LOGIC_VECTOR(31 DOWNTO 0)
+			data_in : IN STD_LOGIC_VECTOR(31 DOWNTO 0);
+			exception : IN STD_LOGIC;
+			exc_code : IN STD_LOGIC_VECTOR(1 DOWNTO 0);
+			exc_data : IN STD_LOGIC_VECTOR(31 DOWNTO 0)
 		);
 	END COMPONENT;
 
@@ -190,7 +228,8 @@ ARCHITECTURE structure OF inkel_pentiun IS
 			byte : OUT STD_LOGIC;
 			mem_read : OUT STD_LOGIC;
 			mem_to_reg : OUT STD_LOGIC;
-			reg_we : OUT STD_LOGIC
+			reg_we : OUT STD_LOGIC;
+			invalid_inst : OUT STD_LOGIC
 		);
 	END COMPONENT;
 
@@ -201,7 +240,6 @@ ARCHITECTURE structure OF inkel_pentiun IS
 			reg_src1_v_D      : IN STD_LOGIC;
 			reg_src2_v_D      : IN STD_LOGIC;
 			inm_src2_v_D      : IN STD_LOGIC;
-			mem_write_D       : IN STD_LOGIC;
 			reg_dest_A        : IN STD_LOGIC_VECTOR (4 DOWNTO 0);
 			reg_we_A          : IN STD_LOGIC;
 			reg_dest_L        : IN STD_LOGIC_VECTOR (4 DOWNTO 0);
@@ -219,13 +257,11 @@ ARCHITECTURE structure OF inkel_pentiun IS
 	COMPONENT detention_unit IS
 		PORT(
 			reset          : IN STD_LOGIC;
-			branch_D       : IN STD_LOGIC;
 			reg_src1_D     : IN STD_LOGIC_VECTOR(4 DOWNTO 0);
 			reg_src2_D     : IN STD_LOGIC_VECTOR(4 DOWNTO 0);
 			reg_dest_D     : IN STD_LOGIC_VECTOR(4 DOWNTO 0);
 			reg_src1_v_D   : IN STD_LOGIC;
 			reg_src2_v_D   : IN STD_LOGIC;
-			mem_we_D       : IN STD_LOGIC;
 			branch_taken_A : IN STD_LOGIC;
 			mul_D 			: IN STD_LOGIC;
 			mul_M1			: IN STD_LOGIC;
@@ -242,10 +278,12 @@ ARCHITECTURE structure OF inkel_pentiun IS
 			mem_read_A     : IN STD_LOGIC;
 			reg_dest_L     : IN STD_LOGIC_VECTOR(4 DOWNTO 0);
 			mem_read_L     : IN STD_LOGIC;
-			reg_dest_C     : IN STD_LOGIC_VECTOR(4 DOWNTO 0);
-			mem_read_C     : IN STD_LOGIC;
 			done_F         : IN STD_LOGIC;
 			done_L         : IN STD_LOGIC;
+			exc_D          : IN STD_LOGIC;
+			exc_A          : IN STD_LOGIC;
+			exc_L          : IN STD_LOGIC;
+			exc_C          : IN STD_LOGIC;
 			conflict       : OUT STD_LOGIC;
 			switch_ctrl    : OUT STD_LOGIC;
 			reg_PC_reset   : OUT STD_LOGIC;
@@ -351,7 +389,7 @@ ARCHITECTURE structure OF inkel_pentiun IS
 			reg_dest_out : OUT STD_LOGIC_VECTOR(4 downto 0);
 			reg_we_out : OUT STD_LOGIC;
 			Dout : OUT  STD_LOGIC_VECTOR (31 downto 0)
-		); 
+		);
 	END COMPONENT;
 
 	COMPONENT Switch_UD IS
@@ -460,6 +498,7 @@ ARCHITECTURE structure OF inkel_pentiun IS
 	SIGNAL mem_req_F : STD_LOGIC;
 	SIGNAL mem_done_F : STD_LOGIC;
 	SIGNAL priv_status_F : STD_LOGIC;
+	SIGNAL invalid_access_F : STD_LOGIC;
 	SIGNAL debug_dump_F : STD_LOGIC := '0';
 	SIGNAL pc_F : STD_LOGIC_VECTOR(31 DOWNTO 0);
 	SIGNAL inst_F : STD_LOGIC_VECTOR(31 DOWNTO 0);
@@ -481,6 +520,7 @@ ARCHITECTURE structure OF inkel_pentiun IS
 	SIGNAL mul_D : STD_LOGIC;
 	SIGNAL switch_ctrl : STD_LOGIC;
 	SIGNAL priv_status_D : STD_LOGIC;
+	SIGNAL invalid_inst_D : STD_LOGIC;
 	SIGNAL debug_dump_D : STD_LOGIC;
 	SIGNAL ALU_ctrl_D : STD_LOGIC_VECTOR(2 DOWNTO 0);
 	SIGNAL reg_src1_D : STD_LOGIC_VECTOR(4 DOWNTO 0);
@@ -539,6 +579,7 @@ ARCHITECTURE structure OF inkel_pentiun IS
 	SIGNAL reg_we_L : STD_LOGIC;
 	SIGNAL priv_status_L : STD_LOGIC;
 	SIGNAL debug_dump_L : STD_LOGIC;
+	SIGNAL invalid_access_L : STD_LOGIC;
 	SIGNAL reg_dest_L : STD_LOGIC_VECTOR(4 DOWNTO 0);
 	SIGNAL pc_L : STD_LOGIC_VECTOR(31 DOWNTO 0);
 	SIGNAL ALU_out_L : STD_LOGIC_VECTOR(31 DOWNTO 0);
@@ -592,22 +633,27 @@ ARCHITECTURE structure OF inkel_pentiun IS
 	SIGNAL reg_we_M5 : STD_LOGIC;
 
 	-- Writeback stage signals
-	SIGNAL reg_we_WB : STD_LOGIC;
-	SIGNAL priv_status_WB : STD_LOGIC;
-	SIGNAL debug_dump_WB : STD_LOGIC;
-	SIGNAL mul_WB : STD_LOGIC;
-	SIGNAL reg_dest_WB : STD_LOGIC_VECTOR(4 DOWNTO 0);
-	SIGNAL pc_WB : STD_LOGIC_VECTOR(31 DOWNTO 0);
-	SIGNAL reg_data_WB : STD_LOGIC_VECTOR(31 DOWNTO 0);
-	SIGNAL reg_data_WB_tmp : STD_LOGIC_VECTOR(31 DOWNTO 0);
-	SIGNAL mul_out_WB : STD_LOGIC_VECTOR(31 DOWNTO 0);
+	SIGNAL reg_we_W : STD_LOGIC;
+	SIGNAL priv_status_W : STD_LOGIC;
+	SIGNAL debug_dump_W : STD_LOGIC;
+	SIGNAL mul_W : STD_LOGIC;
+	SIGNAL reg_dest_W : STD_LOGIC_VECTOR(4 DOWNTO 0);
+	SIGNAL pc_W : STD_LOGIC_VECTOR(31 DOWNTO 0);
+	SIGNAL reg_data_W : STD_LOGIC_VECTOR(31 DOWNTO 0);
+	SIGNAL reg_data_W_tmp : STD_LOGIC_VECTOR(31 DOWNTO 0);
+	SIGNAL mul_out_W : STD_LOGIC_VECTOR(31 DOWNTO 0);
 
 	-- Segmentation registers signals
 	SIGNAL reg_F_D_reset : STD_LOGIC;
+	SIGNAL reg_F_D_reset_DU : STD_LOGIC;
 	SIGNAL reg_D_A_reset : STD_LOGIC;
+	SIGNAL reg_D_A_reset_DU : STD_LOGIC;
 	SIGNAL reg_A_L_reset : STD_LOGIC;
+	SIGNAL reg_A_L_reset_DU : STD_LOGIC;
 	SIGNAL reg_L_C_reset : STD_LOGIC;
+	SIGNAL reg_L_C_reset_DU : STD_LOGIC;
 	SIGNAL reg_C_W_reset : STD_LOGIC;
+	SIGNAL reg_C_W_reset_DU : STD_LOGIC;
 	SIGNAL reg_F_D_we : STD_LOGIC;
 	SIGNAL reg_D_A_we : STD_LOGIC;
 	SIGNAL reg_A_L_we : STD_LOGIC;
@@ -633,18 +679,39 @@ ARCHITECTURE structure OF inkel_pentiun IS
 	SIGNAL mux_mem_data_D_BP_ctrl : STD_LOGIC_VECTOR(1 DOWNTO 0);
 	SIGNAL mux_mem_data_A_BP_ctrl : STD_LOGIC_VECTOR(1 DOWNTO 0);
 	SIGNAL mux_mem_data_L_BP_ctrl : STD_LOGIC;
+
+	-- Exception unit signals
+	SIGNAL exc_F_E : STD_LOGIC;
+	SIGNAL exc_D : STD_LOGIC;
+	SIGNAL exc_D_E : STD_LOGIC;
+	SIGNAL exc_A : STD_LOGIC;
+	SIGNAL exc_A_E : STD_LOGIC;
+	SIGNAL exc_L : STD_LOGIC;
+	SIGNAL exc_L_E : STD_LOGIC;
+	SIGNAL exc_C : STD_LOGIC;
+	SIGNAL exc_C_E : STD_LOGIC;
+	SIGNAL exc_W : STD_LOGIC;
+	SIGNAL exc_code_F_E : STD_LOGIC_VECTOR(1 DOWNTO 0);
+	SIGNAL exc_code_D : STD_LOGIC_VECTOR(1 DOWNTO 0);
+	SIGNAL exc_code_D_E : STD_LOGIC_VECTOR(1 DOWNTO 0);
+	SIGNAL exc_code_A : STD_LOGIC_VECTOR(1 DOWNTO 0);
+	SIGNAL exc_code_A_E : STD_LOGIC_VECTOR(1 DOWNTO 0);
+	SIGNAL exc_code_L : STD_LOGIC_VECTOR(1 DOWNTO 0);
+	SIGNAL exc_code_L_E : STD_LOGIC_VECTOR(1 DOWNTO 0);
+	SIGNAL exc_code_C : STD_LOGIC_VECTOR(1 DOWNTO 0);
+	SIGNAL exc_code_C_E : STD_LOGIC_VECTOR(1 DOWNTO 0);
+	SIGNAL exc_code_W : STD_LOGIC_VECTOR(1 DOWNTO 0);
+	SIGNAL exc_data_F_E : STD_LOGIC_VECTOR(31 DOWNTO 0);
+	SIGNAL exc_data_D : STD_LOGIC_VECTOR(31 DOWNTO 0);
+	SIGNAL exc_data_D_E : STD_LOGIC_VECTOR(31 DOWNTO 0);
+	SIGNAL exc_data_A : STD_LOGIC_VECTOR(31 DOWNTO 0);
+	SIGNAL exc_data_A_E : STD_LOGIC_VECTOR(31 DOWNTO 0);
+	SIGNAL exc_data_L : STD_LOGIC_VECTOR(31 DOWNTO 0);
+	SIGNAL exc_data_L_E : STD_LOGIC_VECTOR(31 DOWNTO 0);
+	SIGNAL exc_data_C : STD_LOGIC_VECTOR(31 DOWNTO 0);
+	SIGNAL exc_data_C_E : STD_LOGIC_VECTOR(31 DOWNTO 0);
+	SIGNAL exc_data_W : STD_LOGIC_VECTOR(31 DOWNTO 0);
 BEGIN
-
-	----------------------------- Fetch -------------------------------
-
-	reg_pc: pc PORT MAP(
-		clk => clk,
-		reset => reset_PC,
-		addr_jump => jump_addr_A,
-		branch_taken => branch_taken_A,
-		load_PC => load_PC,
-		pc => pc_F
-	);
 
 	mem: memory PORT MAP(
 		clk => clk,
@@ -662,59 +729,39 @@ BEGIN
 		d_data_out => mem_data_in_L
 	);
 
-	f: fetch PORT MAP(
-		clk => clk,
+	----------------------------- Control -------------------------------
+
+	exc : exception_unit PORT MAP(
+		invalid_access_F => invalid_access_F,
+		mem_addr_F => pc_F,
+		invalid_inst_D => invalid_inst_D,
+		inst_D => inst_D,
+		invalid_access_L => invalid_access_L,
+		mem_addr_L => ALU_out_L,
+		exc_F => exc_F_E,
+		exc_code_F => exc_code_F_E,
+		exc_data_F => exc_data_F_E,
+		exc_D => exc_D_E,
+		exc_code_D => exc_code_D_E,
+		exc_data_D => exc_data_D_E,
+		exc_A => exc_A_E,
+		exc_code_A => exc_code_A_E,
+		exc_data_A => exc_data_A_E,
+		exc_L => exc_L_E,
+		exc_code_L => exc_code_L_E,
+		exc_data_L => exc_data_L_E,
+		exc_C => exc_C_E,
+		exc_code_C => exc_code_C_E,
+		exc_data_C => exc_data_C_E
+	);
+
+	DU : detention_unit PORT MAP(
 		reset => reset,
-		debug_dump => debug_dump_F,
-		pc => pc_F,
-		branch_taken => branch_taken_A,
-		inst => inst_F,
-		inst_v => inst_v_F,
-		mem_req => mem_req_F,
-		mem_addr => mem_addr_F,
-		mem_done => mem_done_F,
-		mem_data_in => mem_data_in_F
-	);
-
-	priv_status_F <= '0';
-
-	reg_F_D: reg_FD PORT MAP(
-		clk => clk,
-		reset => reg_F_D_reset,
-		we => reg_F_D_we,
-		inst_in => inst_F,
-		inst_out => inst_D
-	);
-
-	reg_status_F_D: reg_status PORT MAP(
-		clk => clk,
-		reset => reg_F_D_reset,
-		we => reg_F_D_we,
-		pc_in => pc_F,
-		priv_status_in => priv_status_F,
-		exc_in => '0',
-		exc_code_in => (OTHERS => '0'),
-		exc_data_in => (OTHERS => '0'),
-		debug_dump_in => debug_dump_F,
-		pc_out => pc_D,
-		priv_status_out => priv_status_D,
-		exc_out => open,
-		exc_code_out => open,
-		exc_data_out => open,
-		debug_dump_out => debug_dump_D
-	);
-
-	----------------------------- Decode -------------------------------
-
-	UD : detention_unit PORT MAP(
-		reset => reset,
-		branch_D => branch_D,
 		reg_src1_D => reg_src1_D,
 		reg_src2_D => reg_src2_D,
 		reg_dest_D => reg_dest_D,
 		reg_src1_v_D => reg_src1_v_D,
 		reg_src2_v_D => reg_src2_v_D,
-		mem_we_D => mem_we_D,
 		branch_taken_A => branch_taken_A,
 		mul_D => mul_UD,
 		mul_M1 => mul_M1,
@@ -731,18 +778,20 @@ BEGIN
 		mem_read_A => mem_read_A,
 		reg_dest_L => reg_dest_L,
 		mem_read_L => cache_re_L,
-		reg_dest_C => reg_dest_C,
-		mem_read_C => cache_re_C,
 		done_F => inst_v_F,
 		done_L => done_L,
+		exc_D => exc_D_E,
+		exc_A => exc_A_E,
+		exc_L => exc_L_E,
+		exc_C => exc_C_E,
 		conflict => conflict_D,
 		switch_ctrl => switch_ctrl,
 		reg_PC_reset => reset_PC,
-		reg_F_D_reset => reg_F_D_reset,
-		reg_D_A_reset => reg_D_A_reset,
-		reg_A_L_reset => reg_A_L_reset,
-		reg_L_C_reset => reg_L_C_reset,
-		reg_C_W_reset => reg_C_W_reset,
+		reg_F_D_reset => reg_F_D_reset_DU,
+		reg_D_A_reset => reg_D_A_reset_DU,
+		reg_A_L_reset => reg_A_L_reset_DU,
+		reg_L_C_reset => reg_L_C_reset_DU,
+		reg_C_W_reset => reg_C_W_reset_DU,
 		reg_PC_we => load_PC,
 		reg_F_D_we => reg_F_D_we,
 		reg_D_A_we => reg_D_A_we,
@@ -750,6 +799,87 @@ BEGIN
 		reg_L_C_we => reg_L_C_we,
 		reg_C_W_we => reg_C_W_we
 	);
+
+	BP : bypass_unit PORT MAP(
+		reg_src1_D => reg_src1_D,
+		reg_src2_D => reg_src2_D,
+		reg_src1_v_D => reg_src1_v_D,
+		reg_src2_v_D => reg_src2_v_D,
+		inm_src2_v_D => inm_src2_v_D,
+		reg_dest_A => reg_dest_A,
+		reg_we_A => reg_we_A,
+		reg_dest_L => reg_dest_L,
+		reg_we_L => reg_we_L,
+		reg_dest_C => reg_dest_C,
+		reg_we_C => reg_we_C,
+		mux_src1_D_BP => mux_src1_D_BP_ctrl,
+		mux_src2_D_BP => mux_src2_D_BP_ctrl,
+		mux_mem_data_D_BP => mux_mem_data_D_BP_ctrl,
+		mux_mem_data_A_BP => mux_mem_data_A_BP_ctrl,
+		mux_mem_data_L_BP => mux_mem_data_L_BP_ctrl
+	);
+
+	----------------------------- Fetch -------------------------------
+
+	reg_pc: pc PORT MAP(
+		clk => clk,
+		reset => reset_PC,
+		addr_jump => jump_addr_A,
+		branch_taken => branch_taken_A,
+		exception => exc_W,
+		load_PC => load_PC,
+		pc => pc_F
+	);
+
+	priv_status_F <= exc_W;
+
+	f: fetch PORT MAP(
+		clk => clk,
+		reset => reset,
+		debug_dump => debug_dump_F,
+		pc => pc_F,
+		branch_taken => branch_taken_A,
+		inst => inst_F,
+		inst_v => inst_v_F,
+		invalid_access => invalid_access_F,
+		mem_req => mem_req_F,
+		mem_addr => mem_addr_F,
+		mem_done => mem_done_F,
+		mem_data_in => mem_data_in_F
+	);
+
+	reg_F_D_reset <= reg_F_D_reset_DU OR exc_F_E;
+
+	reg_F_D: reg_FD PORT MAP(
+		clk => clk,
+		reset => reg_F_D_reset,
+		we => reg_F_D_we,
+		inst_in => inst_F,
+		inst_out => inst_D
+	);
+
+	reg_status_F_D: reg_status PORT MAP(
+		clk => clk,
+		reset => reg_F_D_reset_DU,
+		we => reg_F_D_we,
+		pc_in => pc_F,
+		priv_status_in => priv_status_F,
+		exc_new => exc_F_E,
+		exc_code_new => exc_code_F_E,
+		exc_data_new => exc_data_F_E,
+		exc_old => '0',
+		exc_code_old => (OTHERS => 'X'),
+		exc_data_old => (OTHERS => 'X'),
+		debug_dump_in => debug_dump_F,
+		pc_out => pc_D,
+		priv_status_out => priv_status_D,
+		exc_out => exc_D,
+		exc_code_out => exc_code_D,
+		exc_data_out => exc_data_D,
+		debug_dump_out => debug_dump_D
+	);
+
+	----------------------------- Decode -------------------------------
 
 	d: decode PORT MAP(
 		inst => inst_D,
@@ -771,7 +901,8 @@ BEGIN
 		byte => byte_D,
 		mem_read => mem_read_D,
 		mem_to_reg => mem_to_reg_D,
-		reg_we => reg_we_D
+		reg_we => reg_we_D,
+		invalid_inst => invalid_inst_D
 	);
 
 	Switch_det: Switch_UD PORT MAP(
@@ -799,14 +930,19 @@ BEGIN
 	rb: reg_bank PORT MAP(
 		clk => clk,
 		reset => reset,
-		debug_dump => debug_dump_WB,
+		debug_dump => debug_dump_W,
 		src1 => reg_src1_D,
 		src2 => reg_src2_D,
+		srcctrl => "00",
 		data1 => reg_data1_D,
 		data2 => reg_data2_D,
-		we => reg_we_WB,
-		dest => reg_dest_WB,
-		data_in => reg_data_WB
+		datactrl => open,
+		we => reg_we_W,
+		dest => reg_dest_W,
+		data_in => reg_data_W,
+		exception => exc_W,
+		exc_code => exc_code_W,
+		exc_data => exc_data_W
 	);
 
 	mux_src1_D_BP : mux4_32bits PORT MAP(
@@ -835,6 +971,8 @@ BEGIN
 		ctrl => mux_mem_data_D_BP_ctrl,
 		Dout => mem_data_D
 	);
+
+	reg_D_A_reset <= reg_D_A_reset_DU OR exc_D_E;
 
 	reg_D_A: reg_DA PORT MAP(
 		clk => clk,
@@ -884,43 +1022,26 @@ BEGIN
 
 	reg_status_D_A: reg_status PORT MAP(
 		clk => clk,
-		reset => reg_D_A_reset,
+		reset => reg_D_A_reset_DU,
 		we => reg_D_A_we,
 		pc_in => pc_D,
 		priv_status_in => priv_status_D,
-		exc_in => '0',
-		exc_code_in => (OTHERS => '0'),
-		exc_data_in => (OTHERS => '0'),
+		exc_new => exc_D_E,
+		exc_code_new => exc_code_D_E,
+		exc_data_new => exc_data_D_E,
+		exc_old => exc_D,
+		exc_code_old => exc_code_D,
+		exc_data_old => exc_data_D,
 		debug_dump_in => debug_dump_D,
 		pc_out => pc_A,
 		priv_status_out => priv_status_A,
-		exc_out => open,
-		exc_code_out => open,
-		exc_data_out => open,
+		exc_out => exc_A,
+		exc_code_out => exc_code_A,
+		exc_data_out => exc_data_A,
 		debug_dump_out => debug_dump_A
 	);
 
 	--------------------------------- Execution ------------------------------------------
-
-	UB : bypass_unit PORT MAP(
-		reg_src1_D => reg_src1_D,
-		reg_src2_D => reg_src2_D,
-		reg_src1_v_D => reg_src1_v_D,
-		reg_src2_v_D => reg_src2_v_D,
-		inm_src2_v_D => inm_src2_v_D,
-		mem_write_D => mem_we_D,
-		reg_dest_A => reg_dest_A,
-		reg_we_A => reg_we_A,
-		reg_dest_L => reg_dest_L,
-		reg_we_L => reg_we_L,
-		reg_dest_C => reg_dest_C,
-		reg_we_C => reg_we_C,
-		mux_src1_D_BP => mux_src1_D_BP_ctrl,
-		mux_src2_D_BP => mux_src2_D_BP_ctrl,
-		mux_mem_data_D_BP => mux_mem_data_D_BP_ctrl,
-		mux_mem_data_A_BP => mux_mem_data_A_BP_ctrl,
-		mux_mem_data_L_BP => mux_mem_data_L_BP_ctrl
-	);
 
 	jump_or_branch_A <= branch_A OR jump_A;
 
@@ -981,6 +1102,8 @@ BEGIN
 		Dout => mem_data_A_BP
 	);
 
+	reg_A_L_reset <= reg_A_L_reset_DU OR exc_A_E;
+
 	reg_A_L : reg_AL PORT MAP(
 		clk => clk,
 		reset => reg_A_L_reset,
@@ -1007,19 +1130,22 @@ BEGIN
 
 	reg_status_A_L: reg_status PORT MAP(
 		clk => clk,
-		reset => reg_A_L_reset,
+		reset => reg_A_L_reset_DU,
 		we => reg_A_L_we,
 		pc_in => pc_A,
 		priv_status_in => priv_status_A,
-		exc_in => '0',
-		exc_code_in => (OTHERS => '0'),
-		exc_data_in => (OTHERS => '0'),
+		exc_new => exc_A_E,
+		exc_code_new => exc_code_A_E,
+		exc_data_new => exc_data_A_E,
+		exc_old => exc_A,
+		exc_code_old => exc_code_A,
+		exc_data_old => exc_data_A,
 		debug_dump_in => debug_dump_A,
 		pc_out => pc_L,
 		priv_status_out => priv_status_L,
-		exc_out => open,
-		exc_code_out => open,
-		exc_data_out => open,
+		exc_out => exc_L,
+		exc_code_out => exc_code_L,
+		exc_data_out => exc_data_L,
 		debug_dump_out => debug_dump_L
 	);
 
@@ -1032,6 +1158,7 @@ BEGIN
 		addr => ALU_out_L,
 		re => cache_re_L,
 		we => cache_we_L,
+		is_byte => byte_L,
 		state => state_L,
 		state_nx => state_nx_L,
 		hit => hit_L,
@@ -1039,6 +1166,7 @@ BEGIN
 		line_num => line_num_L,
 		line_we => line_we_L,
 		lru_line_num => lru_line_num_L,
+		invalid_access => invalid_access_L,
 		mem_req => mem_req_L,
 		mem_addr => mem_addr_L,
 		mem_we => mem_we_L,
@@ -1051,6 +1179,8 @@ BEGIN
 		ctrl => mux_mem_data_L_BP_ctrl,
 		Dout => mem_data_L_BP
 	);
+
+	reg_L_C_reset <= reg_L_C_reset_DU OR exc_L_E;
 
 	reg_L_C : reg_LC PORT MAP(
 		clk => clk,
@@ -1084,19 +1214,22 @@ BEGIN
 
 	reg_status_L_C : reg_status PORT MAP(
 		clk => clk,
-		reset => reg_L_C_reset,
+		reset => reg_L_C_reset_DU,
 		we => reg_L_C_we,
 		pc_in => pc_L,
 		priv_status_in => priv_status_L,
-		exc_in => '0',
-		exc_code_in => (OTHERS => '0'),
-		exc_data_in => (OTHERS => '0'),
+		exc_new => exc_L_E,
+		exc_code_new => exc_code_L_E,
+		exc_data_new => exc_data_L_E,
+		exc_old => exc_L,
+		exc_code_old => exc_code_L,
+		exc_data_old => exc_data_L,
 		debug_dump_in => debug_dump_L,
 		pc_out => pc_C,
 		priv_status_out => priv_status_C,
-		exc_out => open,
-		exc_code_out => open,
-		exc_data_out => open,
+		exc_out => exc_C,
+		exc_code_out => exc_code_C,
+		exc_data_out => exc_data_C,
 		debug_dump_out => debug_dump_C
 	);
 
@@ -1140,6 +1273,8 @@ BEGIN
 		Dout => reg_dest_C_M5
 	);
 
+	reg_C_W_reset <= reg_C_W_reset_DU OR exc_C_E;
+
 	reg_C_W: reg_CW PORT MAP(
 		clk => clk,
 		reset => reg_C_W_reset,
@@ -1149,39 +1284,42 @@ BEGIN
 		MUL_out_in => mul_out_M5,
 		mul_in => mul_M5,
 		reg_data_in => reg_data_C,
-		reg_we_out => reg_we_WB,
-		reg_dest_out => reg_dest_WB,
-		reg_data_out => reg_data_WB_tmp,		
-		MUL_out_out => mul_out_WB,
-		mul_out => mul_WB
+		reg_we_out => reg_we_W,
+		reg_dest_out => reg_dest_W,
+		reg_data_out => reg_data_W_tmp,
+		MUL_out_out => mul_out_W,
+		mul_out => mul_W
 	);
 
 	reg_status_C_W: reg_status PORT MAP(
 		clk => clk,
-		reset => reg_C_W_reset,
+		reset => reg_C_W_reset_DU,
 		we => reg_C_W_we,
 		pc_in => pc_C,
 		priv_status_in => priv_status_C,
-		exc_in => '0',
-		exc_code_in => (OTHERS => '0'),
-		exc_data_in => (OTHERS => '0'),
+		exc_new => exc_C_E,
+		exc_code_new => exc_code_C_E,
+		exc_data_new => exc_data_C_E,
+		exc_old => exc_C,
+		exc_code_old => exc_code_C,
+		exc_data_old => exc_data_C,
 		debug_dump_in => debug_dump_C,
-		pc_out => pc_WB,
-		priv_status_out => priv_status_WB,
-		exc_out => open,
-		exc_code_out => open,
-		exc_data_out => open,
-		debug_dump_out => debug_dump_WB
+		pc_out => pc_W,
+		priv_status_out => priv_status_W,
+		exc_out => exc_W,
+		exc_code_out => exc_code_W,
+		exc_data_out => exc_data_W,
+		debug_dump_out => debug_dump_W
 	);
 
 	mux_busW: mux2_32bits PORT MAP(
-		DIn0 => reg_data_WB_tmp,
-		DIn1 => mul_out_WB,
-		ctrl => mul_WB,
-		Dout => reg_data_WB
+		DIn0 => reg_data_W_tmp,
+		DIn1 => mul_out_W,
+		ctrl => mul_W,
+		Dout => reg_data_W
 	);
 
-	pc_out <= pc_WB;
+	pc_out <= pc_W;
 
 END structure;
 

@@ -62,7 +62,7 @@ def init_test(dut):
             do_dump = True
 
         # Check if dump has propagated
-        if dut.debug_dump_WB == 1:
+        if dut.debug_dump_W == 1:
             if dut.debug_dump_F == 0 and dut.debug_dump_D == 0 and dut.debug_dump_A == 0 and dut.debug_dump_C == 0:
                 # There is a bug: sometimes two debug signals are injected. I don't know why :(
                 do_dump = True

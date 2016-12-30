@@ -82,7 +82,7 @@ BEGIN
                 -- 256: memory line for address 0x1000
                 load_file("memory_boot", 256, ram);
                 -- 512: memory line for address 0x2000
-                load_file("memory_exc", 2048, ram);
+                load_file("memory_system", 512, ram);
                 cycle <= op_delay - 1;
             ELSE
                 IF req = '1' THEN

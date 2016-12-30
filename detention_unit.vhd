@@ -3,15 +3,13 @@ USE IEEE.STD_LOGIC_1164.ALL;
 
 ENTITY detention_unit IS
 	PORT(
-		reset 			: IN STD_LOGIC;
-		branch_D		: IN STD_LOGIC;
-		reg_src1_D 		: IN STD_LOGIC_VECTOR(4 DOWNTO 0);
-		reg_src2_D 		: IN STD_LOGIC_VECTOR(4 DOWNTO 0);
-		reg_dest_D		: IN STD_LOGIC_VECTOR(4 DOWNTO 0);
-		reg_src1_v_D	: IN STD_LOGIC;
-		reg_src2_v_D   	: IN STD_LOGIC;
-		mem_we_D		: IN STD_LOGIC;
-		branch_taken_A	: IN STD_LOGIC;
+		reset          : IN STD_LOGIC;
+		reg_src1_D     : IN STD_LOGIC_VECTOR(4 DOWNTO 0);
+		reg_src2_D     : IN STD_LOGIC_VECTOR(4 DOWNTO 0);
+		reg_dest_D     : IN STD_LOGIC_VECTOR(4 DOWNTO 0);
+		reg_src1_v_D   : IN STD_LOGIC;
+		reg_src2_v_D   : IN STD_LOGIC;
+		branch_taken_A : IN STD_LOGIC;
 		mul_D			: IN STD_LOGIC;
 		mul_M1 			: IN STD_LOGIC;
 		mul_M2 			: IN STD_LOGIC;
@@ -22,29 +20,31 @@ ENTITY detention_unit IS
 		reg_dest_M4		: IN STD_LOGIC_VECTOR(4 DOWNTO 0);
 		mul_M5			: IN STD_LOGIC;
 		reg_dest_M5		: IN STD_LOGIC_VECTOR(4 DOWNTO 0);
-		reg_dest_A     	: IN STD_LOGIC_VECTOR(4 DOWNTO 0);
-		reg_we_A       	: IN STD_LOGIC;
-		mem_read_A     	: IN STD_LOGIC;
-		reg_dest_L     	: IN STD_LOGIC_VECTOR(4 DOWNTO 0);
-		mem_read_L     	: IN STD_LOGIC;
-		reg_dest_C     	: IN STD_LOGIC_VECTOR(4 DOWNTO 0);
-		mem_read_C     	: IN STD_LOGIC;
-		done_F         	: IN STD_LOGIC;
-		done_L         	: IN STD_LOGIC;
-		conflict       	: OUT STD_LOGIC;
-		switch_ctrl    	: OUT STD_LOGIC;
-		reg_PC_reset   	: OUT STD_LOGIC;
-		reg_F_D_reset  	: OUT STD_LOGIC;
-		reg_D_A_reset  	: OUT STD_LOGIC;
-		reg_A_L_reset  	: OUT STD_LOGIC;
-		reg_L_C_reset  	: OUT STD_LOGIC;
-		reg_C_W_reset  	: OUT STD_LOGIC;
-		reg_PC_we      	: OUT STD_LOGIC;
-		reg_F_D_we     	: OUT STD_LOGIC;
-		reg_D_A_we     	: OUT STD_LOGIC;
-		reg_A_L_we     	: OUT STD_LOGIC;
-		reg_L_C_we     	: OUT STD_LOGIC;
-		reg_C_W_we     	: OUT STD_LOGIC
+		reg_dest_A     : IN STD_LOGIC_VECTOR(4 DOWNTO 0);
+		reg_we_A       : IN STD_LOGIC;
+		mem_read_A     : IN STD_LOGIC;
+		reg_dest_L     : IN STD_LOGIC_VECTOR(4 DOWNTO 0);
+		mem_read_L     : IN STD_LOGIC;
+		done_F         : IN STD_LOGIC;
+		done_L         : IN STD_LOGIC;
+		exc_D          : IN STD_LOGIC;
+		exc_A          : IN STD_LOGIC;
+		exc_L          : IN STD_LOGIC;
+		exc_C          : IN STD_LOGIC;
+		conflict       : OUT STD_LOGIC;
+		switch_ctrl    : OUT STD_LOGIC;
+		reg_PC_reset   : OUT STD_LOGIC;
+		reg_F_D_reset  : OUT STD_LOGIC;
+		reg_D_A_reset  : OUT STD_LOGIC;
+		reg_A_L_reset  : OUT STD_LOGIC;
+		reg_L_C_reset  : OUT STD_LOGIC;
+		reg_C_W_reset  : OUT STD_LOGIC;
+		reg_PC_we      : OUT STD_LOGIC;
+		reg_F_D_we     : OUT STD_LOGIC;
+		reg_D_A_we     : OUT STD_LOGIC;
+		reg_A_L_we     : OUT STD_LOGIC;
+		reg_L_C_we     : OUT STD_LOGIC;
+		reg_C_W_we     : OUT STD_LOGIC
 	);
 END detention_unit;
 
@@ -85,10 +85,10 @@ BEGIN
 	reg_C_W_we <= '1';
 
 	reg_PC_reset <= reset;
-	reg_F_D_reset <= reset OR branch_taken_A OR (NOT done_F AND done_L AND NOT conflict_MUL AND NOT conflict_i);
-	reg_D_A_reset <= reset OR branch_taken_A OR conflict_i;
-	reg_A_L_reset <= reset OR (conflict_MUL AND done_L);
-	reg_L_C_reset <= reset OR NOT done_L;
+	reg_F_D_reset <= reset OR branch_taken_A OR (NOT done_F AND done_L AND NOT conflict_MUL AND NOT conflict_i) OR exc_D OR exc_A OR exc_L OR exc_C;
+	reg_D_A_reset <= reset OR branch_taken_A OR conflict_i OR exc_A OR exc_L OR exc_C;
+	reg_A_L_reset <= reset OR (conflict_MUL AND done_L) OR exc_L OR exc_C;
+	reg_L_C_reset <= reset OR NOT done_L OR exc_C;
 	reg_C_W_reset <= reset;
 
 	conflict <= conflict_i;

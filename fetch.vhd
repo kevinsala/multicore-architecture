@@ -14,6 +14,7 @@ ENTITY fetch IS
         branch_taken : IN STD_LOGIC;
         inst : OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
         inst_v : OUT STD_LOGIC;
+        invalid_access : OUT STD_LOGIC;
         mem_req : OUT STD_LOGIC;
         mem_addr : OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
         mem_done : IN STD_LOGIC;
@@ -29,6 +30,7 @@ ARCHITECTURE structure OF fetch IS
 			addr : IN STD_LOGIC_VECTOR(31 DOWNTO 0);
 			data_out : OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
 			done : OUT STD_LOGIC;
+			invalid_access : OUT STD_LOGIC;
 			state : IN inst_cache_state_t;
 			state_nx : OUT inst_cache_state_t;
 			mem_req : OUT STD_LOGIC;
@@ -62,6 +64,7 @@ BEGIN
         addr => pc,
         data_out => cache_data_out,
         done => cache_done,
+        invalid_access => invalid_access,
         state => cache_state,
         state_nx => cache_state_nx,
         mem_req => mem_req,
