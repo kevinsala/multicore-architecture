@@ -215,7 +215,8 @@ ARCHITECTURE structure OF inkel_pentiun IS
 			byte : OUT STD_LOGIC;
 			mem_read : OUT STD_LOGIC;
 			mem_to_reg : OUT STD_LOGIC;
-			reg_we : OUT STD_LOGIC
+			reg_we : OUT STD_LOGIC;
+			invalid_inst : OUT STD_LOGIC
 		);
 	END COMPONENT;
 
@@ -482,6 +483,7 @@ ARCHITECTURE structure OF inkel_pentiun IS
 	SIGNAL mul_D : STD_LOGIC;
 	SIGNAL switch_ctrl : STD_LOGIC;
 	SIGNAL priv_status_D : STD_LOGIC;
+	SIGNAL invalid_inst_D : STD_LOGIC;
 	SIGNAL debug_dump_D : STD_LOGIC;
 	SIGNAL ALU_ctrl_D : STD_LOGIC_VECTOR(2 DOWNTO 0);
 	SIGNAL reg_src1_D : STD_LOGIC_VECTOR(4 DOWNTO 0);
@@ -679,7 +681,7 @@ BEGIN
 	----------------------------- Control -------------------------------
 
 	exc : exception_unit PORT MAP(
-		invalid_inst_D => '0',
+		invalid_inst_D => invalid_inst_D,
 		inst_D => inst_D,
 		invalid_access_A => '0',
 		mem_addr_A => alu_out_A,
@@ -837,7 +839,8 @@ BEGIN
 		byte => byte_D,
 		mem_read => mem_read_D,
 		mem_to_reg => mem_to_reg_D,
-		reg_we => reg_we_D
+		reg_we => reg_we_D,
+		invalid_inst => invalid_inst_D
 	);
 
 	Switch_det: Switch_UD PORT MAP(

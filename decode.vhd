@@ -24,7 +24,8 @@ ENTITY decode IS
 		byte : OUT STD_LOGIC;
 		mem_read : OUT STD_LOGIC;
 		mem_to_reg : OUT STD_LOGIC;
-		reg_we : OUT STD_LOGIC
+		reg_we : OUT STD_LOGIC;
+		invalid_inst : OUT STD_LOGIC
 	);
 END decode;
 
@@ -97,6 +98,14 @@ BEGIN
 							op_code_int = OP_MUL OR op_code_int = OP_LDW OR
 							op_code_int = OP_LDB OR op_code_int = OP_LI OR
 							op_code_int = OP_MOV);
+
+    invalid_inst <= NOT to_std_logic(op_code_int = OP_ADD OR op_code_int = OP_SUB OR
+									op_code_int = OP_MUL OR op_code_int = OP_LDB OR
+									op_code_int = OP_LDW OR op_code_int = OP_LI OR
+									op_code_int = OP_STB OR op_code_int = OP_STW OR
+									op_code_int = OP_MOV OR op_code_int = OP_BEQ OR
+									op_code_int = OP_BNE OR op_code_int = OP_JMP OR
+									op_code_int = OP_NOP);
 
 END structure;
 
