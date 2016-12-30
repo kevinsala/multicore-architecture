@@ -65,9 +65,9 @@ ARCHITECTURE structure OF inkel_pentiun IS
 		PORT(
 			invalid_inst_D : IN STD_LOGIC;
 			inst_D : IN STD_LOGIC_VECTOR(31 DOWNTO 0);
-			invalid_access_A : IN STD_LOGIC;
-			mem_addr_A : IN STD_LOGIC_VECTOR(31 DOWNTO 0);
 			overflow_A : IN STD_LOGIC;
+			invalid_access_L : IN STD_LOGIC;
+			mem_addr_L : IN STD_LOGIC_VECTOR(31 DOWNTO 0);
 			exc_F : OUT STD_LOGIC;
 			exc_code_F : OUT STD_LOGIC_VECTOR(1 DOWNTO 0);
 			exc_data_F : OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
@@ -116,23 +116,25 @@ ARCHITECTURE structure OF inkel_pentiun IS
 
 	COMPONENT lookup_stage IS
 		PORT(
-			clk          : IN  STD_LOGIC;
-			reset        : IN  STD_LOGIC;
-			debug_dump   : IN  STD_LOGIC;
-			addr         : IN  STD_LOGIC_VECTOR(31 DOWNTO 0);
-			re           : IN  STD_LOGIC;
-			we           : IN  STD_LOGIC;
-			state        : IN  data_cache_state_t;
-			state_nx     : OUT data_cache_state_t;
-			hit          : OUT STD_LOGIC;
-			done         : OUT STD_LOGIC;
-			line_num     : OUT INTEGER RANGE 0 TO 3;
-			line_we      : OUT STD_LOGIC;
-			lru_line_num : OUT INTEGER RANGE 0 TO 3;
-			mem_req      : OUT STD_LOGIC;
-			mem_addr     : OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
-			mem_we       : OUT STD_LOGIC;
-			mem_done     : IN  STD_LOGIC
+			clk            : IN  STD_LOGIC;
+			reset          : IN  STD_LOGIC;
+			debug_dump     : IN  STD_LOGIC;
+			addr           : IN  STD_LOGIC_VECTOR(31 DOWNTO 0);
+			re             : IN  STD_LOGIC;
+			we             : IN  STD_LOGIC;
+			is_byte        : IN  STD_LOGIC;
+			state          : IN  data_cache_state_t;
+			state_nx       : OUT data_cache_state_t;
+			hit            : OUT STD_LOGIC;
+			done           : OUT STD_LOGIC;
+			line_num       : OUT INTEGER RANGE 0 TO 3;
+			line_we        : OUT STD_LOGIC;
+			lru_line_num   : OUT INTEGER RANGE 0 TO 3;
+			invalid_access : OUT STD_LOGIC;
+			mem_req        : OUT STD_LOGIC;
+			mem_addr       : OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
+			mem_we         : OUT STD_LOGIC;
+			mem_done       : IN  STD_LOGIC
 		);
 	END COMPONENT;
 
@@ -547,6 +549,7 @@ ARCHITECTURE structure OF inkel_pentiun IS
 	SIGNAL reg_we_L : STD_LOGIC;
 	SIGNAL priv_status_L : STD_LOGIC;
 	SIGNAL debug_dump_L : STD_LOGIC;
+	SIGNAL invalid_access_L : STD_LOGIC;
 	SIGNAL reg_dest_L : STD_LOGIC_VECTOR(4 DOWNTO 0);
 	SIGNAL pc_L : STD_LOGIC_VECTOR(31 DOWNTO 0);
 	SIGNAL ALU_out_L : STD_LOGIC_VECTOR(31 DOWNTO 0);
@@ -683,9 +686,9 @@ BEGIN
 	exc : exception_unit PORT MAP(
 		invalid_inst_D => invalid_inst_D,
 		inst_D => inst_D,
-		invalid_access_A => '0',
-		mem_addr_A => alu_out_A,
 		overflow_A => '0',
+		invalid_access_L => invalid_access_L,
+		mem_addr_L => ALU_out_L,
 		exc_F => exc_F_E,
 		exc_code_F => exc_code_F_E,
 		exc_data_F => exc_data_F_E,
@@ -1095,6 +1098,7 @@ BEGIN
 		addr => ALU_out_L,
 		re => cache_re_L,
 		we => cache_we_L,
+		is_byte => byte_L,
 		state => state_L,
 		state_nx => state_nx_L,
 		hit => hit_L,
@@ -1102,6 +1106,7 @@ BEGIN
 		line_num => line_num_L,
 		line_we => line_we_L,
 		lru_line_num => lru_line_num_L,
+		invalid_access => invalid_access_L,
 		mem_req => mem_req_L,
 		mem_addr => mem_addr_L,
 		mem_we => mem_we_L,

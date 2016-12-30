@@ -5,9 +5,9 @@ USE ieee.std_logic_unsigned.ALL;
 ENTITY exception_unit IS
 	PORT (invalid_inst_D : IN STD_LOGIC;
 		inst_D : IN STD_LOGIC_VECTOR(31 DOWNTO 0);
-		invalid_access_A : IN STD_LOGIC;
-		mem_addr_A : IN STD_LOGIC_VECTOR(31 DOWNTO 0);
 		overflow_A : IN STD_LOGIC;
+		invalid_access_L : IN STD_LOGIC;
+		mem_addr_L : IN STD_LOGIC_VECTOR(31 DOWNTO 0);
 		exc_F : OUT STD_LOGIC;
 		exc_code_F : OUT STD_LOGIC_VECTOR(1 DOWNTO 0);
 		exc_data_F : OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
@@ -38,16 +38,16 @@ BEGIN
 	exc_data_D <= inst_D WHEN invalid_inst_D = '1' ELSE
 					(OTHERS => 'X');
 
-	exc_A <= invalid_access_A OR overflow_A;
-	exc_code_A <= "01" WHEN invalid_access_A = '1' ELSE
-					"10" WHEN overflow_A = '1' ELSE
+	exc_A <= overflow_A;
+	exc_code_A <= "10" WHEN overflow_A = '1' ELSE
 					(OTHERS => 'X');
-	exc_data_A <= mem_addr_A WHEN invalid_access_A = '1' ELSE
-					(OTHERS => 'X');
+	exc_data_A <= (OTHERS => 'X');
 
-	exc_L <= '0';
-	exc_code_L <= (OTHERS => 'X');
-	exc_data_L <= (OTHERS => 'X');
+	exc_L <= invalid_access_L;
+	exc_code_L <= "01" WHEN invalid_access_L = '1' ELSE
+					(OTHERS => 'X');
+	exc_data_L <= mem_addr_L WHEN invalid_access_L = '1' ELSE
+					(OTHERS => 'X');
 
 	exc_C <= '0';
 	exc_code_C <= (OTHERS => 'X');
