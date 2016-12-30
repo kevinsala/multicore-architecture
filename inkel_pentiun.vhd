@@ -77,7 +77,7 @@ ARCHITECTURE structure OF inkel_pentiun IS
 			exc_A : OUT STD_LOGIC;
 			exc_code_A : OUT STD_LOGIC_VECTOR(1 DOWNTO 0);
 			exc_data_A : OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
-				exc_L : OUT STD_LOGIC;
+			exc_L : OUT STD_LOGIC;
 			exc_code_L : OUT STD_LOGIC_VECTOR(1 DOWNTO 0);
 			exc_data_L : OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
 			exc_C : OUT STD_LOGIC;
@@ -92,6 +92,7 @@ ARCHITECTURE structure OF inkel_pentiun IS
 			reset : IN STD_LOGIC;
 			addr_jump : IN STD_LOGIC_VECTOR(31 DOWNTO 0);
 			branch_taken : IN STD_LOGIC;
+			exception : IN STD_LOGIC;
 			load_PC : IN STD_LOGIC;
 			pc : OUT STD_LOGIC_VECTOR(31 DOWNTO 0)
 		);
@@ -757,11 +758,12 @@ BEGIN
 		reset => reset_PC,
 		addr_jump => jump_addr_A,
 		branch_taken => branch_taken_A,
+		exception => exc_W,
 		load_PC => load_PC,
 		pc => pc_F
 	);
 
-	priv_status_F <= '0';
+	priv_status_F <= exc_W;
 
 	f: fetch PORT MAP(
 		clk => clk,
