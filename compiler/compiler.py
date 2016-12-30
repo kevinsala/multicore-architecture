@@ -25,12 +25,12 @@ def main():
             if len(l) != 0 and l[0] != "#":
                 if l[-1:] == ":":
                     # This is a label
-                    label = l[:-1]
+                    label_text = l[:-1]
                     for label in labels:
-                        if label.label == label:
-                            raise instruction.InvalidInstruction(inst)
+                        if label.label == label_text:
+                            raise instruction.InvalidInstruction(l)
 
-                    labels.append(Label(label, len(inst)))
+                    labels.append(Label(label_text, len(inst)))
                 else:
                     # This is an instruction
                     inst.append(instruction.Instruction(l))
@@ -41,8 +41,8 @@ def main():
                 if label.label == inst[i].label:
                     inst[i].set_offset(label.calc_offset(i))
 
-            if inst[i].offset == -1:
-                raise instruction.InvalidInstruction(inst)
+            if not inst[i].is_set_offset():
+                raise instruction.InvalidInstruction(inst[i].asm)
 
     with open(OUT_FILE, "w") as f:
         for i in inst:

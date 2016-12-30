@@ -8,12 +8,6 @@ class InvalidInstruction(Exception):
         return self.value
 
 class Instruction:
-    r1 = -1
-    r2 = -1
-    dst = -1
-    offset = 0
-    label = ""
-    asm = ""
 
     def _reg_to_num(self, reg):
         if reg[0] != 'r' and reg[0] != 'R':
@@ -26,6 +20,12 @@ class Instruction:
             return r
 
     def __init__(self, asm):
+        self.r1 = -1
+        self.r2 = -1
+        self.dst = -1
+        self.offset = 0
+        self.offset_set = False
+        self.label = ""
         self.asm = asm
         self.icode, args = self.asm.split(" ", 1)
         args = args.replace(" ","").split(",")
@@ -88,6 +88,7 @@ class Instruction:
             raise InvalidInstruction(self.asm)
 
     def set_offset(self, offset):
+        self.offset_set = True
         if self.itype == "m" or self.itype == "b":
             if offset > (2**14 - 1) or offset < (-1 * (2**15)):
                 raise InvalidInstruction(self.asm)
@@ -96,6 +97,9 @@ class Instruction:
                 raise InvalidInstruction(self.asm)
 
         self.offset = offset
+
+    def is_set_offset(self):
+        return self.offset_set
 
     def to_binary(self):
         encoded = 0
