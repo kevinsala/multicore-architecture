@@ -590,17 +590,6 @@ ARCHITECTURE structure OF inkel_pentiun IS
 	SIGNAL mux_mem_data_L_BP_ctrl : STD_LOGIC;
 BEGIN
 
-	----------------------------- Fetch -------------------------------
-
-	reg_pc: pc PORT MAP(
-		clk => clk,
-		reset => reset_PC,
-		addr_jump => jump_addr_A,
-		branch_taken => branch_taken_A,
-		load_PC => load_PC,
-		pc => pc_F
-	);
-
 	mem: memory PORT MAP(
 		clk => clk,
 		reset => reset,
@@ -615,6 +604,75 @@ BEGIN
 		d_data_in => mem_data_out_L,
 		f_data_out => mem_data_in_F,
 		d_data_out => mem_data_in_L
+	);
+
+	----------------------------- Control -------------------------------
+
+	DU : detention_unit PORT MAP(
+		reset => reset,
+		branch_D => branch_D,
+		reg_src1_D => reg_src1_D,
+		reg_src2_D => reg_src2_D,
+		reg_dest_D => reg_dest_D,
+		reg_src1_v_D => reg_src1_v_D,
+		reg_src2_v_D => reg_src2_v_D,
+		mem_we_D => mem_we_D,
+		branch_taken_A => branch_taken_A,
+		reg_dest_A => reg_dest_A,
+		reg_we_A => reg_we_A,
+		mem_read_A => mem_read_A,
+		mul_det_A => mul_det_A,
+		reg_dest_L => reg_dest_L,
+		mem_read_L => cache_re_L,
+		reg_dest_C => reg_dest_C,
+		mem_read_C => cache_re_C,
+		done_F => inst_v_F,
+		done_L => done_L,
+		conflict => conflict_D,
+		switch_ctrl => switch_ctrl,
+		reg_PC_reset => reset_PC,
+		reg_F_D_reset => reg_F_D_reset,
+		reg_D_A_reset => reg_D_A_reset,
+		reg_A_L_reset => reg_A_L_reset,
+		reg_L_C_reset => reg_L_C_reset,
+		reg_C_W_reset => reg_C_W_reset,
+		reg_PC_we => load_PC,
+		reg_F_D_we => reg_F_D_we,
+		reg_D_A_we => reg_D_A_we,
+		reg_A_L_we => reg_A_L_we,
+		reg_L_C_we => reg_L_C_we,
+		reg_C_W_we => reg_C_W_we
+	);
+
+	BP : bypass_unit PORT MAP(
+		reg_src1_D => reg_src1_D,
+		reg_src2_D => reg_src2_D,
+		reg_src1_v_D => reg_src1_v_D,
+		reg_src2_v_D => reg_src2_v_D,
+		inm_src2_v_D => inm_src2_v_D,
+		mem_write_D => mem_we_D,
+		reg_dest_A => reg_dest_A,
+		reg_we_A => reg_we_A,
+		reg_dest_L => reg_dest_L,
+		reg_we_L => reg_we_L,
+		reg_dest_C => reg_dest_C,
+		reg_we_C => reg_we_C,
+		mux_src1_D_BP => mux_src1_D_BP_ctrl,
+		mux_src2_D_BP => mux_src2_D_BP_ctrl,
+		mux_mem_data_D_BP => mux_mem_data_D_BP_ctrl,
+		mux_mem_data_A_BP => mux_mem_data_A_BP_ctrl,
+		mux_mem_data_L_BP => mux_mem_data_L_BP_ctrl
+	);
+
+	----------------------------- Fetch -------------------------------
+
+	reg_pc: pc PORT MAP(
+		clk => clk,
+		reset => reset_PC,
+		addr_jump => jump_addr_A,
+		branch_taken => branch_taken_A,
+		load_PC => load_PC,
+		pc => pc_F
 	);
 
 	f: fetch PORT MAP(
@@ -660,42 +718,6 @@ BEGIN
 	);
 
 	----------------------------- Decode -------------------------------
-
-	UD : detention_unit PORT MAP(
-		reset => reset,
-		branch_D => branch_D,
-		reg_src1_D => reg_src1_D,
-		reg_src2_D => reg_src2_D,
-		reg_dest_D => reg_dest_D,
-		reg_src1_v_D => reg_src1_v_D,
-		reg_src2_v_D => reg_src2_v_D,
-		mem_we_D => mem_we_D,
-		branch_taken_A => branch_taken_A,
-		reg_dest_A => reg_dest_A,
-		reg_we_A => reg_we_A,
-		mem_read_A => mem_read_A,
-		mul_det_A => mul_det_A,
-		reg_dest_L => reg_dest_L,
-		mem_read_L => cache_re_L,
-		reg_dest_C => reg_dest_C,
-		mem_read_C => cache_re_C,
-		done_F => inst_v_F,
-		done_L => done_L,
-		conflict => conflict_D,
-		switch_ctrl => switch_ctrl,
-		reg_PC_reset => reset_PC,
-		reg_F_D_reset => reg_F_D_reset,
-		reg_D_A_reset => reg_D_A_reset,
-		reg_A_L_reset => reg_A_L_reset,
-		reg_L_C_reset => reg_L_C_reset,
-		reg_C_W_reset => reg_C_W_reset,
-		reg_PC_we => load_PC,
-		reg_F_D_we => reg_F_D_we,
-		reg_D_A_we => reg_D_A_we,
-		reg_A_L_we => reg_A_L_we,
-		reg_L_C_we => reg_L_C_we,
-		reg_C_W_we => reg_C_W_we
-	);
 
 	d: decode PORT MAP(
 		inst => inst_D,
@@ -847,26 +869,6 @@ BEGIN
 	);
 
 	--------------------------------- Execution ------------------------------------------
-
-	UB : bypass_unit PORT MAP(
-		reg_src1_D => reg_src1_D,
-		reg_src2_D => reg_src2_D,
-		reg_src1_v_D => reg_src1_v_D,
-		reg_src2_v_D => reg_src2_v_D,
-		inm_src2_v_D => inm_src2_v_D,
-		mem_write_D => mem_we_D,
-		reg_dest_A => reg_dest_A,
-		reg_we_A => reg_we_A,
-		reg_dest_L => reg_dest_L,
-		reg_we_L => reg_we_L,
-		reg_dest_C => reg_dest_C,
-		reg_we_C => reg_we_C,
-		mux_src1_D_BP => mux_src1_D_BP_ctrl,
-		mux_src2_D_BP => mux_src2_D_BP_ctrl,
-		mux_mem_data_D_BP => mux_mem_data_D_BP_ctrl,
-		mux_mem_data_A_BP => mux_mem_data_A_BP_ctrl,
-		mux_mem_data_L_BP => mux_mem_data_L_BP_ctrl
-	);
 
 	jump_or_branch_A <= branch_A OR jump_A;
 
