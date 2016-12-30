@@ -550,12 +550,12 @@ ARCHITECTURE structure OF inkel_pentiun IS
 	SIGNAL line_data_C : STD_LOGIC_VECTOR(127 DOWNTO 0);
 
 	-- Writeback stage signals
-	SIGNAL reg_we_WB : STD_LOGIC;
-	SIGNAL priv_status_WB : STD_LOGIC;
-	SIGNAL debug_dump_WB : STD_LOGIC;
-	SIGNAL reg_dest_WB : STD_LOGIC_VECTOR(4 DOWNTO 0);
-	SIGNAL pc_WB : STD_LOGIC_VECTOR(31 DOWNTO 0);
-	SIGNAL reg_data_WB : STD_LOGIC_VECTOR(31 DOWNTO 0);
+	SIGNAL reg_we_W : STD_LOGIC;
+	SIGNAL priv_status_W : STD_LOGIC;
+	SIGNAL debug_dump_W : STD_LOGIC;
+	SIGNAL reg_dest_W : STD_LOGIC_VECTOR(4 DOWNTO 0);
+	SIGNAL pc_W : STD_LOGIC_VECTOR(31 DOWNTO 0);
+	SIGNAL reg_data_W : STD_LOGIC_VECTOR(31 DOWNTO 0);
 
 	-- Segmentation registers signals
 	SIGNAL reg_F_D_reset : STD_LOGIC;
@@ -767,14 +767,14 @@ BEGIN
 	rb: reg_bank PORT MAP(
 		clk => clk,
 		reset => reset,
-		debug_dump => debug_dump_WB,
+		debug_dump => debug_dump_W,
 		src1 => reg_src1_D,
 		src2 => reg_src2_D,
 		data1 => reg_data1_D,
 		data2 => reg_data2_D,
-		we => reg_we_WB,
-		dest => reg_dest_WB,
-		data_in => reg_data_WB
+		we => reg_we_W,
+		dest => reg_dest_W,
+		data_in => reg_data_W
 	);
 
 	mux_src1_D_BP : mux4_32bits PORT MAP(
@@ -1080,9 +1080,9 @@ BEGIN
 		reg_we_in => reg_we_C,
 		reg_dest_in => reg_dest_C,
 		reg_data_in => reg_data_C,
-		reg_we_out => reg_we_WB,
-		reg_dest_out => reg_dest_WB,
-		reg_data_out => reg_data_WB
+		reg_we_out => reg_we_W,
+		reg_dest_out => reg_dest_W,
+		reg_data_out => reg_data_W
 	);
 
 	reg_status_C_W: reg_status PORT MAP(
@@ -1095,15 +1095,15 @@ BEGIN
 		exc_code_in => (OTHERS => '0'),
 		exc_data_in => (OTHERS => '0'),
 		debug_dump_in => debug_dump_C,
-		pc_out => pc_WB,
-		priv_status_out => priv_status_WB,
+		pc_out => pc_W,
+		priv_status_out => priv_status_W,
 		exc_out => open,
 		exc_code_out => open,
 		exc_data_out => open,
-		debug_dump_out => debug_dump_WB
+		debug_dump_out => debug_dump_W
 	);
 
-	pc_out <= pc_WB;
+	pc_out <= pc_W;
 
 END structure;
 
