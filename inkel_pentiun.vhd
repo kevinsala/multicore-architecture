@@ -65,7 +65,6 @@ ARCHITECTURE structure OF inkel_pentiun IS
 		PORT(
 			invalid_inst_D : IN STD_LOGIC;
 			inst_D : IN STD_LOGIC_VECTOR(31 DOWNTO 0);
-			overflow_A : IN STD_LOGIC;
 			invalid_access_L : IN STD_LOGIC;
 			mem_addr_L : IN STD_LOGIC_VECTOR(31 DOWNTO 0);
 			exc_F : OUT STD_LOGIC;
@@ -686,7 +685,6 @@ BEGIN
 	exc : exception_unit PORT MAP(
 		invalid_inst_D => invalid_inst_D,
 		inst_D => inst_D,
-		overflow_A => '0',
 		invalid_access_L => invalid_access_L,
 		mem_addr_L => ALU_out_L,
 		exc_F => exc_F_E,

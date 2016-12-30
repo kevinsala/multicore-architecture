@@ -5,7 +5,6 @@ USE ieee.std_logic_unsigned.ALL;
 ENTITY exception_unit IS
 	PORT (invalid_inst_D : IN STD_LOGIC;
 		inst_D : IN STD_LOGIC_VECTOR(31 DOWNTO 0);
-		overflow_A : IN STD_LOGIC;
 		invalid_access_L : IN STD_LOGIC;
 		mem_addr_L : IN STD_LOGIC_VECTOR(31 DOWNTO 0);
 		exc_F : OUT STD_LOGIC;
@@ -38,9 +37,8 @@ BEGIN
 	exc_data_D <= inst_D WHEN invalid_inst_D = '1' ELSE
 					(OTHERS => 'X');
 
-	exc_A <= overflow_A;
-	exc_code_A <= "10" WHEN overflow_A = '1' ELSE
-					(OTHERS => 'X');
+	exc_A <= '0';
+	exc_code_A <= (OTHERS => 'X');
 	exc_data_A <= (OTHERS => 'X');
 
 	exc_L <= invalid_access_L;
