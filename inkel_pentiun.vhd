@@ -11,12 +11,12 @@ ENTITY inkel_pentiun IS
 END inkel_pentiun;
 
 ARCHITECTURE structure OF inkel_pentiun IS
-	COMPONENT mux2_1 IS
+	COMPONENT Mux2_1bit IS
 		PORT(
-			DIn0 : IN  STD_LOGIC_VECTOR(31 DOWNTO 0);
-			DIn1 : IN  STD_LOGIC_VECTOR(31 DOWNTO 0);
+			DIn0 : IN  STD_LOGIC;
+			DIn1 : IN  STD_LOGIC;
 			ctrl : IN  STD_LOGIC;
-			Dout : OUT STD_LOGIC_VECTOR(31 DOWNTO 0)
+			Dout : OUT STD_LOGIC
 		);
 	END COMPONENT;
 
@@ -145,6 +145,15 @@ ARCHITECTURE structure OF inkel_pentiun IS
 		);
 	END COMPONENT;
 
+	COMPONENT mux2_5bits IS
+		Port(
+			Din0 : in STD_LOGIC_VECTOR(4 downto 0);
+			Din1 : in STD_LOGIC_VECTOR(4 downto 0);
+			ctrl : in STD_LOGIC;
+			Dout : out STD_LOGIC_VECTOR(4 downto 0)
+		);
+	END COMPONENT;
+
 	COMPONENT reg_bank IS
 		PORT(
 			clk : IN STD_LOGIC;
@@ -218,10 +227,19 @@ ARCHITECTURE structure OF inkel_pentiun IS
 			reg_src2_v_D   : IN STD_LOGIC;
 			mem_we_D       : IN STD_LOGIC;
 			branch_taken_A : IN STD_LOGIC;
+			mul_D 			: IN STD_LOGIC;
+			mul_M1			: IN STD_LOGIC;
+			mul_M2			: IN STD_LOGIC;
+			reg_dest_M2 	: IN STD_LOGIC_VECTOR(4 downto 0);
+			mul_M3			: IN STD_LOGIC;
+			reg_dest_M3 	: IN STD_LOGIC_VECTOR(4 downto 0);
+			mul_M4			: IN STD_LOGIC;
+			reg_dest_M4 	: IN STD_LOGIC_VECTOR(4 downto 0);
+			reg_dest_M5 	: IN STD_LOGIC_VECTOR(4 downto 0);
+			mul_M5 			: IN STD_LOGIC;
 			reg_dest_A     : IN STD_LOGIC_VECTOR(4 DOWNTO 0);
 			reg_we_A       : IN STD_LOGIC;
 			mem_read_A     : IN STD_LOGIC;
-			mul_det_A      : IN STD_LOGIC;
 			reg_dest_L     : IN STD_LOGIC_VECTOR(4 DOWNTO 0);
 			mem_read_L     : IN STD_LOGIC;
 			reg_dest_C     : IN STD_LOGIC_VECTOR(4 DOWNTO 0);
@@ -313,17 +331,27 @@ ARCHITECTURE structure OF inkel_pentiun IS
 		);
 	END COMPONENT;
 
-	COMPONENT ALU_MUL IS
+	COMPONENT ALU_MUL_seg IS
 		PORT(
 			clk : IN STD_LOGIC;
 			reset : IN STD_LOGIC;
 			load : IN STD_LOGIC;
-			DA : IN STD_LOGIC_VECTOR (31 downto 0); --entrada 1
-			DB : IN STD_LOGIC_VECTOR (31 downto 0); --entrada 2
-			--Counter : OUT STD_LOGIC_VECTOR(2 downto 0); --contador de los ciclos restantes para la multiplicacion
-			Mul_ready : OUT STD_LOGIC;
-			Dout : OUT STD_LOGIC_VECTOR (31 downto 0)
-		);
+			done_L : IN STD_LOGIC;
+			DA : IN  STD_LOGIC_VECTOR (31 downto 0); --entrada 1
+			DB : IN  STD_LOGIC_VECTOR (31 downto 0); --entrada 2
+			reg_dest_in : IN STD_LOGIC_VECTOR(4 downto 0);
+			reg_we_in : IN STD_LOGIC;
+			M2_mul : OUT STD_LOGIC;
+			reg_dest_M2 : OUT STD_LOGIC_VECTOR(4 downto 0);
+			M3_mul : OUT STD_LOGIC;
+			reg_dest_M3 : OUT STD_LOGIC_VECTOR(4 downto 0);
+			M4_mul : OUT STD_LOGIC;
+			reg_dest_M4 : OUT STD_LOGIC_VECTOR(4 downto 0);
+			M5_mul : OUT STD_LOGIC;
+			reg_dest_out : OUT STD_LOGIC_VECTOR(4 downto 0);
+			reg_we_out : OUT STD_LOGIC;
+			Dout : OUT  STD_LOGIC_VECTOR (31 downto 0)
+		); 
 	END COMPONENT;
 
 	COMPONENT Switch_UD IS
@@ -415,10 +443,14 @@ ARCHITECTURE structure OF inkel_pentiun IS
 			we : IN STD_LOGIC;
 			reg_we_in : IN STD_LOGIC;
 			reg_dest_in : IN STD_LOGIC_VECTOR(4 DOWNTO 0);
+			MUL_out_in : IN STD_LOGIC_VECTOR(31 DOWNTO 0);
+			mul_in : IN STD_LOGIC;
 			reg_data_in : IN STD_LOGIC_VECTOR(31 DOWNTO 0);
 			reg_we_out : OUT STD_LOGIC;
 			reg_dest_out : OUT STD_LOGIC_VECTOR(4 DOWNTO 0);
-			reg_data_out : OUT STD_LOGIC_VECTOR(31 DOWNTO 0)
+			reg_data_out : OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
+			MUL_out_out : OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
+			mul_out : OUT STD_LOGIC
 		);
 	END COMPONENT;
 
@@ -474,9 +506,6 @@ ARCHITECTURE structure OF inkel_pentiun IS
 	SIGNAL branch_taken_A : STD_LOGIC;
 	SIGNAL mem_read_A : STD_LOGIC;
 	SIGNAL mem_to_reg_A : STD_LOGIC;
-	SIGNAL mul_det_A : STD_LOGIC;
-	SIGNAL mul_ready_A : STD_LOGIC;
-	SIGNAL mul_A : STD_LOGIC;
 	SIGNAL reg_src1_v_A : STD_LOGIC;
 	SIGNAL reg_src2_v_A : STD_LOGIC;
 	SIGNAL inm_src2_v_A : STD_LOGIC;
@@ -496,9 +525,7 @@ ARCHITECTURE structure OF inkel_pentiun IS
 	SIGNAL inm_ext_A : STD_LOGIC_VECTOR(31 DOWNTO 0);
 	SIGNAL ALU_data1_A : STD_LOGIC_VECTOR(31 DOWNTO 0);
 	SIGNAL ALU_data2_A : STD_LOGIC_VECTOR(31 DOWNTO 0);
-	SIGNAL ALU_out_tmp : STD_LOGIC_VECTOR(31 DOWNTO 0);
 	SIGNAL ALU_out_A : STD_LOGIC_VECTOR(31 DOWNTO 0);
-	SIGNAL mul_out_tmp : STD_LOGIC_VECTOR(31 DOWNTO 0);
 	SIGNAL mem_data_A : STD_LOGIC_VECTOR(31 DOWNTO 0);
 	SIGNAL mem_data_A_BP : STD_LOGIC_VECTOR(31 DOWNTO 0);
 
@@ -548,14 +575,32 @@ ARCHITECTURE structure OF inkel_pentiun IS
 	SIGNAL cache_data_out_C : STD_LOGIC_VECTOR(31 DOWNTO 0);
 	SIGNAL reg_data_C : STD_LOGIC_VECTOR(31 DOWNTO 0);
 	SIGNAL line_data_C : STD_LOGIC_VECTOR(127 DOWNTO 0);
+	SIGNAL reg_we_C_M5 : STD_LOGIC;
+	SIGNAL reg_dest_C_M5 : STD_LOGIC_VECTOR(4 DOWNTO 0);
+
+	-- Mul stage signals
+	SIGNAL mul_M1 : STD_LOGIC;
+	SIGNAL mul_M2 : STD_LOGIC;
+	SIGNAL reg_dest_M2 : STD_LOGIC_VECTOR(4 downto 0);
+	SIGNAL mul_M3 : STD_LOGIC;
+	SIGNAL reg_dest_M3 : STD_LOGIC_VECTOR(4 downto 0);
+	SIGNAL mul_M4 : STD_LOGIC;
+	SIGNAL reg_dest_M4 : STD_LOGIC_VECTOR(4 downto 0);
+	SIGNAL mul_M5 : STD_LOGIC;
+	SIGNAL mul_out_M5 : STD_LOGIC_VECTOR(31 downto 0);
+	SIGNAL reg_dest_M5 : STD_LOGIC_VECTOR(4 downto 0);
+	SIGNAL reg_we_M5 : STD_LOGIC;
 
 	-- Writeback stage signals
 	SIGNAL reg_we_WB : STD_LOGIC;
 	SIGNAL priv_status_WB : STD_LOGIC;
 	SIGNAL debug_dump_WB : STD_LOGIC;
+	SIGNAL mul_WB : STD_LOGIC;
 	SIGNAL reg_dest_WB : STD_LOGIC_VECTOR(4 DOWNTO 0);
 	SIGNAL pc_WB : STD_LOGIC_VECTOR(31 DOWNTO 0);
 	SIGNAL reg_data_WB : STD_LOGIC_VECTOR(31 DOWNTO 0);
+	SIGNAL reg_data_WB_tmp : STD_LOGIC_VECTOR(31 DOWNTO 0);
+	SIGNAL mul_out_WB : STD_LOGIC_VECTOR(31 DOWNTO 0);
 
 	-- Segmentation registers signals
 	SIGNAL reg_F_D_reset : STD_LOGIC;
@@ -671,10 +716,19 @@ BEGIN
 		reg_src2_v_D => reg_src2_v_D,
 		mem_we_D => mem_we_D,
 		branch_taken_A => branch_taken_A,
+		mul_D => mul_UD,
+		mul_M1 => mul_M1,
+		mul_M2 => mul_M2,
+		reg_dest_M2 => reg_dest_M2,
+		mul_M3 => mul_M3,
+		reg_dest_M3 => reg_dest_M3,
+		mul_M4 => mul_M4,
+		reg_dest_M4 => reg_dest_M4,
+		mul_M5 => mul_M5,
+		reg_dest_M5 => reg_dest_M5,
 		reg_dest_A => reg_dest_A,
 		reg_we_A => reg_we_A,
 		mem_read_A => mem_read_A,
-		mul_det_A => mul_det_A,
 		reg_dest_L => reg_dest_L,
 		mem_read_L => cache_re_L,
 		reg_dest_C => reg_dest_C,
@@ -806,7 +860,7 @@ BEGIN
 		reg_data1_in => data1_BP_D,
 		reg_data2_in => data2_BP_D,
 		mem_data_in => mem_data_D,
-		mul_out => mul_A,
+		mul_out => mul_M1,
 		mem_we_out => mem_we_A,
 		byte_out => byte_A,
 		mem_read_out => mem_read_A,
@@ -870,14 +924,14 @@ BEGIN
 
 	jump_or_branch_A <= branch_A OR jump_A;
 
-	mux_src1_A: mux2_1 PORT MAP(
+	mux_src1_A: mux2_32bits PORT MAP(
 		DIn0 => reg_data1_A,
 		Din1 => pc_A,
 		ctrl => jump_or_branch_A,
 		Dout => ALU_data1_A
 	);
 
-	mux_src2_A: mux2_1 PORT MAP(
+	mux_src2_A: mux2_32bits PORT MAP(
 		DIn0 => reg_data2_A,
 		Din1 => inm_ext_A,
 		ctrl => inm_src2_v_A,
@@ -892,30 +946,31 @@ BEGIN
 		DA => ALU_data1_A,
 		DB => ALU_data2_A,
 		ALUctrl => ALU_ctrl_A,
-		Dout => ALU_out_tmp
-	);
-
-	jump_addr_A <= ALU_out_tmp;
-
-	Mul_unit: ALU_MUL PORT MAP(
-		clk => clk,
-		reset => reset,
-		load => mul_A,
-		DA => reg_data1_A,
-		DB => ALU_data2_A,
-		--Counter => Mul_counter,
-		Mul_ready => mul_ready_A,
-		Dout => mul_out_tmp
-	);
-
-	mux_alu: mux2_32bits PORT MAP(
-		Din0 => ALU_out_tmp,
-		Din1 => mul_out_tmp,
-		ctrl => mul_A,
 		Dout => ALU_out_A
 	);
 
-	mul_det_A <= mul_A AND NOT(mul_ready_A);
+	jump_addr_A <= ALU_out_A;
+
+	Mul_pipeline: ALU_MUL_seg PORT MAP(
+		clk => clk,
+		reset => reset,
+		load => mul_M1,
+		done_L => done_L,
+		DA => reg_data1_A,
+		DB => reg_data2_A,
+		reg_dest_in => reg_dest_A,
+		reg_we_in => reg_we_A,
+		M2_mul => mul_M2,
+		reg_dest_M2 => reg_dest_M2,
+		M3_mul => mul_M3,
+		reg_dest_M3 => reg_dest_M3,
+		M4_mul => mul_M4,
+		reg_dest_M4 => reg_dest_M4,
+		M5_mul => mul_M5,
+		reg_dest_out => reg_dest_M5,
+		reg_we_out => reg_we_M5,
+		Dout => mul_out_M5
+	);
 
 	mux_mem_data_A_BP : mux4_32bits PORT MAP(
 		Din0 => mem_data_A,
@@ -1064,23 +1119,41 @@ BEGIN
 		mem_data_out => mem_data_out_L
 	);
 
-	mux_reg_data_C: mux2_1 PORT MAP(
+	mux_reg_data_C: mux2_32bits PORT MAP(
 		Din0 => ALU_out_C,
 		DIn1 => cache_data_out_C,
 		ctrl => mem_to_reg_C,
 		Dout => reg_data_C
 	);
 
+	mux_reg_we: Mux2_1bit PORT MAP(
+		DIn0 => reg_we_C,
+		DIn1 => reg_we_M5,
+		ctrl => mul_M5,
+		Dout => reg_we_C_M5
+	);
+
+	mux_reg_dest: mux2_5bits PORT MAP(
+		DIn0 => reg_dest_C,
+		DIn1 => reg_dest_M5,
+		ctrl => mul_M5,
+		Dout => reg_dest_C_M5
+	);
+
 	reg_C_W: reg_CW PORT MAP(
 		clk => clk,
 		reset => reg_C_W_reset,
 		we => reg_C_W_we,
-		reg_we_in => reg_we_C,
-		reg_dest_in => reg_dest_C,
+		reg_we_in => reg_we_C_M5,
+		reg_dest_in => reg_dest_C_M5,
+		MUL_out_in => mul_out_M5,
+		mul_in => mul_M5,
 		reg_data_in => reg_data_C,
 		reg_we_out => reg_we_WB,
 		reg_dest_out => reg_dest_WB,
-		reg_data_out => reg_data_WB
+		reg_data_out => reg_data_WB_tmp,		
+		MUL_out_out => mul_out_WB,
+		mul_out => mul_WB
 	);
 
 	reg_status_C_W: reg_status PORT MAP(
@@ -1099,6 +1172,13 @@ BEGIN
 		exc_code_out => open,
 		exc_data_out => open,
 		debug_dump_out => debug_dump_WB
+	);
+
+	mux_busW: mux2_32bits PORT MAP(
+		DIn0 => reg_data_WB_tmp,
+		DIn1 => mul_out_WB,
+		ctrl => mul_WB,
+		Dout => reg_data_WB
 	);
 
 	pc_out <= pc_WB;
