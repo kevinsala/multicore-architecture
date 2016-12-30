@@ -4,13 +4,11 @@ USE IEEE.STD_LOGIC_1164.ALL;
 ENTITY detention_unit IS
 	PORT(
 		reset          : IN STD_LOGIC;
-		branch_D       : IN STD_LOGIC;
 		reg_src1_D     : IN STD_LOGIC_VECTOR(4 DOWNTO 0);
 		reg_src2_D     : IN STD_LOGIC_VECTOR(4 DOWNTO 0);
 		reg_dest_D     : IN STD_LOGIC_VECTOR(4 DOWNTO 0);
 		reg_src1_v_D   : IN STD_LOGIC;
 		reg_src2_v_D   : IN STD_LOGIC;
-		mem_we_D       : IN STD_LOGIC;
 		branch_taken_A : IN STD_LOGIC;
 		reg_dest_A     : IN STD_LOGIC_VECTOR(4 DOWNTO 0);
 		reg_we_A       : IN STD_LOGIC;
@@ -18,8 +16,6 @@ ENTITY detention_unit IS
 		mul_det_A      : IN STD_LOGIC;
 		reg_dest_L     : IN STD_LOGIC_VECTOR(4 DOWNTO 0);
 		mem_read_L     : IN STD_LOGIC;
-		reg_dest_C     : IN STD_LOGIC_VECTOR(4 DOWNTO 0);
-		mem_read_C     : IN STD_LOGIC;
 		done_F         : IN STD_LOGIC;
 		done_L         : IN STD_LOGIC;
 		conflict       : OUT STD_LOGIC;

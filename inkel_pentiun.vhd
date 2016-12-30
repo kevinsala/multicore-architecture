@@ -220,7 +220,6 @@ ARCHITECTURE structure OF inkel_pentiun IS
 			reg_src1_v_D      : IN STD_LOGIC;
 			reg_src2_v_D      : IN STD_LOGIC;
 			inm_src2_v_D      : IN STD_LOGIC;
-			mem_write_D       : IN STD_LOGIC;
 			reg_dest_A        : IN STD_LOGIC_VECTOR (4 DOWNTO 0);
 			reg_we_A          : IN STD_LOGIC;
 			reg_dest_L        : IN STD_LOGIC_VECTOR (4 DOWNTO 0);
@@ -238,13 +237,11 @@ ARCHITECTURE structure OF inkel_pentiun IS
 	COMPONENT detention_unit IS
 		PORT(
 			reset          : IN STD_LOGIC;
-			branch_D       : IN STD_LOGIC;
 			reg_src1_D     : IN STD_LOGIC_VECTOR(4 DOWNTO 0);
 			reg_src2_D     : IN STD_LOGIC_VECTOR(4 DOWNTO 0);
 			reg_dest_D     : IN STD_LOGIC_VECTOR(4 DOWNTO 0);
 			reg_src1_v_D   : IN STD_LOGIC;
 			reg_src2_v_D   : IN STD_LOGIC;
-			mem_we_D       : IN STD_LOGIC;
 			branch_taken_A : IN STD_LOGIC;
 			reg_dest_A     : IN STD_LOGIC_VECTOR(4 DOWNTO 0);
 			reg_we_A       : IN STD_LOGIC;
@@ -252,8 +249,6 @@ ARCHITECTURE structure OF inkel_pentiun IS
 			mul_det_A      : IN STD_LOGIC;
 			reg_dest_L     : IN STD_LOGIC_VECTOR(4 DOWNTO 0);
 			mem_read_L     : IN STD_LOGIC;
-			reg_dest_C     : IN STD_LOGIC_VECTOR(4 DOWNTO 0);
-			mem_read_C     : IN STD_LOGIC;
 			done_F         : IN STD_LOGIC;
 			done_L         : IN STD_LOGIC;
 			conflict       : OUT STD_LOGIC;
@@ -698,13 +693,11 @@ BEGIN
 
 	DU : detention_unit PORT MAP(
 		reset => reset,
-		branch_D => branch_D,
 		reg_src1_D => reg_src1_D,
 		reg_src2_D => reg_src2_D,
 		reg_dest_D => reg_dest_D,
 		reg_src1_v_D => reg_src1_v_D,
 		reg_src2_v_D => reg_src2_v_D,
-		mem_we_D => mem_we_D,
 		branch_taken_A => branch_taken_A,
 		reg_dest_A => reg_dest_A,
 		reg_we_A => reg_we_A,
@@ -712,8 +705,6 @@ BEGIN
 		mul_det_A => mul_det_A,
 		reg_dest_L => reg_dest_L,
 		mem_read_L => cache_re_L,
-		reg_dest_C => reg_dest_C,
-		mem_read_C => cache_re_C,
 		done_F => inst_v_F,
 		done_L => done_L,
 		conflict => conflict_D,
@@ -738,7 +729,6 @@ BEGIN
 		reg_src1_v_D => reg_src1_v_D,
 		reg_src2_v_D => reg_src2_v_D,
 		inm_src2_v_D => inm_src2_v_D,
-		mem_write_D => mem_we_D,
 		reg_dest_A => reg_dest_A,
 		reg_we_A => reg_we_A,
 		reg_dest_L => reg_dest_L,

@@ -8,7 +8,6 @@ ENTITY bypass_unit IS
 		reg_src1_v_D      : IN STD_LOGIC;
 		reg_src2_v_D      : IN STD_LOGIC;
 		inm_src2_v_D      : IN STD_LOGIC;
-		mem_write_D       : IN STD_LOGIC;
 		reg_dest_A        : IN STD_LOGIC_VECTOR (4 DOWNTO 0);
 		reg_we_A          : IN STD_LOGIC;
 		reg_dest_L        : IN STD_LOGIC_VECTOR (4 DOWNTO 0);
