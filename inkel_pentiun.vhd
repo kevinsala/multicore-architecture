@@ -251,6 +251,10 @@ ARCHITECTURE structure OF inkel_pentiun IS
 			mem_read_L     : IN STD_LOGIC;
 			done_F         : IN STD_LOGIC;
 			done_L         : IN STD_LOGIC;
+			exc_D          : IN STD_LOGIC;
+			exc_A          : IN STD_LOGIC;
+			exc_L          : IN STD_LOGIC;
+			exc_C          : IN STD_LOGIC;
 			conflict       : OUT STD_LOGIC;
 			switch_ctrl    : OUT STD_LOGIC;
 			reg_PC_reset   : OUT STD_LOGIC;
@@ -707,6 +711,10 @@ BEGIN
 		mem_read_L => cache_re_L,
 		done_F => inst_v_F,
 		done_L => done_L,
+		exc_D => exc_D_E,
+		exc_A => exc_A_E,
+		exc_L => exc_L_E,
+		exc_C => exc_C_E,
 		conflict => conflict_D,
 		switch_ctrl => switch_ctrl,
 		reg_PC_reset => reset_PC,

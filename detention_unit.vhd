@@ -18,6 +18,10 @@ ENTITY detention_unit IS
 		mem_read_L     : IN STD_LOGIC;
 		done_F         : IN STD_LOGIC;
 		done_L         : IN STD_LOGIC;
+		exc_D          : IN STD_LOGIC;
+		exc_A          : IN STD_LOGIC;
+		exc_L          : IN STD_LOGIC;
+		exc_C          : IN STD_LOGIC;
 		conflict       : OUT STD_LOGIC;
 		switch_ctrl    : OUT STD_LOGIC;
 		reg_PC_reset   : OUT STD_LOGIC;
@@ -64,10 +68,10 @@ BEGIN
 	reg_C_W_we <= '1';
 
 	reg_PC_reset <= reset;
-	reg_F_D_reset <= reset OR branch_taken_A OR (NOT done_F AND done_L);
-	reg_D_A_reset <= reset OR branch_taken_A OR conflict_i;
-	reg_A_L_reset <= reset OR conflict_MUL;
-	reg_L_C_reset <= reset OR NOT done_L;
+	reg_F_D_reset <= reset OR branch_taken_A OR (NOT done_F AND done_L) OR exc_D OR exc_A OR exc_L OR exc_C;
+	reg_D_A_reset <= reset OR branch_taken_A OR conflict_i OR exc_A OR exc_L OR exc_C;
+	reg_A_L_reset <= reset OR conflict_MUL OR exc_L OR exc_C;
+	reg_L_C_reset <= reset OR NOT done_L OR exc_C;
 	reg_C_W_reset <= reset;
 
 	conflict <= conflict_i;
