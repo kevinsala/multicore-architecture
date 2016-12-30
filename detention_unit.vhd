@@ -16,9 +16,9 @@ ENTITY detention_unit IS
 		mul_M1	  	   : IN STD_LOGIC;
 		mul_M2	  	   : IN STD_LOGIC;
 		reg_dest_M2		: IN STD_LOGIC_VECTOR(4 DOWNTO 0);
-		mul_M3	  	   : IN STD_LOGIC;
+		mul_M3 			: IN STD_LOGIC;
 		reg_dest_M3		: IN STD_LOGIC_VECTOR(4 DOWNTO 0);
-		mul_M4	  	   : IN STD_LOGIC;
+		mul_M4 			: IN STD_LOGIC;
 		reg_dest_M4		: IN STD_LOGIC_VECTOR(4 DOWNTO 0);
 		mul_M5	  	   : IN STD_LOGIC;
 		reg_dest_M5		: IN STD_LOGIC_VECTOR(4 DOWNTO 0);

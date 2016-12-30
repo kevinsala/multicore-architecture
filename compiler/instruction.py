@@ -50,7 +50,15 @@ class Instruction:
             mem_reg = mem_reg[:-1]
             self.set_offset(int(mem_offset, 0))
             self.r1 = self._reg_to_num(mem_reg)
-        elif self.icode == "beq":
+        elif self.icode == "mov":
+            if len(args) != 2:
+                raise InvalidInstruction(self.asm)
+
+            self.itype = "m"
+            self.dst = self._reg_to_num(args[0])
+            self.r1 = self._reg_to_num(args[1])
+            self.set_offset(0)
+        elif self.icode == "beq" or self.icode == "bne":
             if len(args) != 3:
                 raise InvalidInstruction(self.asm)
 
@@ -111,6 +119,8 @@ class Instruction:
                 eicode = 18
             elif self.icode == "stw":
                 eicode = 19
+            elif self.icode == "mov":
+                eicode = 20
             else:
                 raise
 
@@ -118,6 +128,8 @@ class Instruction:
         elif self.itype == "b":
             if self.icode == "beq":
                 eicode = 48
+            elif self.icode == "bne":
+                eicode = 50
             else:
                 raise
 

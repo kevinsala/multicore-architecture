@@ -11,12 +11,12 @@ ENTITY inkel_pentiun IS
 END inkel_pentiun;
 
 ARCHITECTURE structure OF inkel_pentiun IS
-	COMPONENT mux2_1 IS
+	COMPONENT Mux2_1bit IS
 		PORT(
-			DIn0 : IN  STD_LOGIC_VECTOR(31 DOWNTO 0);
-			DIn1 : IN  STD_LOGIC_VECTOR(31 DOWNTO 0);
+			DIn0 : IN  STD_LOGIC;
+			DIn1 : IN  STD_LOGIC;
 			ctrl : IN  STD_LOGIC;
-			Dout : OUT STD_LOGIC_VECTOR(31 DOWNTO 0)
+			Dout : OUT STD_LOGIC
 		);
 	END COMPONENT;
 
@@ -255,6 +255,7 @@ ARCHITECTURE structure OF inkel_pentiun IS
 			reg_dest_M3 	: IN STD_LOGIC_VECTOR(4 downto 0);
 			mul_M4			: IN STD_LOGIC;
 			reg_dest_M4 	: IN STD_LOGIC_VECTOR(4 downto 0);
+			reg_dest_M5 	: IN STD_LOGIC_VECTOR(4 downto 0);
 			mul_M5 			: IN STD_LOGIC;
 			reg_dest_A     : IN STD_LOGIC_VECTOR(4 DOWNTO 0);
 			reg_we_A       : IN STD_LOGIC;
@@ -347,6 +348,7 @@ ARCHITECTURE structure OF inkel_pentiun IS
 			clk : IN STD_LOGIC;
 			reset : IN STD_LOGIC;
 			load : IN STD_LOGIC;
+			done_L : IN STD_LOGIC;
 			DA : IN  STD_LOGIC_VECTOR (31 downto 0); --entrada 1
 			DB : IN  STD_LOGIC_VECTOR (31 downto 0); --entrada 2
 			reg_dest_in : IN STD_LOGIC_VECTOR(4 downto 0);
@@ -583,6 +585,8 @@ ARCHITECTURE structure OF inkel_pentiun IS
 	SIGNAL cache_data_in_C : STD_LOGIC_VECTOR(31 DOWNTO 0);
 	SIGNAL cache_data_out_C : STD_LOGIC_VECTOR(31 DOWNTO 0);
 	SIGNAL mem_data_C_BP : STD_LOGIC_VECTOR(31 DOWNTO 0);
+	SIGNAL reg_we_C_M5 : STD_LOGIC;
+	SIGNAL reg_dest_C_M5 : STD_LOGIC_VECTOR(4 DOWNTO 0);
 
 	-- Mul stage signals
 	SIGNAL mul_M1 : STD_LOGIC;
@@ -604,7 +608,6 @@ ARCHITECTURE structure OF inkel_pentiun IS
 	SIGNAL debug_dump_WB : STD_LOGIC;
 	SIGNAL mul_WB : STD_LOGIC;
 	SIGNAL reg_dest_WB : STD_LOGIC_VECTOR(4 DOWNTO 0);
-	SIGNAL reg_dest_tmp_WB : STD_LOGIC_VECTOR(4 DOWNTO 0);
 	SIGNAL pc_WB : STD_LOGIC_VECTOR(31 DOWNTO 0);
 	SIGNAL reg_data_WB : STD_LOGIC_VECTOR(31 DOWNTO 0);
 	SIGNAL mem_data_out_WB : STD_LOGIC_VECTOR(31 DOWNTO 0);
@@ -738,6 +741,7 @@ BEGIN
 		mul_M4 => mul_M4,
 		reg_dest_M4 => reg_dest_M4,
 		mul_M5 => mul_M5,
+		reg_dest_M5 => reg_dest_M5,
 		reg_dest_A => reg_dest_A,
 		reg_we_A => reg_we_A,
 		mem_read_A => mem_read_A,
@@ -958,6 +962,7 @@ BEGIN
 		clk => clk,
 		reset => reset,
 		load => mul_M1,
+		done_L => done_L,
 		DA => data1_BP_A,
 		DB => data2_BP_A,
 		reg_dest_in => reg_dest_A,
@@ -1131,13 +1136,27 @@ BEGIN
 		mem_data_out => mem_data_out_L
 	);
 
+	mux_reg_we: Mux2_1bit PORT MAP(
+		DIn0 => reg_we_C,
+		DIn1 => reg_we_M5,
+		ctrl => mul_M5,
+		Dout => reg_we_C_M5
+	);
+
+	mux_reg_dest: mux2_5bits PORT MAP(
+		DIn0 => reg_dest_C,
+		DIn1 => reg_dest_M5,
+		ctrl => mul_M5,
+		Dout => reg_dest_C_M5
+	);
+
 	reg_C_W: reg_CW PORT MAP(
 		clk => clk,
 		reset => reg_C_W_reset,
 		we => reg_C_W_we,
 		mem_to_reg_in => mem_to_reg_C,
-		reg_we_in => reg_we_C,
-		reg_dest_in => reg_dest_C,
+		reg_we_in => reg_we_C_M5,
+		reg_dest_in => reg_dest_C_M5,
 		ALU_out_in => ALU_out_C,
 		MUL_out_in => mul_out_M5,
 		mem_data_out_in => cache_data_out_C,
@@ -1149,13 +1168,6 @@ BEGIN
 		MUL_out_out => mul_out_WB,
 		mem_data_out_out => mem_data_out_WB,
 		mul_out => mul_WB
-	);
-
-	mux_reg_dest: mux2_5bits PORT MAP(
-		DIn0 => reg_dest_tmp_WB,
-		DIn1 => reg_dest_M5,
-		ctrl => mul_M5,
-		Dout => reg_dest_WB
 	);
 
 	reg_status_C_W: reg_status PORT MAP(
@@ -1179,10 +1191,10 @@ BEGIN
 	mux_busW: mux4_32bits PORT MAP(
 		DIn0 => ALU_out_WB,
 		DIn1 => mem_data_out_WB,
-		DIn2 => mul_out_M5,
+		DIn2 => mul_out_WB,
 		DIn3 => (OTHERS => '0'),
 		ctrl(0) => mem_to_reg_WB,
-		ctrl(1) => mul_M5,
+		ctrl(1) => mul_WB,
 		Dout => reg_data_WB
 	);
 

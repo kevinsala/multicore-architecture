@@ -5,20 +5,7 @@ def sign_extend(value, bits):
     return (value & (sign_bit - 1)) - (value & sign_bit)
 
 class InkelPentiun:
-    memory = []
-
-    cache_i_v = [False, False, False, False]
-    cache_i_tag = [0, 0, 0, 0]
-    cache_i_data = ["", "", "", ""]
-
-    cache_d_v = [False, False, False, False]
-    cache_d_d = [False, False, False, False]
-    cache_d_tag = [0, 0, 0, 0]
-    cache_d_lru = [0, 1, 2, 3]
-    cache_d_data = ["", "", "", ""]
-
-    reg_b = [0] * 32
-    pc = 0x1000
+    verbose = False
 
     def _swap_mem_line_endianness(self, mem_line):
         if len(mem_line) % 8:
@@ -155,6 +142,21 @@ class InkelPentiun:
 
 
     def __init__(self, mem_boot, mem_sys = ""):
+        self.memory = []
+
+        self.cache_i_v = [False, False, False, False]
+        self.cache_i_tag = [0, 0, 0, 0]
+        self.cache_i_data = ["", "", "", ""]
+
+        self.cache_d_v = [False, False, False, False]
+        self.cache_d_d = [False, False, False, False]
+        self.cache_d_tag = [0, 0, 0, 0]
+        self.cache_d_lru = [0, 1, 2, 3]
+        self.cache_d_data = ["", "", "", ""]
+
+        self.reg_b = [0] * 32
+        self.pc = 0x1000
+
         pos = 0x100
         with open(mem_boot, "r") as f:
             i = 0
@@ -256,6 +258,9 @@ class InkelPentiun:
             # stw
             addr = sign_extend(offsetlo, 15) + self.reg_b[r1]
             self._write_to_cache_d(addr, self.reg_b[rdest], False)
+        elif icode == 20:
+            # mov
+            self.reg_b[rdest] = self.reg_b[r1]
         elif icode == 48:
             # beq
             if self.reg_b[r1] == self.reg_b[r2]:
@@ -263,11 +268,32 @@ class InkelPentiun:
         elif icode == 49:
             # jmp
             next_pc = (sign_extend((offsethi << 15) | offsetlo, 20) * 4) + self.pc
+        elif icode == 50:
+            # bne
+            if self.reg_b[r1] != self.reg_b[r2]:
+                next_pc = sign_extend((offsethi << 10) | offsetlo_b, 15) + self.pc
         else:
             # nop / error
             if icode != (2**7 - 1):
                 print "WARNING: non-valid instruction. Will halt simulation"
                 return 0
+
+        if self.verbose:
+            print "------------------------------"
+            print self.memory
+            print "------------------------------"
+            print self.cache_i_v
+            print self.cache_i_tag
+            print self.cache_i_data
+            print "------------------------------"
+            print self.cache_d_v
+            print self.cache_d_d
+            print self.cache_d_tag
+            print self.cache_d_data
+            print "------------------------------"
+            print self.reg_b
+            print "------------------------------"
+            print
 
         cur_pc = self.pc
         self.pc = next_pc
