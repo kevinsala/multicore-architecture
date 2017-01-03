@@ -9,6 +9,7 @@ ENTITY detention_unit IS
 		reg_dest_D     : IN STD_LOGIC_VECTOR(4 DOWNTO 0);
 		reg_src1_v_D   : IN STD_LOGIC;
 		reg_src2_v_D   : IN STD_LOGIC;
+		mem_we_D	   : IN STD_LOGIC;
 		branch_taken_A : IN STD_LOGIC;
 		mul_D			: IN STD_LOGIC;
 		mul_M1 			: IN STD_LOGIC;
@@ -59,6 +60,7 @@ ARCHITECTURE detention_unit_behavior OF detention_unit IS
 	SIGNAL conflict_ALU_L : STD_LOGIC;
 	SIGNAL conflict_ALU : STD_LOGIC;
 	SIGNAL conflict_MUL : STD_LOGIC; -- Detener instrucciones porque la inst MUL está en M1 o en M2
+	SIGNAL conflict_MUL_ALU : STD_LOGIC; -- Detener instrucciones alu-dependientes de una inst. mul
 	SIGNAL conflict_MUL_M1 : STD_LOGIC; -- Detener instrucciones porque es dependiente de la inst MUL
 	SIGNAL conflict_MUL_M2 : STD_LOGIC; -- Detener instrucciones porque es dependiente de la inst MUL
 	SIGNAL conflict_MUL_M3 : STD_LOGIC; -- Detener instrucciones porque es dependiente de la inst MUL
@@ -69,11 +71,14 @@ BEGIN
 	conflict_ALU_L <= '1' WHEN mem_read_L = '1' AND ((reg_src1_D = reg_dest_L AND reg_src1_v_D = '1') OR (reg_src2_D = reg_dest_L AND reg_src2_v_D = '1')) ELSE '0';
 	conflict_MUL_M1 <= '1' WHEN  mul_M1 = '1' AND ((reg_src1_D = reg_dest_A AND reg_src1_v_D = '1') OR (reg_src2_D = reg_dest_A AND reg_src2_v_D = '1')) ELSE '0';
 	conflict_MUL_M2 <= '1' WHEN  mul_M2 = '1' AND ((reg_src1_D = reg_dest_M2 AND reg_src1_v_D = '1') OR (reg_src2_D = reg_dest_M2 AND reg_src2_v_D = '1')) ELSE '0';
-	conflict_MUL_M3 <= '1' WHEN  mul_M3 = '1' AND ((reg_src1_D = reg_dest_M3 AND reg_src1_v_D = '1') OR (reg_src2_D = reg_dest_M3 AND reg_src2_v_D = '1')) ELSE '0';
-	conflict_MUL_M4 <= '1' WHEN  mul_M4 = '1' AND ((reg_src1_D = reg_dest_M4 AND reg_src1_v_D = '1') OR (reg_src2_D = reg_dest_M4 AND reg_src2_v_D = '1')) ELSE '0';
+	conflict_MUL_M3 <= '1' WHEN  mul_M3 = '1' AND ((reg_src1_D = reg_dest_M3 AND reg_src1_v_D = '1') OR (reg_src2_D = reg_dest_M3 AND reg_src2_v_D = '1' AND NOT mem_we_D = '1')) ELSE '0';
+	conflict_MUL_M4 <= '1' WHEN  mul_M4 = '1' AND ((reg_src1_D = reg_dest_M4 AND reg_src1_v_D = '1') OR (reg_src2_D = reg_dest_M4 AND reg_src2_v_D = '1' AND NOT mem_we_D = '1')) ELSE '0';
+	
 	conflict_ALU <= conflict_ALU_A OR conflict_ALU_L;
 	conflict_MUL <= (mul_M1 OR mul_M2) AND NOT mul_D;
-	conflict_i <= conflict_ALU OR conflict_MUL OR conflict_MUL_M1 OR conflict_MUL_M2 OR conflict_MUL_M3 OR conflict_MUL_M4;
+	conflict_MUL_ALU <= conflict_MUL_M1 OR conflict_MUL_M2 OR conflict_MUL_M3 OR conflict_MUL_M4;
+
+	conflict_i <= conflict_ALU OR conflict_MUL OR conflict_MUL_ALU;
 
 	switch_ctrl <= NOT conflict_i;
 

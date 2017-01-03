@@ -246,11 +246,13 @@ ARCHITECTURE structure OF inkel_pentiun IS
 			reg_we_L          : IN STD_LOGIC;
 			reg_dest_C        : IN STD_LOGIC_VECTOR (4 DOWNTO 0);
 			reg_we_C          : IN STD_LOGIC;
-			mux_src1_D_BP     : OUT STD_LOGIC_VECTOR (1 DOWNTO 0);
-			mux_src2_D_BP     : OUT STD_LOGIC_VECTOR (1 DOWNTO 0);
-			mux_mem_data_D_BP : OUT STD_LOGIC_VECTOR (1 DOWNTO 0);
+			reg_dest_M5       : IN STD_LOGIC_VECTOR (4 DOWNTO 0);
+			reg_we_M5         : IN STD_LOGIC;
+			mux_src1_D_BP     : OUT STD_LOGIC_VECTOR (2 DOWNTO 0);
+			mux_src2_D_BP     : OUT STD_LOGIC_VECTOR (2 DOWNTO 0);
+			mux_mem_data_D_BP : OUT STD_LOGIC_VECTOR (2 DOWNTO 0);
 			mux_mem_data_A_BP : OUT STD_LOGIC_VECTOR (1 DOWNTO 0);
-			mux_mem_data_L_BP : OUT STD_LOGIC
+			mux_mem_data_L_BP : OUT STD_LOGIC_VECTOR (1 DOWNTO 0)
 		);
 	END COMPONENT;
 
@@ -262,17 +264,18 @@ ARCHITECTURE structure OF inkel_pentiun IS
 			reg_dest_D     : IN STD_LOGIC_VECTOR(4 DOWNTO 0);
 			reg_src1_v_D   : IN STD_LOGIC;
 			reg_src2_v_D   : IN STD_LOGIC;
+			mem_we_D 	   : IN STD_LOGIC;
 			branch_taken_A : IN STD_LOGIC;
-			mul_D 			: IN STD_LOGIC;
-			mul_M1			: IN STD_LOGIC;
-			mul_M2			: IN STD_LOGIC;
-			reg_dest_M2 	: IN STD_LOGIC_VECTOR(4 downto 0);
-			mul_M3			: IN STD_LOGIC;
-			reg_dest_M3 	: IN STD_LOGIC_VECTOR(4 downto 0);
-			mul_M4			: IN STD_LOGIC;
-			reg_dest_M4 	: IN STD_LOGIC_VECTOR(4 downto 0);
-			reg_dest_M5 	: IN STD_LOGIC_VECTOR(4 downto 0);
-			mul_M5 			: IN STD_LOGIC;
+			mul_D 		   : IN STD_LOGIC;
+			mul_M1		   : IN STD_LOGIC;
+			mul_M2		   : IN STD_LOGIC;
+			reg_dest_M2    : IN STD_LOGIC_VECTOR(4 downto 0);
+			mul_M3		   : IN STD_LOGIC;
+			reg_dest_M3    : IN STD_LOGIC_VECTOR(4 downto 0);
+			mul_M4		   : IN STD_LOGIC;
+			reg_dest_M4    : IN STD_LOGIC_VECTOR(4 downto 0);
+			reg_dest_M5    : IN STD_LOGIC_VECTOR(4 downto 0);
+			mul_M5 		   : IN STD_LOGIC;
 			reg_dest_A     : IN STD_LOGIC_VECTOR(4 DOWNTO 0);
 			reg_we_A       : IN STD_LOGIC;
 			mem_read_A     : IN STD_LOGIC;
@@ -356,6 +359,21 @@ ARCHITECTURE structure OF inkel_pentiun IS
 			DIn2 : IN STD_LOGIC_VECTOR (31 DOWNTO 0);
 			DIn3 : IN STD_LOGIC_VECTOR (31 DOWNTO 0);
 			ctrl : IN STD_LOGIC_VECTOR (1 DOWNTO 0);
+			Dout : OUT STD_LOGIC_VECTOR (31 DOWNTO 0)
+		);
+	END COMPONENT;
+
+	COMPONENT mux8_32bits IS
+		PORT(
+			Din0 : IN STD_LOGIC_VECTOR (31 DOWNTO 0);
+			Din1 : IN STD_LOGIC_VECTOR (31 DOWNTO 0);
+			Din2 : IN STD_LOGIC_VECTOR (31 DOWNTO 0);
+			Din3 : IN STD_LOGIC_VECTOR (31 DOWNTO 0);
+			Din4 : IN STD_LOGIC_VECTOR (31 DOWNTO 0);
+			Din5 : IN STD_LOGIC_VECTOR (31 DOWNTO 0);
+			Din6 : IN STD_LOGIC_VECTOR (31 DOWNTO 0);
+			Din7 : IN STD_LOGIC_VECTOR (31 DOWNTO 0);
+			ctrl : IN STD_LOGIC_VECTOR (2 DOWNTO 0);
 			Dout : OUT STD_LOGIC_VECTOR (31 DOWNTO 0)
 		);
 	END COMPONENT;
@@ -533,7 +551,7 @@ ARCHITECTURE structure OF inkel_pentiun IS
 	SIGNAL reg_data2_D : STD_LOGIC_VECTOR(31 DOWNTO 0);
 	SIGNAL inm_ext_D : STD_LOGIC_VECTOR(31 DOWNTO 0);
 	SIGNAL conflict_D : STD_LOGIC;
-	SIGNAL mem_data_D : STD_LOGIC_VECTOR(31 DOWNTO 0);
+	SIGNAL mem_data_D_BP : STD_LOGIC_VECTOR(31 DOWNTO 0);
 	SIGNAL data1_BP_D : STD_LOGIC_VECTOR(31 DOWNTO 0);
 	SIGNAL data2_BP_D : STD_LOGIC_VECTOR(31 DOWNTO 0);
 
@@ -674,11 +692,11 @@ ARCHITECTURE structure OF inkel_pentiun IS
 	SIGNAL mul_UD : STD_LOGIC;
 
 	-- Bypass unit signals
-	SIGNAL mux_src1_D_BP_ctrl : STD_LOGIC_VECTOR(1 DOWNTO 0);
-	SIGNAL mux_src2_D_BP_ctrl : STD_LOGIC_VECTOR(1 DOWNTO 0);
-	SIGNAL mux_mem_data_D_BP_ctrl : STD_LOGIC_VECTOR(1 DOWNTO 0);
+	SIGNAL mux_src1_D_BP_ctrl : STD_LOGIC_VECTOR(2 DOWNTO 0);
+	SIGNAL mux_src2_D_BP_ctrl : STD_LOGIC_VECTOR(2 DOWNTO 0);
+	SIGNAL mux_mem_data_D_BP_ctrl : STD_LOGIC_VECTOR(2 DOWNTO 0);
 	SIGNAL mux_mem_data_A_BP_ctrl : STD_LOGIC_VECTOR(1 DOWNTO 0);
-	SIGNAL mux_mem_data_L_BP_ctrl : STD_LOGIC;
+	SIGNAL mux_mem_data_L_BP_ctrl : STD_LOGIC_VECTOR(1 DOWNTO 0);
 
 	-- Exception unit signals
 	SIGNAL exc_F_E : STD_LOGIC;
@@ -762,8 +780,9 @@ BEGIN
 		reg_dest_D => reg_dest_D,
 		reg_src1_v_D => reg_src1_v_D,
 		reg_src2_v_D => reg_src2_v_D,
+		mem_we_D => mem_we_D,
 		branch_taken_A => branch_taken_A,
-		mul_D => mul_UD,
+		mul_D => mul_D,
 		mul_M1 => mul_M1,
 		mul_M2 => mul_M2,
 		reg_dest_M2 => reg_dest_M2,
@@ -812,6 +831,8 @@ BEGIN
 		reg_we_L => reg_we_L,
 		reg_dest_C => reg_dest_C,
 		reg_we_C => reg_we_C,
+		reg_dest_M5 => reg_dest_M5,
+		reg_we_M5 => reg_we_M5,
 		mux_src1_D_BP => mux_src1_D_BP_ctrl,
 		mux_src2_D_BP => mux_src2_D_BP_ctrl,
 		mux_mem_data_D_BP => mux_mem_data_D_BP_ctrl,
@@ -945,31 +966,43 @@ BEGIN
 		exc_data => exc_data_W
 	);
 
-	mux_src1_D_BP : mux4_32bits PORT MAP(
+	mux_src1_D_BP : mux8_32bits PORT MAP(
 		Din0 => reg_data1_D,
 		Din1 => reg_data_C,
 		Din2 => ALU_out_L,
 		Din3 => ALU_out_A,
+		Din4 => mul_out_M5,
+		Din5 => (OTHERS => '0'),
+		Din6 => (OTHERS => '0'),
+		Din7 => (OTHERS => '0'),
 		ctrl => mux_src1_D_BP_ctrl,
 		Dout => data1_BP_D
 	);
 
-	mux_src2_D_BP : mux4_32bits PORT MAP(
+	mux_src2_D_BP : mux8_32bits PORT MAP(
 		Din0 => reg_data2_D,
 		Din1 => reg_data_C,
 		Din2 => ALU_out_L,
 		Din3 => ALU_out_A,
+		Din4 => mul_out_M5,
+		Din5 => (OTHERS => '0'),
+		Din6 => (OTHERS => '0'),
+		Din7 => (OTHERS => '0'),
 		ctrl => mux_src2_D_BP_ctrl,
 		Dout => data2_BP_D
 	);
 
-	mux_mem_data_D_BP : mux4_32bits PORT MAP(
+	mux_mem_data_D_BP : mux8_32bits PORT MAP(
 		Din0 => reg_data2_D,
 		Din1 => reg_data_C,
 		Din2 => ALU_out_L,
 		Din3 => ALU_out_A,
+		Din4 => mul_out_M5,
+		Din5 => (OTHERS => '0'),
+		Din6 => (OTHERS => '0'),
+		Din7 => (OTHERS => '0'),
 		ctrl => mux_mem_data_D_BP_ctrl,
-		Dout => mem_data_D
+		Dout => mem_data_D_BP
 	);
 
 	reg_D_A_reset <= reg_D_A_reset_DU OR exc_D_E;
@@ -997,7 +1030,7 @@ BEGIN
 		reg_dest_in => reg_dest_D,
 		reg_data1_in => data1_BP_D,
 		reg_data2_in => data2_BP_D,
-		mem_data_in => mem_data_D,
+		mem_data_in => mem_data_D_BP,
 		mul_out => mul_M1,
 		mem_we_out => mem_we_A,
 		byte_out => byte_A,
@@ -1072,32 +1105,11 @@ BEGIN
 
 	jump_addr_A <= ALU_out_A;
 
-	Mul_pipeline: ALU_MUL_seg PORT MAP(
-		clk => clk,
-		reset => reset,
-		load => mul_M1,
-		done_L => done_L,
-		DA => reg_data1_A,
-		DB => reg_data2_A,
-		reg_dest_in => reg_dest_A,
-		reg_we_in => reg_we_A,
-		M2_mul => mul_M2,
-		reg_dest_M2 => reg_dest_M2,
-		M3_mul => mul_M3,
-		reg_dest_M3 => reg_dest_M3,
-		M4_mul => mul_M4,
-		reg_dest_M4 => reg_dest_M4,
-		M5_mul => mul_M5,
-		reg_dest_out => reg_dest_M5,
-		reg_we_out => reg_we_M5,
-		Dout => mul_out_M5
-	);
-
 	mux_mem_data_A_BP : mux4_32bits PORT MAP(
 		Din0 => mem_data_A,
 		Din1 => reg_data_C,
 		Din2 => ALU_out_L,
-		DIn3 => x"00000000",
+		DIn3 => mul_out_M5,
 		ctrl => mux_mem_data_A_BP_ctrl,
 		Dout => mem_data_A_BP
 	);
@@ -1149,6 +1161,29 @@ BEGIN
 		debug_dump_out => debug_dump_L
 	);
 
+	-------------------------------- Mul Pipeline -----------------------------------------
+
+	Mul_pipeline: ALU_MUL_seg PORT MAP(
+		clk => clk,
+		reset => reset,
+		load => mul_M1,
+		done_L => done_L,
+		DA => reg_data1_A,
+		DB => reg_data2_A,
+		reg_dest_in => reg_dest_A,
+		reg_we_in => reg_we_A,
+		M2_mul => mul_M2,
+		reg_dest_M2 => reg_dest_M2,
+		M3_mul => mul_M3,
+		reg_dest_M3 => reg_dest_M3,
+		M4_mul => mul_M4,
+		reg_dest_M4 => reg_dest_M4,
+		M5_mul => mul_M5,
+		reg_dest_out => reg_dest_M5,
+		reg_we_out => reg_we_M5,
+		Dout => mul_out_M5
+	);
+
 	-------------------------------- Lookup  ----------------------------------------------
 
 	lookup : lookup_stage PORT MAP(
@@ -1173,9 +1208,11 @@ BEGIN
 		mem_done => mem_done_L
 	);
 
-	mux_mem_data_L_BP : mux2_32bits PORT MAP(
+	mux_mem_data_L_BP : mux4_32bits PORT MAP(
 		Din0 => cache_data_in_L,
 		Din1 => reg_data_C,
+		Din2 => mul_out_M5,
+		Din3 => (OTHERS => '0'),
 		ctrl => mux_mem_data_L_BP_ctrl,
 		Dout => mem_data_L_BP
 	);
