@@ -43,6 +43,39 @@ ARCHITECTURE structure OF inkel_pentiun IS
 		);
 	END COMPONENT;
 
+	COMPONENT mux_reg_status IS
+		PORT(
+			pc_C : IN STD_LOGIC_VECTOR(31 DOWNTO 0);
+			priv_status_C : IN STD_LOGIC;
+			exc_C_E : IN STD_LOGIC;
+			exc_code_C_E : IN STD_LOGIC_VECTOR(1 DOWNTO 0);
+			exc_data_C_E : IN STD_LOGIC_VECTOR(31 DOWNTO 0);
+			exc_C : IN STD_LOGIC;
+			exc_code_C : IN STD_LOGIC_VECTOR(1 DOWNTO 0);
+			exc_data_C : IN STD_LOGIC_VECTOR(31 DOWNTO 0);
+			debug_dump_C : IN STD_LOGIC;
+			pc_M5 : IN STD_LOGIC_VECTOR(31 DOWNTO 0);
+			priv_status_M5 : IN STD_LOGIC;
+			exc_M5_E : IN STD_LOGIC;
+			exc_code_M5_E : IN STD_LOGIC_VECTOR(1 DOWNTO 0);
+			exc_data_M5_E : IN STD_LOGIC_VECTOR(31 DOWNTO 0);
+			exc_M5 : IN STD_LOGIC;
+			exc_code_M5 : IN STD_LOGIC_VECTOR(1 DOWNTO 0);
+			exc_data_M5 : IN STD_LOGIC_VECTOR(31 DOWNTO 0);
+			debug_dump_M5 : IN STD_LOGIC;
+			ctrl : IN STD_LOGIC;
+			pc_M5_C : OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
+			priv_status_M5_C : OUT STD_LOGIC;
+			exc_M5_C_E : OUT STD_LOGIC;
+			exc_code_M5_C_E : OUT STD_LOGIC_VECTOR(1 DOWNTO 0);
+			exc_data_M5_C_E : OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
+			exc_M5_C : OUT STD_LOGIC;
+			exc_code_M5_C : OUT STD_LOGIC_VECTOR(1 DOWNTO 0);
+			exc_data_M5_C : OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
+			debug_dump_M5_C : OUT STD_LOGIC
+		);
+	END COMPONENT mux_reg_status;
+
 	COMPONENT memory IS
 		PORT(
 			clk : IN STD_LOGIC;
@@ -406,7 +439,23 @@ ARCHITECTURE structure OF inkel_pentiun IS
 			M5_mul : OUT STD_LOGIC;
 			reg_dest_out : OUT STD_LOGIC_VECTOR(4 downto 0);
 			reg_we_out : OUT STD_LOGIC;
-			Dout : OUT  STD_LOGIC_VECTOR (31 downto 0)
+			Dout : OUT  STD_LOGIC_VECTOR(31 downto 0);
+			-- reg status signals --
+			pc_in : IN STD_LOGIC_VECTOR(31 DOWNTO 0);
+			priv_status_in : IN STD_LOGIC;
+			exc_new : IN STD_LOGIC;
+			exc_code_new : IN STD_LOGIC_VECTOR(1 DOWNTO 0);
+			exc_data_new : IN STD_LOGIC_VECTOR(31 DOWNTO 0);
+			exc_old : IN STD_LOGIC;
+			exc_code_old : IN STD_LOGIC_VECTOR(1 DOWNTO 0);
+			exc_data_old : IN STD_LOGIC_VECTOR(31 DOWNTO 0);
+			debug_dump_in : IN STD_LOGIC;
+			pc_out : OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
+			priv_status_out : OUT STD_LOGIC;
+			exc_out : OUT STD_LOGIC;
+			exc_code_out : OUT STD_LOGIC_VECTOR(1 DOWNTO 0);
+			exc_data_out : OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
+			debug_dump_out : OUT STD_LOGIC
 		);
 	END COMPONENT;
 
@@ -649,6 +698,12 @@ ARCHITECTURE structure OF inkel_pentiun IS
 	SIGNAL mul_out_M5 : STD_LOGIC_VECTOR(31 downto 0);
 	SIGNAL reg_dest_M5 : STD_LOGIC_VECTOR(4 downto 0);
 	SIGNAL reg_we_M5 : STD_LOGIC;
+	SIGNAL pc_M5 : STD_LOGIC_VECTOR(31 DOWNTO 0);
+	SIGNAL priv_status_M5 : STD_LOGIC;
+	SIGNAL debug_dump_M5 : STD_LOGIC;
+	SIGNAL pc_M5_C : STD_LOGIC_VECTOR(31 DOWNTO 0);
+	SIGNAL priv_status_M5_C : STD_LOGIC;
+	SIGNAL debug_dump_M5_C : STD_LOGIC;
 
 	-- Writeback stage signals
 	SIGNAL reg_we_W : STD_LOGIC;
@@ -706,6 +761,10 @@ ARCHITECTURE structure OF inkel_pentiun IS
 	SIGNAL exc_A_E : STD_LOGIC;
 	SIGNAL exc_L : STD_LOGIC;
 	SIGNAL exc_L_E : STD_LOGIC;
+	SIGNAL exc_M5 : STD_LOGIC;
+	SIGNAL exc_M5_E : STD_LOGIC;
+	SIGNAL exc_M5_C : STD_LOGIC;
+	SIGNAL exc_M5_C_E : STD_LOGIC;
 	SIGNAL exc_C : STD_LOGIC;
 	SIGNAL exc_C_E : STD_LOGIC;
 	SIGNAL exc_W : STD_LOGIC;
@@ -716,8 +775,12 @@ ARCHITECTURE structure OF inkel_pentiun IS
 	SIGNAL exc_code_A_E : STD_LOGIC_VECTOR(1 DOWNTO 0);
 	SIGNAL exc_code_L : STD_LOGIC_VECTOR(1 DOWNTO 0);
 	SIGNAL exc_code_L_E : STD_LOGIC_VECTOR(1 DOWNTO 0);
+	SIGNAL exc_code_M5 : STD_LOGIC_VECTOR(1 DOWNTO 0);
+	SIGNAL exc_code_M5_E : STD_LOGIC_VECTOR(1 DOWNTO 0);
 	SIGNAL exc_code_C : STD_LOGIC_VECTOR(1 DOWNTO 0);
 	SIGNAL exc_code_C_E : STD_LOGIC_VECTOR(1 DOWNTO 0);
+	SIGNAL exc_code_M5_C : STD_LOGIC_VECTOR(1 DOWNTO 0);
+	SIGNAL exc_code_M5_C_E : STD_LOGIC_VECTOR(1 DOWNTO 0);
 	SIGNAL exc_code_W : STD_LOGIC_VECTOR(1 DOWNTO 0);
 	SIGNAL exc_data_F_E : STD_LOGIC_VECTOR(31 DOWNTO 0);
 	SIGNAL exc_data_D : STD_LOGIC_VECTOR(31 DOWNTO 0);
@@ -726,8 +789,12 @@ ARCHITECTURE structure OF inkel_pentiun IS
 	SIGNAL exc_data_A_E : STD_LOGIC_VECTOR(31 DOWNTO 0);
 	SIGNAL exc_data_L : STD_LOGIC_VECTOR(31 DOWNTO 0);
 	SIGNAL exc_data_L_E : STD_LOGIC_VECTOR(31 DOWNTO 0);
+	SIGNAL exc_data_M5 : STD_LOGIC_VECTOR(31 DOWNTO 0);
+	SIGNAL exc_data_M5_E : STD_LOGIC_VECTOR(31 DOWNTO 0);
 	SIGNAL exc_data_C : STD_LOGIC_VECTOR(31 DOWNTO 0);
 	SIGNAL exc_data_C_E : STD_LOGIC_VECTOR(31 DOWNTO 0);
+	SIGNAL exc_data_M5_C : STD_LOGIC_VECTOR(31 DOWNTO 0);
+	SIGNAL exc_data_M5_C_E : STD_LOGIC_VECTOR(31 DOWNTO 0);
 	SIGNAL exc_data_W : STD_LOGIC_VECTOR(31 DOWNTO 0);
 BEGIN
 
@@ -1181,7 +1248,23 @@ BEGIN
 		M5_mul => mul_M5,
 		reg_dest_out => reg_dest_M5,
 		reg_we_out => reg_we_M5,
-		Dout => mul_out_M5
+		Dout => mul_out_M5,
+		-- Reg Status signals --
+		pc_in => pc_A,
+		priv_status_in => priv_status_A,
+		exc_new => exc_A_E,
+		exc_code_new => exc_code_A_E,
+		exc_data_new => exc_data_A_E,
+		exc_old => exc_A,
+		exc_code_old => exc_code_A,
+		exc_data_old => exc_data_A,
+		debug_dump_in => debug_dump_A,
+		pc_out => pc_M5,
+		priv_status_out => priv_status_M5,
+		exc_out => exc_M5,
+		exc_code_out => exc_code_M5,
+		exc_data_out => exc_data_M5,
+		debug_dump_out => debug_dump_M5
 	);
 
 	-------------------------------- Lookup  ----------------------------------------------
@@ -1310,7 +1393,7 @@ BEGIN
 		Dout => reg_dest_C_M5
 	);
 
-	reg_C_W_reset <= reg_C_W_reset_DU OR exc_C_E;
+	reg_C_W_reset <= reg_C_W_reset_DU OR exc_C_E OR exc_M5_E;
 
 	reg_C_W: reg_CW PORT MAP(
 		clk => clk,
@@ -1328,19 +1411,50 @@ BEGIN
 		mul_out => mul_W
 	);
 
+	mux_reg_status_W: mux_reg_status PORT MAP(
+		pc_C => pc_C,
+		priv_status_C => priv_status_C,
+		exc_C_E => exc_C_E,
+		exc_code_C_E => exc_code_C_E,
+		exc_data_C_E => exc_data_C_E,
+		exc_C => exc_C,
+		exc_code_C => exc_code_C,
+		exc_data_C => exc_data_C,
+		debug_dump_C => debug_dump_C,
+		pc_M5 => pc_M5,
+		priv_status_M5 => priv_status_M5,
+		exc_M5_E => exc_M5_E,
+		exc_code_M5_E => exc_code_M5_E,
+		exc_data_M5_E => exc_data_M5_E,
+		exc_M5 => exc_M5,
+		exc_code_M5 => exc_code_M5,
+		exc_data_M5 => exc_data_M5,
+		debug_dump_M5 => debug_dump_M5,
+		ctrl => mul_M5,
+		pc_M5_C => pc_M5_C,
+		priv_status_M5_C => priv_status_M5_C,
+		exc_M5_C_E => exc_M5_C_E,
+		exc_code_M5_C_E => exc_code_M5_C_E,
+		exc_data_M5_C_E => exc_data_M5_C_E,
+		exc_M5_C => exc_M5_C,
+		exc_code_M5_C => exc_code_M5_C,
+		exc_data_M5_C => exc_data_M5_C,
+		debug_dump_M5_C => debug_dump_M5_C
+	);
+
 	reg_status_C_W: reg_status PORT MAP(
 		clk => clk,
 		reset => reg_C_W_reset_DU,
 		we => reg_C_W_we,
-		pc_in => pc_C,
-		priv_status_in => priv_status_C,
-		exc_new => exc_C_E,
-		exc_code_new => exc_code_C_E,
-		exc_data_new => exc_data_C_E,
-		exc_old => exc_C,
-		exc_code_old => exc_code_C,
-		exc_data_old => exc_data_C,
-		debug_dump_in => debug_dump_C,
+		pc_in => pc_M5_C,
+		priv_status_in => priv_status_M5_C,
+		exc_new => exc_M5_C_E,
+		exc_code_new => exc_code_M5_C_E,
+		exc_data_new => exc_data_M5_C_E,
+		exc_old => exc_M5_C,
+		exc_code_old => exc_code_M5_C,
+		exc_data_old => exc_data_M5_C,
+		debug_dump_in => debug_dump_M5_C,
 		pc_out => pc_W,
 		priv_status_out => priv_status_W,
 		exc_out => exc_W,

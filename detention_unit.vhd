@@ -85,7 +85,7 @@ BEGIN
 	reg_PC_we <= NOT conflict_i AND done_F AND done_L;
 	reg_F_D_we <= NOT conflict_i AND done_L;
 	reg_D_A_we <= done_L AND NOT conflict_MUL;
-	reg_A_L_we <= done_L;
+	reg_A_L_we <= done_L AND NOT mul_M1;
 	reg_L_C_we <= '1';
 	reg_C_W_we <= '1';
 
