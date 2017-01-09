@@ -52,10 +52,6 @@ END detention_unit;
 ARCHITECTURE detention_unit_behavior OF detention_unit IS
 
 	-- Determine that there are no conflicts
-	SIGNAL conflict_branch_A : STD_LOGIC;
-	SIGNAL conflict_branch_L : STD_LOGIC;
-	SIGNAL conflict_branch_C : STD_LOGIC;
-	SIGNAL conflict_branch : STD_LOGIC;
 	SIGNAL conflict_ALU_A : STD_LOGIC;
 	SIGNAL conflict_ALU_L : STD_LOGIC;
 	SIGNAL conflict_ALU : STD_LOGIC;
@@ -73,7 +69,7 @@ BEGIN
 	conflict_MUL_M2 <= '1' WHEN  mul_M2 = '1' AND ((reg_src1_D = reg_dest_M2 AND reg_src1_v_D = '1') OR (reg_src2_D = reg_dest_M2 AND reg_src2_v_D = '1')) ELSE '0';
 	conflict_MUL_M3 <= '1' WHEN  mul_M3 = '1' AND ((reg_src1_D = reg_dest_M3 AND reg_src1_v_D = '1') OR (reg_src2_D = reg_dest_M3 AND reg_src2_v_D = '1' AND NOT mem_we_D = '1')) ELSE '0';
 	conflict_MUL_M4 <= '1' WHEN  mul_M4 = '1' AND ((reg_src1_D = reg_dest_M4 AND reg_src1_v_D = '1') OR (reg_src2_D = reg_dest_M4 AND reg_src2_v_D = '1' AND NOT mem_we_D = '1')) ELSE '0';
-	
+
 	conflict_ALU <= conflict_ALU_A OR conflict_ALU_L;
 	conflict_MUL <= (mul_M1 OR mul_M2) AND NOT mul_D;
 	conflict_MUL_ALU <= conflict_MUL_M1 OR conflict_MUL_M2 OR conflict_MUL_M3 OR conflict_MUL_M4;
