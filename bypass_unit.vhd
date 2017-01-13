@@ -26,27 +26,27 @@ END bypass_unit;
 
 ARCHITECTURE bypass_unit_behavior OF bypass_unit IS
 BEGIN
-	mux_src1_D_BP <= "100" WHEN (reg_src1_D = reg_dest_M5 AND reg_src1_v_D = '1' AND reg_we_M5 = '1') 
-			ELSE "011" WHEN (reg_src1_D = reg_dest_A AND reg_src1_v_D = '1' AND reg_we_A = '1')
+	mux_src1_D_BP <= "011" WHEN (reg_src1_D = reg_dest_A AND reg_src1_v_D = '1' AND reg_we_A = '1')
 			ELSE "010" WHEN (reg_src1_D = reg_dest_L AND reg_src1_v_D = '1' AND reg_we_L = '1')
 			ELSE "001" WHEN (reg_src1_D = reg_dest_C AND reg_src1_v_D = '1' AND reg_we_C = '1')
+			ELSE "100" WHEN (reg_src1_D = reg_dest_M5 AND reg_src1_v_D = '1' AND reg_we_M5 = '1')
 			ELSE "000";
 
-	mux_src2_D_BP <= "100" WHEN (reg_src2_D = reg_dest_M5 AND reg_src2_v_D = '1' AND reg_we_M5 = '1')
-			ELSE "011" WHEN (reg_src2_D = reg_dest_A AND reg_src2_v_D = '1' AND reg_we_A = '1')
+	mux_src2_D_BP <= "011" WHEN (reg_src2_D = reg_dest_A AND reg_src2_v_D = '1' AND reg_we_A = '1')
 			ELSE "010" WHEN (reg_src2_D = reg_dest_L AND reg_src2_v_D = '1' AND reg_we_L = '1')
 			ELSE "001" WHEN (reg_src2_D = reg_dest_C AND reg_src2_v_D = '1' AND reg_we_C = '1')
+			ELSE "100" WHEN (reg_src2_D = reg_dest_M5 AND reg_src2_v_D = '1' AND reg_we_M5 = '1')
 			ELSE "000";
 
-	mux_mem_data_D_BP <= "100" WHEN (reg_src2_D = reg_dest_M5 AND reg_we_M5 = '1')
-			ELSE "011" WHEN (reg_src2_D = reg_dest_A AND reg_we_A = '1')
+	mux_mem_data_D_BP <= "011" WHEN (reg_src2_D = reg_dest_A AND reg_we_A = '1')
 			ELSE "010" WHEN (reg_src2_D = reg_dest_L AND reg_we_L = '1')
 			ELSE "001" WHEN (reg_src2_D = reg_dest_C AND reg_we_C = '1')
+			ELSE "100" WHEN (reg_src2_D = reg_dest_M5 AND reg_we_M5 = '1')
 			ELSE "000";
 
-	mux_mem_data_A_BP <= "11" WHEN (reg_dest_A = reg_dest_M5 AND reg_we_M5 = '1')
-			ELSE "10" WHEN (reg_dest_A = reg_dest_L AND reg_we_L = '1')
+	mux_mem_data_A_BP <= "10" WHEN (reg_dest_A = reg_dest_L AND reg_we_L = '1')
 			ELSE "01" WHEN (reg_dest_A = reg_dest_C AND reg_we_C = '1')
+			ELSE "11" WHEN (reg_dest_A = reg_dest_M5 AND reg_we_M5 = '1')
 			ELSE "00";
 
 	mux_mem_data_L_BP <= "10" WHEN (reg_dest_L = reg_dest_M5 AND reg_we_M5 = '1')
