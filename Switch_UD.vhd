@@ -1,41 +1,38 @@
 library IEEE;
 use IEEE.STD_LOGIC_1164.ALL;
 
--- Uncomment the following library declaration if using
--- arithmetic functions with Signed or Unsigned values
---use IEEE.NUMERIC_STD.ALL;
-
--- Uncomment the following library declaration if instantiating
--- any Xilinx primitives in this code.
---library UNISIM;
---use UNISIM.VComponents.all;
-
 entity Switch_UD is
-Port(
-	Reg_Write : in STD_LOGIC;
-	Mem_Read : in STD_LOGIC;
-	Byte : in STD_LOGIC;
-	Mem_Write : in STD_LOGIC;
-	MemtoReg : in STD_LOGIC;
-	ALU_Src_A : in STD_LOGIC;
-	ALU_Src_B : in STD_LOGIC;
-	inm_src2_v_D : IN STD_LOGIC;
-	Mul : in STD_LOGIC;
-	ctrl : in STD_LOGIC;
-	Reg_Write_out : out STD_LOGIC;
-	Mem_Read_out : out STD_LOGIC;
-	Byte_out : out STD_LOGIC;
-	Mem_Write_out : out STD_LOGIC;
-	MemtoReg_out : out STD_LOGIC;
-	ALU_Src_A_out : out STD_LOGIC;
-	ALU_Src_B_out : out STD_LOGIC;
-	inm_src2_v_UD : OUT STD_LOGIC;
-	Mul_out : out STD_LOGIC);
+	Port(
+		Reg_Write : in STD_LOGIC;
+		Mem_Read : in STD_LOGIC;
+		Byte : in STD_LOGIC;
+		Mem_Write : in STD_LOGIC;
+		MemtoReg : in STD_LOGIC;
+		ALU_Src_A : in STD_LOGIC;
+		ALU_Src_B : in STD_LOGIC;
+		inm_src2_v_D : IN STD_LOGIC;
+		Mul : in STD_LOGIC;
+		dtlb_we : IN STD_LOGIC;
+		itlb_we : IN STD_LOGIC;
+		ctrl : in STD_LOGIC;
+		Reg_Write_out : out STD_LOGIC;
+		Mem_Read_out : out STD_LOGIC;
+		Byte_out : out STD_LOGIC;
+		Mem_Write_out : out STD_LOGIC;
+		MemtoReg_out : out STD_LOGIC;
+		ALU_Src_A_out : out STD_LOGIC;
+		ALU_Src_B_out : out STD_LOGIC;
+		inm_src2_v_UD : OUT STD_LOGIC;
+		Mul_out : out STD_LOGIC;
+		dtlb_we_out : OUT STD_LOGIC;
+		itlb_we_out : OUT STD_LOGIC
+	);
 end Switch_UD;
 
 architecture Behavioral of Switch_UD is
 
 begin	
+
 	Reg_Write_out <= Reg_Write when (ctrl ='1') else '0';
 	Mem_Read_out <= Mem_Read when (ctrl ='1') else '0';
 	Byte_out <= Byte when (ctrl ='1') else '0';
@@ -45,5 +42,7 @@ begin
 	ALU_Src_B_out <= ALU_Src_B when (ctrl ='1') else '0';
 	inm_src2_v_UD <= inm_src2_v_D WHEN (ctrl = '1') ELSE '0';
 	Mul_out <= Mul when (ctrl ='1') else '0';
-end Behavioral;
+	dtlb_we_out <= dtlb_we WHEN (ctrl = '1') ELSE '0';
+	itlb_we_out <= itlb_we WHEN (ctrl = '1') ELSE '0';
 
+end Behavioral;

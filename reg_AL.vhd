@@ -6,6 +6,8 @@ ENTITY reg_AL IS
 	PORT(clk : IN STD_LOGIC;
 		reset : IN STD_LOGIC;
 		we : IN STD_LOGIC;
+		dtlb_we_in : IN STD_LOGIC;
+		itlb_we_in : IN STD_LOGIC;
 		mem_we_in : IN STD_LOGIC;
 		byte_in : IN STD_LOGIC;
 		mem_read_in : IN STD_LOGIC;
@@ -15,6 +17,8 @@ ENTITY reg_AL IS
 		ALU_out_in : IN STD_LOGIC_VECTOR(31 DOWNTO 0);
 		mem_data_in : IN STD_LOGIC_VECTOR(31 DOWNTO 0);
 		cache_state_in : IN data_cache_state_t;
+		dtlb_we_out : OUT STD_LOGIC;
+		itlb_we_out : OUT STD_LOGIC;
 		mem_we_out : OUT STD_LOGIC;
 		byte_out : OUT STD_LOGIC;
 		mem_read_out : OUT STD_LOGIC;
@@ -33,6 +37,8 @@ BEGIN
 	BEGIN
 		IF rising_edge(clk) THEN
 			IF reset = '1' THEN
+				dtlb_we_out <= '0';
+				itlb_we_out <= '0';
 				mem_we_out <= '0';
 				byte_out <= '0';
 				mem_read_out <= '0';
@@ -44,6 +50,8 @@ BEGIN
 				cache_state_out <= READY;
 			ELSE
 				IF we = '1' THEN
+					dtlb_we_out <= dtlb_we_in;
+					itlb_we_out <= itlb_we_in;
 					mem_we_out <= mem_we_in;
 					byte_out <= byte_in;
 					mem_read_out <= mem_read_in;
