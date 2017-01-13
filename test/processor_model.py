@@ -7,6 +7,9 @@ def sign_extend(value, bits):
 class InkelPentiun:
     verbose = False
 
+    def _physical_addr(self, vaddr):
+        return vaddr - 0x1000
+
     def _swap_mem_line_endianness(self, mem_line):
         if len(mem_line) % 8:
             print "WARNING: tring to swap endianness of a memory line of wrong size"
@@ -16,6 +19,7 @@ class InkelPentiun:
             new_mem_line = mem_line[i:i+8] + new_mem_line
 
         return new_mem_line
+
 
     def _save_old_memories(self):
         self.old_memory = list(self.memory)
@@ -108,30 +112,34 @@ class InkelPentiun:
         return index
 
 
-    def _read_from_cache_d(self, addr):
-        if addr % 4 != 0:
+    def _read_from_cache_d(self, vaddr):
+        if vaddr % 4 != 0:
             print "WARNING: Unaligned cache access to address 0x%08x" % addr
 
-        elem = (addr >> 2) & (2**2 - 1) # Bits 2 and 3
+        paddr = self._physical_addr(vaddr)
 
-        index = self._update_cache_d(addr)
+        elem = (vaddr >> 2) & (2**2 - 1) # Bits 2 and 3
+
+        index = self._update_cache_d(paddr)
         return self.cache_d_data[index][elem * 8 : (elem + 1) * 8]
 
 
-    def _write_to_cache_d(self, addr, data, is_byte):
-        if not is_byte and addr % 4 != 0:
+    def _write_to_cache_d(self, vaddr, data, is_byte):
+        if not is_byte and vaddr % 4 != 0:
             print "WARNING: Unaligned cache access to address 0x%08x" % addr
 
-        index = self._update_cache_d(addr)
+        paddr = self._physical_addr(vaddr)
+
+        index = self._update_cache_d(paddr)
         cache_line = self.cache_d_data[index]
 
         if is_byte:
-            byte = addr & (2**4 - 1)
+            byte = paddr & (2**4 - 1)
             data_s = "%02x" % (data & (-1 * 2**8))
             msb = (byte + 1) * 2
             lsb = byte * 2
         else:
-            elem = (addr & 0xC) >> 2
+            elem = (paddr & 0xC) >> 2
             data_s = "%08x" % data
             msb = (elem + 1) * 4
             lsb = elem * 4
