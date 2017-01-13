@@ -327,7 +327,6 @@ ARCHITECTURE structure OF inkel_pentiun IS
 			exc_L          : IN STD_LOGIC;
 			exc_C          : IN STD_LOGIC;
 			conflict       : OUT STD_LOGIC;
-			switch_ctrl    : OUT STD_LOGIC;
 			reg_PC_reset   : OUT STD_LOGIC;
 			reg_F_D_reset  : OUT STD_LOGIC;
 			reg_D_A_reset  : OUT STD_LOGIC;
@@ -469,34 +468,6 @@ ARCHITECTURE structure OF inkel_pentiun IS
 		);
 	END COMPONENT;
 
-	COMPONENT Switch_UD IS
-		PORT(
-			Reg_Write : IN STD_LOGIC;
-			Mem_Read : IN STD_LOGIC;
-			Byte : IN STD_LOGIC;
-			Mem_Write : IN STD_LOGIC;
-			MemtoReg : IN STD_LOGIC;
-			ALU_Src_A : IN STD_LOGIC;
-			ALU_Src_B : IN STD_LOGIC;
-			inm_src2_v_D : IN STD_LOGIC;
-			Mul: IN STD_LOGIC;
-			dtlb_we : IN STD_LOGIC;
-			itlb_we : IN STD_LOGIC;
-			ctrl : IN STD_LOGIC;
-			Reg_Write_out : OUT STD_LOGIC;
-			Mem_Read_out : OUT STD_LOGIC;
-			Byte_out : OUT STD_LOGIC;
-			Mem_Write_out : OUT STD_LOGIC;
-			MemtoReg_out : OUT STD_LOGIC;
-			ALU_Src_A_out : OUT STD_LOGIC;
-			ALU_Src_B_out : OUT STD_LOGIC;
-			inm_src2_v_UD : OUT STD_LOGIC;
-			Mul_out : OUT STD_LOGIC;
-			dtlb_we_out : OUT STD_LOGIC;
-			itlb_we_out : OUT STD_LOGIC
-		);
-	END COMPONENT;
-
 	COMPONENT reg_AL IS
 		PORT(
 			clk : IN STD_LOGIC;
@@ -613,7 +584,6 @@ ARCHITECTURE structure OF inkel_pentiun IS
 	SIGNAL mul_D : STD_LOGIC;
 	SIGNAL dtlb_we_D : STD_LOGIC;
 	SIGNAL itlb_we_D : STD_LOGIC;
-	SIGNAL switch_ctrl : STD_LOGIC;
 	SIGNAL priv_status_D : STD_LOGIC;
 	SIGNAL invalid_inst_D : STD_LOGIC;
 	SIGNAL debug_dump_D : STD_LOGIC;
@@ -911,7 +881,6 @@ BEGIN
 		exc_L => exc_L_E,
 		exc_C => exc_C_E,
 		conflict => conflict_D,
-		switch_ctrl => switch_ctrl,
 		reg_PC_reset => reset_PC,
 		reg_F_D_reset => reg_F_D_reset_DU,
 		reg_D_A_reset => reg_D_A_reset_DU,
@@ -1035,32 +1004,6 @@ BEGIN
 		invalid_inst => invalid_inst_D
 	);
 
-	Switch_det: Switch_UD PORT MAP(
-		Reg_Write => reg_we_D,
-		Mem_Read => mem_read_D,
-		Byte => byte_D,
-		Mem_Write => mem_we_D,
-		MemtoReg => mem_to_reg_D,
-		ALU_Src_A => reg_src1_v_D,
-		ALU_Src_B => reg_src2_v_D,
-		inm_src2_v_D => inm_src2_v_D,
-		Mul => mul_D,
-		dtlb_we => dtlb_we_D,
-		itlb_we => itlb_we_D,
-		ctrl => switch_ctrl,
-		Reg_Write_out => reg_we_UD,
-		Mem_Read_out => mem_read_UD,
-		Byte_out => byte_UD,
-		Mem_Write_out => mem_we_UD,
-		MemtoReg_out => mem_to_reg_UD,
-		ALU_Src_A_out => reg_src1_v_UD,
-		ALU_Src_B_out => reg_src2_v_UD,
-		inm_src2_v_UD => inm_src2_v_UD,
-		Mul_out => mul_UD,
-		dtlb_we_out => dtlb_we_UD,
-		itlb_we_out => itlb_we_UD
-	);
-
 	rb: reg_bank PORT MAP(
 		clk => clk,
 		reset => reset,
@@ -1124,22 +1067,22 @@ BEGIN
 		clk => clk,
 		reset => reg_D_A_reset,
 		we => reg_D_A_we,
-		mul_in => mul_UD,
-		dtlb_we_in => dtlb_we_UD,
-		itlb_we_in => itlb_we_UD,
-		mem_we_in => mem_we_UD,
-		byte_in => byte_UD,
-		mem_read_in => mem_read_UD,
-		mem_to_reg_in => mem_to_reg_UD,
-		reg_we_in => reg_we_UD,
+		mul_in => mul_D,
+		dtlb_we_in => dtlb_we_D,
+		itlb_we_in => itlb_we_D,
+		mem_we_in => mem_we_D,
+		byte_in => byte_D,
+		mem_read_in => mem_read_D,
+		mem_to_reg_in => mem_to_reg_D,
+		reg_we_in => reg_we_D,
 		branch_in => branch_D,
 		branch_if_eq_in => branch_if_eq_D,
 		jump_in => jump_D,
 		inm_ext_in => inm_ext_D,
 		ALU_ctrl_in => ALU_ctrl_D,
-		reg_src1_v_in => reg_src1_v_UD,
-		reg_src2_v_in => reg_src2_v_UD,
-		inm_src2_v_in => inm_src2_v_UD,
+		reg_src1_v_in => reg_src1_v_D,
+		reg_src2_v_in => reg_src2_v_D,
+		inm_src2_v_in => inm_src2_v_D,
 		reg_src1_in => reg_src1_D,
 		reg_src2_in => reg_src2_D,
 		reg_dest_in => reg_dest_D,

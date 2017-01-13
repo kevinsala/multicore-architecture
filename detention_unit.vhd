@@ -33,7 +33,6 @@ ENTITY detention_unit IS
 		exc_L          : IN STD_LOGIC;
 		exc_C          : IN STD_LOGIC;
 		conflict       : OUT STD_LOGIC;
-		switch_ctrl    : OUT STD_LOGIC;
 		reg_PC_reset   : OUT STD_LOGIC;
 		reg_F_D_reset  : OUT STD_LOGIC;
 		reg_D_A_reset  : OUT STD_LOGIC;
@@ -75,8 +74,6 @@ BEGIN
 	conflict_MUL_ALU <= conflict_MUL_M1 OR conflict_MUL_M2 OR conflict_MUL_M3 OR conflict_MUL_M4;
 
 	conflict_i <= conflict_ALU OR conflict_MUL OR conflict_MUL_ALU;
-
-	switch_ctrl <= NOT conflict_i;
 
 	reg_PC_we <= NOT conflict_i AND done_F AND done_L;
 	reg_F_D_we <= NOT conflict_i AND done_L;

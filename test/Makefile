@@ -34,7 +34,6 @@ VHDL_SOURCES = $(PWD)/../utils.vhd \
                 $(PWD)/../reg_MUL.vhd \
                 $(PWD)/../reg_status.vhd \
                 $(PWD)/../sign_ext.vhd \
-                $(PWD)/../Switch_UD.vhd \
                 $(PWD)/../tlb.vhd
 TOPLEVEL = inkel_pentiun
 MODULE = test_inkel_pentiun
