@@ -70,7 +70,6 @@ BEGIN
 	p: PROCESS(clk)
 		VARIABLE object_line : INTEGER RANGE 0 TO 3;
 	BEGIN
-		-- Write on falling edge
 		IF falling_edge(clk) THEN
 			IF debug_dump = '1' THEN
 				dump_tlb("dump/tlb", tlb_tags);
