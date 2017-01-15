@@ -8,6 +8,7 @@ PACKAGE utils IS
 
 	TYPE data_cache_state_t IS (READY, LINEREQ, LINEREPL);
 	TYPE inst_cache_state_t IS (READY, LINEREQ);
+	TYPE store_buffer_state_t IS (READY, FLUSHING, FLUSHED);
 END utils;
 
 PACKAGE BODY utils IS
