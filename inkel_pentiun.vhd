@@ -34,12 +34,14 @@ ARCHITECTURE structure OF inkel_pentiun IS
 			exc_code_old : IN STD_LOGIC_VECTOR(1 DOWNTO 0);
 			exc_data_old : IN STD_LOGIC_VECTOR(31 DOWNTO 0);
 			debug_dump_in : IN STD_LOGIC;
+			rob_idx_in : IN STD_LOGIC_VECTOR(3 DOWNTO 0);
 			pc_out : OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
 			priv_status_out : OUT STD_LOGIC;
 			exc_out : OUT STD_LOGIC;
 			exc_code_out : OUT STD_LOGIC_VECTOR(1 DOWNTO 0);
 			exc_data_out : OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
-			debug_dump_out : OUT STD_LOGIC
+			debug_dump_out : OUT STD_LOGIC;
+			rob_idx_out : OUT STD_LOGIC_VECTOR(3 DOWNTO 0)
 		);
 	END COMPONENT;
 
@@ -481,12 +483,14 @@ ARCHITECTURE structure OF inkel_pentiun IS
 			exc_code_old : IN STD_LOGIC_VECTOR(1 DOWNTO 0);
 			exc_data_old : IN STD_LOGIC_VECTOR(31 DOWNTO 0);
 			debug_dump_in : IN STD_LOGIC;
+			rob_idx_in : IN STD_LOGIC_VECTOR(3 DOWNTO 0);
 			pc_out : OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
 			priv_status_out : OUT STD_LOGIC;
 			exc_out : OUT STD_LOGIC;
 			exc_code_out : OUT STD_LOGIC_VECTOR(1 DOWNTO 0);
 			exc_data_out : OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
-			debug_dump_out : OUT STD_LOGIC
+			debug_dump_out : OUT STD_LOGIC;
+			rob_idx_out : OUT STD_LOGIC_VECTOR(3 DOWNTO 0)
 		);
 	END COMPONENT;
 
@@ -594,6 +598,7 @@ ARCHITECTURE structure OF inkel_pentiun IS
 	SIGNAL priv_status_F : STD_LOGIC;
 	SIGNAL invalid_access_F : STD_LOGIC;
 	SIGNAL debug_dump_F : STD_LOGIC := '0';
+	SIGNAL rob_idx_F : STD_LOGIC_VECTOR(3 DOWNTO 0) := x"0"; -- TODO
 	SIGNAL pc_F : STD_LOGIC_VECTOR(31 DOWNTO 0);
 	SIGNAL inst_F : STD_LOGIC_VECTOR(31 DOWNTO 0);
 	SIGNAL mem_addr_F : STD_LOGIC_VECTOR(31 DOWNTO 0);
@@ -622,6 +627,7 @@ ARCHITECTURE structure OF inkel_pentiun IS
 	SIGNAL debug_dump_D : STD_LOGIC;
 	SIGNAL iret_D : STD_LOGIC;
 	SIGNAL ALU_ctrl_D : STD_LOGIC_VECTOR(2 DOWNTO 0);
+	SIGNAL rob_idx_D : STD_LOGIC_VECTOR(3 DOWNTO 0);
 	SIGNAL reg_src1_D : STD_LOGIC_VECTOR(4 DOWNTO 0);
 	SIGNAL reg_src2_D : STD_LOGIC_VECTOR(4 DOWNTO 0);
 	SIGNAL reg_dest_D : STD_LOGIC_VECTOR(4 DOWNTO 0);
@@ -659,6 +665,7 @@ ARCHITECTURE structure OF inkel_pentiun IS
 	SIGNAL alu_inst_A : STD_LOGIC;
 	SIGNAL mem_inst_A : STD_LOGIC;
 	SIGNAL ALU_ctrl_A : STD_LOGIC_VECTOR(2 DOWNTO 0);
+	SIGNAL rob_idx_A : STD_LOGIC_VECTOR(3 DOWNTO 0);
 	SIGNAL reg_dest_A : STD_LOGIC_VECTOR(4 DOWNTO 0);
 	SIGNAL reg_src1_A : STD_LOGIC_VECTOR(4 DOWNTO 0);
 	SIGNAL reg_src2_A : STD_LOGIC_VECTOR(4 DOWNTO 0);
@@ -685,6 +692,7 @@ ARCHITECTURE structure OF inkel_pentiun IS
 	SIGNAL debug_dump_L : STD_LOGIC;
 	SIGNAL dtlb_miss_L : STD_LOGIC;
 	SIGNAL invalid_access_L : STD_LOGIC;
+	SIGNAL rob_idx_L : STD_LOGIC_VECTOR(3 DOWNTO 0);
 	SIGNAL reg_dest_L : STD_LOGIC_VECTOR(4 DOWNTO 0);
 	SIGNAL pc_L : STD_LOGIC_VECTOR(31 DOWNTO 0);
 	SIGNAL ALU_out_L : STD_LOGIC_VECTOR(31 DOWNTO 0);
@@ -721,6 +729,7 @@ ARCHITECTURE structure OF inkel_pentiun IS
 	SIGNAL line_we_C : STD_LOGIC;
 	SIGNAL line_num_C : INTEGER RANGE 0 TO 3;
 	SIGNAL lru_line_num_C : INTEGER RANGE 0 TO 3;
+	SIGNAL rob_idx_C : STD_LOGIC_VECTOR(3 DOWNTO 0);
 	SIGNAL reg_dest_C : STD_LOGIC_VECTOR(4 DOWNTO 0);
 	SIGNAL pc_C : STD_LOGIC_VECTOR(31 DOWNTO 0);
 	SIGNAL ALU_out_C : STD_LOGIC_VECTOR(31 DOWNTO 0);
@@ -749,6 +758,7 @@ ARCHITECTURE structure OF inkel_pentiun IS
 	SIGNAL pc_M5_C : STD_LOGIC_VECTOR(31 DOWNTO 0);
 	SIGNAL priv_status_M5_C : STD_LOGIC;
 	SIGNAL debug_dump_M5_C : STD_LOGIC;
+	SIGNAL rob_idx_M5 : STD_LOGIC_VECTOR(3 DOWNTO 0);
 
 	-- Writeback stage signals
 	SIGNAL mem_inst_W : STD_LOGIC;
@@ -759,6 +769,7 @@ ARCHITECTURE structure OF inkel_pentiun IS
 	SIGNAL debug_dump_W : STD_LOGIC;
 	SIGNAL mul_W : STD_LOGIC;
 	SIGNAL mul_inst_W : STD_LOGIC;
+	SIGNAL rob_idx_W : STD_LOGIC_VECTOR(3 DOWNTO 0);
 	SIGNAL reg_dest_W : STD_LOGIC_VECTOR(4 DOWNTO 0);
 	SIGNAL pc_W : STD_LOGIC_VECTOR(31 DOWNTO 0);
 	SIGNAL reg_data_W : STD_LOGIC_VECTOR(31 DOWNTO 0);
@@ -1020,12 +1031,14 @@ BEGIN
 		exc_code_old => (OTHERS => 'X'),
 		exc_data_old => (OTHERS => 'X'),
 		debug_dump_in => debug_dump_F,
+		rob_idx_in => rob_idx_F,
 		pc_out => pc_D,
 		priv_status_out => priv_status_D,
 		exc_out => exc_D,
 		exc_code_out => exc_code_D,
 		exc_data_out => exc_data_D,
-		debug_dump_out => debug_dump_D
+		debug_dump_out => debug_dump_D,
+		rob_idx_out => rob_idx_D
 	);
 
 	----------------------------- Decode -------------------------------
@@ -1187,12 +1200,14 @@ BEGIN
 		exc_code_old => exc_code_D,
 		exc_data_old => exc_data_D,
 		debug_dump_in => debug_dump_D,
+		rob_idx_in => rob_idx_D,
 		pc_out => pc_A,
 		priv_status_out => priv_status_A,
 		exc_out => exc_A,
 		exc_code_out => exc_code_A,
 		exc_data_out => exc_data_A,
-		debug_dump_out => debug_dump_A
+		debug_dump_out => debug_dump_A,
+		rob_idx_out => rob_idx_A
 	);
 
 	--------------------------------- Execution ------------------------------------------
@@ -1282,12 +1297,14 @@ BEGIN
 		exc_code_old => exc_code_A,
 		exc_data_old => exc_data_A,
 		debug_dump_in => debug_dump_A,
+		rob_idx_in => rob_idx_A,
 		pc_out => pc_L,
 		priv_status_out => priv_status_L,
 		exc_out => exc_L,
 		exc_code_out => exc_code_L,
 		exc_data_out => exc_data_L,
-		debug_dump_out => debug_dump_L
+		debug_dump_out => debug_dump_L,
+		rob_idx_out => rob_idx_L
 	);
 
 	-------------------------------- Mul Pipeline -----------------------------------------
@@ -1321,12 +1338,14 @@ BEGIN
 		exc_code_old => exc_code_A,
 		exc_data_old => exc_data_A,
 		debug_dump_in => debug_dump_A,
+		rob_idx_in => rob_idx_A,
 		pc_out => pc_M5,
 		priv_status_out => priv_status_M5,
 		exc_out => exc_M5,
 		exc_code_out => exc_code_M5,
 		exc_data_out => exc_data_M5,
-		debug_dump_out => debug_dump_M5
+		debug_dump_out => debug_dump_M5,
+		rob_idx_out => rob_idx_M5
 	);
 
 	-------------------------------- Lookup  ----------------------------------------------
@@ -1416,12 +1435,14 @@ BEGIN
 		exc_code_old => exc_code_L,
 		exc_data_old => exc_data_L,
 		debug_dump_in => debug_dump_L,
+		rob_idx_in => rob_idx_L,
 		pc_out => pc_C,
 		priv_status_out => priv_status_C,
 		exc_out => exc_C,
 		exc_code_out => exc_code_C,
 		exc_data_out => exc_data_C,
-		debug_dump_out => debug_dump_C
+		debug_dump_out => debug_dump_C,
+		rob_idx_out => rob_idx_C
 	);
 
 	-------------------------------- Cache  ----------------------------------------------
@@ -1532,12 +1553,14 @@ BEGIN
 		exc_code_old => exc_code_M5_C,
 		exc_data_old => exc_data_M5_C,
 		debug_dump_in => debug_dump_M5_C,
+		rob_idx_in => rob_idx_C,
 		pc_out => pc_W,
 		priv_status_out => priv_status_W,
 		exc_out => exc_W,
 		exc_code_out => exc_code_W,
 		exc_data_out => exc_data_W,
-		debug_dump_out => debug_dump_W
+		debug_dump_out => debug_dump_W,
+		rob_idx_out => rob_idx_W
 	);
 
 	mux_busW: mux2_32bits PORT MAP(

@@ -36,12 +36,14 @@ ENTITY ALU_MUL_seg IS
 		exc_code_old : IN STD_LOGIC_VECTOR(1 DOWNTO 0);
 		exc_data_old : IN STD_LOGIC_VECTOR(31 DOWNTO 0);
 		debug_dump_in : IN STD_LOGIC;
+		rob_idx_in : IN STD_LOGIC_VECTOR(3 DOWNTO 0);
 		pc_out : OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
 		priv_status_out : OUT STD_LOGIC;
 		exc_out : OUT STD_LOGIC;
 		exc_code_out : OUT STD_LOGIC_VECTOR(1 DOWNTO 0);
 		exc_data_out : OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
-		debug_dump_out : OUT STD_LOGIC
+		debug_dump_out : OUT STD_LOGIC;
+		rob_idx_out : OUT STD_LOGIC_VECTOR(3 DOWNTO 0)
 	); 
 END ALU_MUL_seg;
 
@@ -78,12 +80,14 @@ COMPONENT reg_status IS
 		exc_code_old : IN STD_LOGIC_VECTOR(1 DOWNTO 0);
 		exc_data_old : IN STD_LOGIC_VECTOR(31 DOWNTO 0);
 		debug_dump_in : IN STD_LOGIC;
+		rob_idx_in : IN STD_LOGIC_VECTOR(3 DOWNTO 0);
 		pc_out : OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
 		priv_status_out : OUT STD_LOGIC;
 		exc_out : OUT STD_LOGIC;
 		exc_code_out : OUT STD_LOGIC_VECTOR(1 DOWNTO 0);
 		exc_data_out : OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
-		debug_dump_out : OUT STD_LOGIC
+		debug_dump_out : OUT STD_LOGIC;
+		rob_idx_out : OUT STD_LOGIC_VECTOR(3 DOWNTO 0)
 	);
 END COMPONENT;
 
@@ -115,6 +119,7 @@ SIGNAL exc_2 : STD_LOGIC;
 SIGNAL exc_code_2 : STD_LOGIC_VECTOR(1 DOWNTO 0);
 SIGNAL exc_data_2 : STD_LOGIC_VECTOR(31 DOWNTO 0);
 SIGNAL debug_dump_2 : STD_LOGIC;
+SIGNAL rob_idx_2 : STD_LOGIC_VECTOR(3 DOWNTO 0);
 
 SIGNAL pc_3 : STD_LOGIC_VECTOR(31 DOWNTO 0);
 SIGNAL priv_status_3 : STD_LOGIC;
@@ -122,6 +127,7 @@ SIGNAL exc_3 : STD_LOGIC;
 SIGNAL exc_code_3 : STD_LOGIC_VECTOR(1 DOWNTO 0);
 SIGNAL exc_data_3 : STD_LOGIC_VECTOR(31 DOWNTO 0);
 SIGNAL debug_dump_3 : STD_LOGIC;
+SIGNAL rob_idx_3 : STD_LOGIC_VECTOR(3 DOWNTO 0);
 
 SIGNAL pc_4 : STD_LOGIC_VECTOR(31 DOWNTO 0);
 SIGNAL priv_status_4 : STD_LOGIC;
@@ -129,6 +135,7 @@ SIGNAL exc_4 : STD_LOGIC;
 SIGNAL exc_code_4 : STD_LOGIC_VECTOR(1 DOWNTO 0);
 SIGNAL exc_data_4 : STD_LOGIC_VECTOR(31 DOWNTO 0);
 SIGNAL debug_dump_4 : STD_LOGIC;
+SIGNAL rob_idx_4 : STD_LOGIC_VECTOR(3 DOWNTO 0);
 
 BEGIN
 
@@ -160,12 +167,14 @@ BEGIN
 		exc_code_old => exc_code_old,
 		exc_data_old => exc_data_old,
 		debug_dump_in => debug_dump_in,
+		rob_idx_in => rob_idx_in,
 		pc_out => pc_2,
 		priv_status_out => priv_status_2,
 		exc_out => exc_2,
 		exc_code_out => exc_code_2,
 		exc_data_out => exc_data_2,
-		debug_dump_out => debug_dump_2
+		debug_dump_out => debug_dump_2,
+		rob_idx_out => rob_idx_2
 	);
 
 	m2_3: reg_MUL PORT MAP(
@@ -196,12 +205,14 @@ BEGIN
 		exc_code_old => exc_code_2,
 		exc_data_old => exc_data_2,
 		debug_dump_in => debug_dump_2,
+		rob_idx_in => rob_idx_2,
 		pc_out => pc_3,
 		priv_status_out => priv_status_3,
 		exc_out => exc_3,
 		exc_code_out => exc_code_3,
 		exc_data_out => exc_data_3,
-		debug_dump_out => debug_dump_3
+		debug_dump_out => debug_dump_3,
+		rob_idx_out => rob_idx_3
 	);
 
 	m3_4: reg_MUL PORT MAP(
@@ -232,12 +243,14 @@ BEGIN
 		exc_code_old => exc_code_3,
 		exc_data_old => exc_data_3,
 		debug_dump_in => debug_dump_3,
+		rob_idx_in => rob_idx_3,
 		pc_out => pc_4,
 		priv_status_out => priv_status_4,
 		exc_out => exc_4,
 		exc_code_out => exc_code_4,
 		exc_data_out => exc_data_4,
-		debug_dump_out => debug_dump_4
+		debug_dump_out => debug_dump_4,
+		rob_idx_out => rob_idx_4
 	);
 
 	m4_5: reg_MUL PORT MAP(
@@ -268,12 +281,14 @@ BEGIN
 		exc_code_old => exc_code_4,
 		exc_data_old => exc_data_4,
 		debug_dump_in => debug_dump_4,
+		rob_idx_in => rob_idx_4,
 		pc_out => pc_out,
 		priv_status_out => priv_status_out,
 		exc_out => exc_out,
 		exc_code_out => exc_code_out,
 		exc_data_out => exc_data_out,
-		debug_dump_out => debug_dump_out
+		debug_dump_out => debug_dump_out,
+		rob_idx_out => rob_idx_out
 	);
 
 	load_M1 <= load AND done_L;
