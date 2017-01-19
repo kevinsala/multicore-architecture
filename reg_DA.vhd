@@ -27,6 +27,7 @@ ENTITY reg_DA IS
 		reg_data1_in : IN STD_LOGIC_VECTOR(31 DOWNTO 0);
 		reg_data2_in : IN STD_LOGIC_VECTOR(31 DOWNTO 0);
 		mem_data_in : IN STD_LOGIC_VECTOR(31 DOWNTO 0);
+		iret_in : IN STD_LOGIC;
 		mul_out : OUT STD_LOGIC;
 		dtlb_we_out : OUT STD_LOGIC;
 		itlb_we_out : OUT STD_LOGIC;
@@ -48,7 +49,8 @@ ENTITY reg_DA IS
 		reg_dest_out : OUT STD_LOGIC_VECTOR(4 DOWNTO 0);
 		reg_data1_out : OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
 		reg_data2_out : OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
-		mem_data_out : OUT STD_LOGIC_VECTOR(31 DOWNTO 0)
+		mem_data_out : OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
+		iret_out : OUT STD_LOGIC
 	);
 END reg_DA;
 
@@ -80,6 +82,7 @@ BEGIN
 				reg_data1_out <= (OTHERS => '0');
 				reg_data2_out <= (OTHERS => '0');
 				mem_data_out <= (OTHERS => '0');
+				iret_out <= '0';
 			ELSE
 				IF we = '1' THEN
 					mul_out <= mul_in;
@@ -104,6 +107,7 @@ BEGIN
 					reg_data1_out <= reg_data1_in;
 					reg_data2_out <= reg_data2_in;
 					mem_data_out <= mem_data_in;
+					iret_out <= iret_in;
 				END IF;
 			END IF;
 		END IF;

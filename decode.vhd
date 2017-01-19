@@ -7,6 +7,7 @@ ENTITY decode IS
 	PORT (
 		inst : IN STD_LOGIC_VECTOR(31 DOWNTO 0);
 		pc : IN STD_LOGIC_VECTOR(31 DOWNTO 0);
+		priv_status : IN STD_LOGIC;
 		op_code : OUT STD_LOGIC_VECTOR(6 DOWNTO 0);
 		reg_src1 : OUT STD_LOGIC_VECTOR(4 DOWNTO 0);
 		reg_src2 : OUT STD_LOGIC_VECTOR(4 DOWNTO 0);
@@ -27,6 +28,7 @@ ENTITY decode IS
 		mem_read : OUT STD_LOGIC;
 		mem_to_reg : OUT STD_LOGIC;
 		reg_we : OUT STD_LOGIC;
+		iret : OUT STD_LOGIC;
 		invalid_inst : OUT STD_LOGIC
 	);
 END decode;
@@ -52,11 +54,15 @@ ARCHITECTURE structure OF decode IS
 	CONSTANT OP_BNE : STD_LOGIC_VECTOR := "0110010";
 	CONSTANT OP_JMP : STD_LOGIC_VECTOR := "0110001";
 	CONSTANT OP_TLBWRITE : STD_LOGIC_VECTOR := "0110100";
+	CONSTANT OP_IRET : STD_LOGIC_VECTOR := "0110101";
 	CONSTANT OP_NOP : STD_LOGIC_VECTOR := "1111111";
 
 	SIGNAL op_code_int : STD_LOGIC_VECTOR(6 DOWNTO 0);
 	SIGNAL inm_ext_int : STD_LOGIC_VECTOR(31 DOWNTO 0);
 	SIGNAL offset_low : STD_LOGIC_VECTOR(9 DOWNTO 0);
+
+	SIGNAL valid_inst : STD_LOGIC;
+	SIGNAL priv_inst : STD_LOGIC;
 BEGIN
 	op_code_int <= inst(31 DOWNTO 25);
 
@@ -112,13 +118,19 @@ BEGIN
 							op_code_int = OP_LDB OR op_code_int = OP_LI OR
 							op_code_int = OP_MOV);
 
-    invalid_inst <= NOT to_std_logic(op_code_int = OP_ADD OR op_code_int = OP_SUB OR
-									op_code_int = OP_MUL OR op_code_int = OP_LDB OR
-									op_code_int = OP_LDW OR op_code_int = OP_LI OR
-									op_code_int = OP_STB OR op_code_int = OP_STW OR
-									op_code_int = OP_MOV OR op_code_int = OP_BEQ OR
-									op_code_int = OP_BNE OR op_code_int = OP_JMP OR
-									op_code_int = OP_NOP);
+	iret <= to_std_logic(op_code_int = OP_IRET);
+
+	priv_inst <= to_std_logic(op_code_int = OP_TLBWRITE OR op_code_int = OP_IRET);
+	valid_inst <= to_std_logic(op_code_int = OP_ADD OR op_code_int = OP_SUB OR
+								op_code_int = OP_MUL OR op_code_int = OP_LDB OR
+								op_code_int = OP_LDW OR op_code_int = OP_LI OR
+								op_code_int = OP_STB OR op_code_int = OP_STW OR
+								op_code_int = OP_MOV OR op_code_int = OP_BEQ OR
+								op_code_int = OP_BNE OR op_code_int = OP_JMP OR
+								op_code_int = OP_TLBWRITE OR op_code_int = OP_IRET OR
+								op_code_int = OP_NOP);
+
+	invalid_inst <= NOT valid_inst OR (priv_inst AND NOT priv_status);
 
 END structure;
 
