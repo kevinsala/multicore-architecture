@@ -242,10 +242,8 @@ ARCHITECTURE structure OF inkel_pentiun IS
 			debug_dump : IN STD_LOGIC;
 			src1 : IN STD_LOGIC_VECTOR(4 DOWNTO 0);
 			src2 : IN STD_LOGIC_VECTOR(4 DOWNTO 0);
-			srcctrl : IN STD_LOGIC_VECTOR(1 DOWNTO 0);
 			data1 : OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
 			data2 : OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
-			datactrl : OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
 			we : IN STD_LOGIC;
 			dest : IN STD_LOGIC_VECTOR(4 DOWNTO 0);
 			data_in : IN STD_LOGIC_VECTOR(31 DOWNTO 0);
@@ -1037,10 +1035,8 @@ BEGIN
 		debug_dump => debug_dump_W,
 		src1 => reg_src1_D,
 		src2 => reg_src2_D,
-		srcctrl => "00",
 		data1 => reg_data1_D,
 		data2 => reg_data2_D,
-		datactrl => open,
 		we => reg_we_W,
 		dest => reg_dest_W,
 		data_in => reg_data_W,
