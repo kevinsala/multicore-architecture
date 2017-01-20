@@ -44,7 +44,8 @@ ENTITY detention_unit IS
 		reg_D_A_we     : OUT STD_LOGIC;
 		reg_A_L_we     : OUT STD_LOGIC;
 		reg_L_C_we     : OUT STD_LOGIC;
-		reg_C_W_we     : OUT STD_LOGIC
+		reg_C_W_we     : OUT STD_LOGIC;
+		rob_count      : OUT STD_LOGIC
 	);
 END detention_unit;
 
@@ -76,6 +77,7 @@ BEGIN
 	conflict_i <= conflict_ALU OR conflict_MUL OR conflict_MUL_ALU;
 
 	reg_PC_we <= NOT conflict_i AND done_F AND done_L;
+	rob_count <= NOT conflict_i AND done_F AND done_L;
 	reg_F_D_we <= NOT conflict_i AND done_L;
 	reg_D_A_we <= done_L AND NOT conflict_MUL;
 	reg_A_L_we <= done_L;
