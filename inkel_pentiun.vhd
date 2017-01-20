@@ -212,7 +212,9 @@ ARCHITECTURE structure OF inkel_pentiun IS
 			clk : IN STD_LOGIC;
 			reset : IN STD_LOGIC;
 			we : IN STD_LOGIC;
+			inst_v_in : IN STD_LOGIC;
 			inst_in : IN STD_LOGIC_VECTOR(31 DOWNTO 0);
+			inst_v_out : OUT STD_LOGIC;
 			inst_out : OUT STD_LOGIC_VECTOR(31 DOWNTO 0)
 		);
 	END COMPONENT;
@@ -256,6 +258,7 @@ ARCHITECTURE structure OF inkel_pentiun IS
 	COMPONENT decode IS
 		PORT(
 			inst : IN STD_LOGIC_VECTOR(31 DOWNTO 0);
+			inst_v : IN STD_LOGIC;
 			pc : IN STD_LOGIC_VECTOR(31 DOWNTO 0);
 			priv_status : IN STD_LOGIC;
 			op_code : OUT STD_LOGIC_VECTOR(6 DOWNTO 0);
@@ -597,6 +600,7 @@ ARCHITECTURE structure OF inkel_pentiun IS
 	SIGNAL mem_data_in_F : STD_LOGIC_VECTOR(127 DOWNTO 0);
 
 	-- Decode stage signals
+	SIGNAL inst_v_D : STD_LOGIC;
 	SIGNAL branch_D : STD_LOGIC;
 	SIGNAL jump_D : STD_LOGIC;
 	SIGNAL branch_if_eq_D : STD_LOGIC;
@@ -997,7 +1001,9 @@ BEGIN
 		clk => clk,
 		reset => reg_F_D_reset,
 		we => reg_F_D_we,
+		inst_v_in => inst_v_F,
 		inst_in => inst_F,
+		inst_v_out => inst_v_D,
 		inst_out => inst_D
 	);
 
@@ -1026,6 +1032,7 @@ BEGIN
 
 	d: decode PORT MAP(
 		inst => inst_D,
+		inst_v => inst_v_D,
 		pc => pc_D,
 		priv_status => priv_status_D,
 		op_code => op_code_D,

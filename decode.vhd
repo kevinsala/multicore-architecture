@@ -6,6 +6,7 @@ USE work.utils.ALL;
 ENTITY decode IS
 	PORT (
 		inst : IN STD_LOGIC_VECTOR(31 DOWNTO 0);
+		inst_v : IN STD_LOGIC;
 		pc : IN STD_LOGIC_VECTOR(31 DOWNTO 0);
 		priv_status : IN STD_LOGIC;
 		op_code : OUT STD_LOGIC_VECTOR(6 DOWNTO 0);
@@ -133,7 +134,8 @@ BEGIN
 								op_code_int = OP_MOV OR op_code_int = OP_BEQ OR
 								op_code_int = OP_BNE OR op_code_int = OP_JMP OR
 								op_code_int = OP_IRET OR op_code_int = OP_NOP);
-	alu_inst <= alu_inst_int;
+	-- inst_v necessary to distinguish bubbles from real NOPs
+	alu_inst <= alu_inst_int AND inst_v;
 	mem_inst_int <= to_std_logic(op_code_int = OP_LDB OR op_code_int = OP_LDW OR
 								op_code_int = OP_STB OR op_code_int = OP_STW OR
 								op_code_int = OP_TLBWRITE);
