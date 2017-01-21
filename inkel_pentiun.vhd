@@ -172,8 +172,6 @@ ARCHITECTURE structure OF inkel_pentiun IS
 			re             : IN  STD_LOGIC;
 			we             : IN  STD_LOGIC;
 			is_byte        : IN  STD_LOGIC;
-			state          : IN  data_cache_state_t;
-			state_nx       : OUT data_cache_state_t;
 			hit            : OUT STD_LOGIC;
 			done           : OUT STD_LOGIC;
 			line_num       : OUT INTEGER RANGE 0 TO 3;
@@ -507,7 +505,6 @@ ARCHITECTURE structure OF inkel_pentiun IS
 			reg_dest_in : IN STD_LOGIC_VECTOR(4 DOWNTO 0);
 			ALU_out_in : IN STD_LOGIC_VECTOR(31 DOWNTO 0);
 			mem_data_in : IN STD_LOGIC_VECTOR(31 DOWNTO 0);
-			cache_state_in : IN data_cache_state_t;
 			alu_inst_out : OUT STD_LOGIC;
 			mem_inst_out : OUT STD_LOGIC;
 			dtlb_we_out : OUT STD_LOGIC;
@@ -519,8 +516,7 @@ ARCHITECTURE structure OF inkel_pentiun IS
 			reg_we_out : OUT STD_LOGIC;
 			reg_dest_out : OUT STD_LOGIC_VECTOR(4 DOWNTO 0);
 			ALU_out_out : OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
-			mem_data_out : OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
-			cache_state_out : OUT data_cache_state_t
+			mem_data_out : OUT STD_LOGIC_VECTOR(31 DOWNTO 0)
 		);
 	END COMPONENT;
 
@@ -677,8 +673,6 @@ ARCHITECTURE structure OF inkel_pentiun IS
 	SIGNAL cache_re_L : STD_LOGIC;
 	SIGNAL cache_we_L : STD_LOGIC;
 	SIGNAL byte_L : STD_LOGIC;
-	SIGNAL state_L : data_cache_state_t;
-	SIGNAL state_nx_L : data_cache_state_t;
 	SIGNAL mem_to_reg_L : STD_LOGIC;
 	SIGNAL reg_we_L : STD_LOGIC;
 	SIGNAL priv_status_L : STD_LOGIC;
@@ -1253,7 +1247,6 @@ BEGIN
 		reg_dest_in => reg_dest_A,
 		ALU_out_in => ALU_out_A,
 		mem_data_in => mem_data_A_BP,
-		cache_state_in => state_nx_L,
 		alu_inst_out => alu_inst_L,
 		mem_inst_out => mem_inst_L,
 		dtlb_we_out => dtlb_we_L,
@@ -1265,8 +1258,7 @@ BEGIN
 		reg_we_out => reg_we_L,
 		reg_dest_out => reg_dest_L,
 		ALU_out_out => ALU_out_L,
-		mem_data_out => cache_data_in_L,
-		cache_state_out => state_L
+		mem_data_out => cache_data_in_L
 	);
 
 	reg_status_A_L: reg_status PORT MAP(
@@ -1341,8 +1333,6 @@ BEGIN
 		re => cache_re_L,
 		we => cache_we_L,
 		is_byte => byte_L,
-		state => state_L,
-		state_nx => state_nx_L,
 		hit => hit_L,
 		done => done_L,
 		line_num => line_num_L,

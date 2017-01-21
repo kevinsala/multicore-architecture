@@ -14,10 +14,8 @@ ENTITY cache_tags IS
 		re             : IN  STD_LOGIC;
 		we             : IN  STD_LOGIC;
 		is_byte        : IN  STD_LOGIC;
-		state          : IN  data_cache_state_t;
-		state_nx       : OUT data_cache_state_t;
-		hit            : OUT STD_LOGIC;
 		done           : OUT STD_LOGIC;
+		hit            : OUT STD_LOGIC;
 		line_num       : OUT INTEGER RANGE 0 TO 3;
 		line_we        : OUT STD_LOGIC;
 		lru_line_num   : OUT INTEGER RANGE 0 TO 3;
@@ -25,7 +23,12 @@ ENTITY cache_tags IS
 		mem_req        : OUT STD_LOGIC;
 		mem_addr       : OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
 		mem_we         : OUT STD_LOGIC;
-		mem_done       : IN  STD_LOGIC
+		mem_done       : IN  STD_LOGIC;
+		repl           : OUT STD_LOGIC;
+		repl_addr      : OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
+		sb_done        : IN STD_LOGIC;
+		sb_addr        : IN STD_LOGIC_VECTOR(31 DOWNTO 0);
+		sb_we          : IN STD_LOGIC
 	);
 END cache_tags;
 
@@ -47,6 +50,7 @@ ARCHITECTURE cache_tags_behavior OF cache_tags IS
 	SIGNAL invalid_access_i : STD_LOGIC;
 
 	-- The next state of the cache
+	SIGNAL state_i : data_cache_state_t;
 	SIGNAL state_nx_i : data_cache_state_t;
 
 	-- Determine the line of the cache that has hit with the access
@@ -55,8 +59,13 @@ ARCHITECTURE cache_tags_behavior OF cache_tags IS
 	SIGNAL hit_line_num_i : INTEGER RANGE 0 TO 3 := 0;
 
 	-- Replacement signals
-	SIGNAL replacement_i : STD_LOGIC := '0';
+	SIGNAL repl_i : STD_LOGIC := '0';
+	SIGNAL repl_dirty_i : STD_LOGIC := '0';
 	SIGNAL lru_line_num_i : INTEGER RANGE 0 TO 3 := 0;
+
+	-- Store buffer signals
+	SIGNAL sb_line_i : hit_t;
+	SIGNAL sb_line_num_i : INTEGER RANGE 0 TO 3 := 0;
 
 	-- Procedure to reset and initialize the cache
 	PROCEDURE reset_cache(
@@ -80,7 +89,7 @@ ARCHITECTURE cache_tags_behavior OF cache_tags IS
 	-- Procedure to execute the Least Recently Used alogrithm
 	PROCEDURE LRU_execute(
 			SIGNAL lru_fields : INOUT lru_fields_t;
-			VARIABLE line_id : IN INTEGER RANGE 0 TO 3
+			SIGNAL line_id : IN INTEGER RANGE 0 TO 3
 		) IS
 		VARIABLE old_value : INTEGER RANGE 0 TO 3 := lru_fields(line_id);
 	BEGIN
@@ -112,30 +121,55 @@ ARCHITECTURE cache_tags_behavior OF cache_tags IS
 	END PROCEDURE;
 BEGIN
 
+internal_reg_process : PROCESS(clk, reset)
+BEGIN
+	IF rising_edge(clk) THEN
+		IF reset = '1' THEN
+			state_i <= READY;
+		ELSE
+			state_i <= state_nx_i;
+		END IF;
+	END IF;
+END PROCESS internal_reg_process;
+
 -- Process that computes the next state of the cache
-next_state_process : process(reset, state, re, we, invalid_access_i, hit_i, replacement_i, mem_done)
+next_state_process : PROCESS(reset, state_i, re, we, sb_done, invalid_access_i, hit_i, repl_dirty_i, mem_done)
 BEGIN
 	IF reset = '1' THEN
 		state_nx_i <= READY;
 	ELSE
-		state_nx_i <= state;
-		IF state = READY THEN
+		state_nx_i <= state_i;
+		IF state_i = READY THEN
 			IF (re = '1' OR we = '1') AND invalid_access_i = '0' THEN
+				IF sb_done = '0' THEN
+					state_nx_i <= WAITSB;
+				ELSE
+					IF hit_i = '1' THEN
+						state_nx_i <= READY;
+					ELSIF repl_dirty_i = '1' THEN
+						state_nx_i <= LINEREPL;
+					ELSE
+						state_nx_i <= LINEREQ;
+					END IF;
+				END IF;
+			END IF;
+		ELSIF state_i = WAITSB THEN
+			IF sb_done = '1' THEN
 				IF hit_i = '1' THEN
 					state_nx_i <= READY;
-				ELSIF replacement_i = '1' THEN
+				ELSIF repl_dirty_i = '1' THEN
 					state_nx_i <= LINEREPL;
 				ELSE
 					state_nx_i <= LINEREQ;
 				END IF;
 			END IF;
 
-		ELSIF state = LINEREPL THEN
+		ELSIF state_i = LINEREPL THEN
 			IF mem_done = '1' THEN
 				state_nx_i <= LINEREQ;
 			END IF;
 
-		ELSIF state = LINEREQ THEN
+		ELSIF state_i = LINEREQ THEN
 			IF mem_done = '1' THEN
 				state_nx_i <= READY;
 			END IF;
@@ -144,10 +178,7 @@ BEGIN
 END PROCESS next_state_process;
 
 -- Process that sets the output signals of the cache
-execution_process : process(clk)
-	VARIABLE serve_access : BOOLEAN;
-	VARIABLE request_line : BOOLEAN;
-	VARIABLE target_line : INTEGER RANGE 0 TO 3;
+execution_process : PROCESS(clk)
 BEGIN
 	IF rising_edge(clk) AND reset = '1' THEN
 		reset_cache(lru_fields, valid_fields, dirty_fields, mem_req);
@@ -157,53 +188,46 @@ BEGIN
 			dump_cache_tags("dump/cache_d_tags", valid_fields, tag_fields);
 		END IF;
 
-		serve_access := FALSE;
-		request_line := FALSE;
-
-		IF state = READY THEN
+		IF state_i = READY OR state_i = WAITSB THEN
 			IF state_nx_i = READY THEN
 				IF re = '1' OR we = '1' THEN
-					target_line := hit_line_num_i;
-					serve_access := TRUE;
+					LRU_execute(lru_fields, hit_line_num_i);
 				END IF;
 			ELSIF state_nx_i = LINEREPL THEN
 				mem_req <= '1';
 				mem_we <= '1';
 				mem_addr <= tag_fields(lru_line_num_i) & "0000";
 			ELSIF state_nx_i = LINEREQ THEN
-				request_line := TRUE;
+				mem_req <= '1';
+				mem_we <= '0';
+				mem_addr <= addr;
 			END IF;
-		ELSIF state = LINEREPL THEN
+		ELSIF state_i = LINEREPL THEN
 			IF state_nx_i = LINEREQ THEN
-				request_line := TRUE;
+				mem_req <= '1';
+				mem_we <= '0';
+				mem_addr <= addr;
 			END IF;
-		ELSIF state = LINEREQ THEN
+		ELSIF state_i = LINEREQ THEN
 			IF state_nx_i = READY THEN
-				target_line := lru_line_num_i;
 				mem_req <= '0';
-				valid_fields(target_line) <= '1';
-				dirty_fields(target_line) <= '0';
-				tag_fields(target_line) <= addr(31 DOWNTO 4);
-				serve_access := TRUE;
+				valid_fields(lru_line_num_i) <= '1';
+				dirty_fields(lru_line_num_i) <= '0';
+				tag_fields(lru_line_num_i) <= addr(31 DOWNTO 4);
+				LRU_execute(lru_fields, lru_line_num_i);
 			END IF;
 		END IF;
 
-		IF serve_access THEN
-			IF we = '1' THEN
-				dirty_fields(target_line) <= '1';
+		IF state_nx_i = WAITSB THEN
+			IF sb_we = '1' THEN
+				dirty_fields(sb_line_num_i) <= '1';
 			END IF;
-			LRU_execute(lru_fields, target_line);
-		ELSIF request_line THEN
-			mem_req <= '1';
-			mem_we <= '0';
-			mem_addr <= addr;
 		END IF;
 	END IF;
 END PROCESS execution_process;
 
 -- Check if the access is invalid
-invalid_access_i <= '1' WHEN (re = '1' OR we = '1') AND is_byte = '0' AND addr(1 DOWNTO 0) /= "00"
-					ELSE '0';
+invalid_access_i <= '1' WHEN (re = '1' OR we = '1') AND is_byte = '0' AND addr(1 DOWNTO 0) /= "00" ELSE '0';
 
 -- For each line, determine if the access has hit
 hit_line_i(0) <= valid_fields(0) AND to_std_logic(tag_fields(0) = addr(31 DOWNTO 4));
@@ -228,19 +252,31 @@ lru_line_num_i <= 0 WHEN lru_fields(0) = 3
 		ELSE 3 WHEN lru_fields(3) = 3
 		ELSE 0;
 
--- Determine if a replacement is needed
-replacement_i <= NOT hit_i AND dirty_fields(lru_line_num_i) AND valid_fields(0) AND valid_fields(1) AND valid_fields(2) AND valid_fields(3);
+sb_line_i(0) <= valid_fields(0) AND to_std_logic(tag_fields(0) = sb_addr(31 DOWNTO 4));
+sb_line_i(1) <= valid_fields(1) AND to_std_logic(tag_fields(1) = sb_addr(31 DOWNTO 4));
+sb_line_i(2) <= valid_fields(2) AND to_std_logic(tag_fields(2) = sb_addr(31 DOWNTO 4));
+sb_line_i(3) <= valid_fields(3) AND to_std_logic(tag_fields(3) = sb_addr(31 DOWNTO 4));
 
--- Logic of the next state
-state_nx <= state_nx_i;
+sb_line_num_i <= 0 WHEN sb_line_i(0) = '1'
+		ELSE 1 WHEN sb_line_i(1) = '1'
+		ELSE 2 WHEN sb_line_i(2) = '1'
+		ELSE 3 WHEN sb_line_i(3) = '1'
+		ELSE 0;
+
+-- Determine if a replacement is needed
+repl_i <= NOT hit_i AND valid_fields(0) AND valid_fields(1) AND valid_fields(2) AND valid_fields(3);
+repl_addr <= tag_fields(lru_line_num_i) & "0000";
+repl <= repl_i;
+
+-- Determine if the replaced line is dirty
+repl_dirty_i <= repl_i AND dirty_fields(lru_line_num_i);
 
 -- The cache has not finished only when a access produces a miss
 done <= hit_i OR NOT(re OR we);
 
 -- Output signals to send new lines to the data cache
 line_num <= hit_line_num_i;
-line_we <= '1' WHEN state = LINEREQ AND state_nx_i = READY
-		ELSE '0';
+line_we <= '1' WHEN state_i = LINEREQ AND state_nx_i = READY ELSE '0';
 
 -- Other output signals
 hit <= hit_i;

@@ -18,7 +18,6 @@ ENTITY reg_AL IS
 		reg_dest_in : IN STD_LOGIC_VECTOR(4 DOWNTO 0);
 		ALU_out_in : IN STD_LOGIC_VECTOR(31 DOWNTO 0);
 		mem_data_in : IN STD_LOGIC_VECTOR(31 DOWNTO 0);
-		cache_state_in : IN data_cache_state_t;
 		alu_inst_out : OUT STD_LOGIC;
 		mem_inst_out : OUT STD_LOGIC;
 		dtlb_we_out : OUT STD_LOGIC;
@@ -30,8 +29,7 @@ ENTITY reg_AL IS
 		reg_we_out : OUT STD_LOGIC;
 		reg_dest_out : OUT STD_LOGIC_VECTOR(4 DOWNTO 0);
 		ALU_out_out : OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
-		mem_data_out : OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
-		cache_state_out : OUT data_cache_state_t
+		mem_data_out : OUT STD_LOGIC_VECTOR(31 DOWNTO 0)
 	);
 END reg_AL;
 
@@ -53,7 +51,6 @@ BEGIN
 				reg_dest_out <= (OTHERS => '0');
 				ALU_out_out <= (OTHERS => '0');
 				mem_data_out <= (OTHERS => '0');
-				cache_state_out <= READY;
 			ELSE
 				IF we = '1' THEN
 					alu_inst_out <= alu_inst_in;
@@ -69,7 +66,6 @@ BEGIN
 					ALU_out_out <= ALU_out_in;
 					mem_data_out <= mem_data_in;
 				END IF;
-				cache_state_out <= cache_state_in;
 			END IF;
 		END IF;
 	END PROCESS p;
