@@ -549,6 +549,7 @@ ARCHITECTURE structure OF inkel_pentiun IS
 			exc_code_in_1 : IN STD_LOGIC_VECTOR(1 DOWNTO 0);
 			exc_data_in_1 : IN STD_LOGIC_VECTOR(31 DOWNTO 0);
 			pc_in_1 : IN STD_LOGIC_VECTOR(31 DOWNTO 0);
+			debug_dump_in_1 : IN STD_LOGIC;
 			rob_we_2 : IN STD_LOGIC;
 			rob_w_pos_2 : IN STD_LOGIC_VECTOR(3 DOWNTO 0);
 			reg_v_in_2 : IN STD_LOGIC;
@@ -558,6 +559,7 @@ ARCHITECTURE structure OF inkel_pentiun IS
 			exc_code_in_2 : IN STD_LOGIC_VECTOR(1 DOWNTO 0);
 			exc_data_in_2 : IN STD_LOGIC_VECTOR(31 DOWNTO 0);
 			pc_in_2 : IN STD_LOGIC_VECTOR(31 DOWNTO 0);
+			debug_dump_in_2 : IN STD_LOGIC;
 			rob_we_3 : IN STD_LOGIC;
 			rob_w_pos_3 : IN STD_LOGIC_VECTOR(3 DOWNTO 0);
 			reg_v_in_3 : IN STD_LOGIC;
@@ -567,6 +569,7 @@ ARCHITECTURE structure OF inkel_pentiun IS
 			exc_code_in_3 : IN STD_LOGIC_VECTOR(1 DOWNTO 0);
 			exc_data_in_3 : IN STD_LOGIC_VECTOR(31 DOWNTO 0);
 			pc_in_3 : IN STD_LOGIC_VECTOR(31 DOWNTO 0);
+			debug_dump_in_3 : IN STD_LOGIC;
 			reg_v_out : OUT STD_LOGIC;
 			reg_out : OUT STD_LOGIC_VECTOR(4 DOWNTO 0);
 			reg_data_out : OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
@@ -574,6 +577,7 @@ ARCHITECTURE structure OF inkel_pentiun IS
 			exc_code_out : OUT STD_LOGIC_VECTOR(1 DOWNTO 0);
 			exc_data_out : OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
 			pc_out : OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
+			debug_dump_out : OUT STD_LOGIC;
 			tail_we : IN STD_LOGIC;
 			tail_out : OUT STD_LOGIC_VECTOR(3 DOWNTO 0)
 		);
@@ -768,6 +772,7 @@ ARCHITECTURE structure OF inkel_pentiun IS
 	SIGNAL exc_code_ROB : STD_LOGIC_VECTOR(1 DOWNTO 0);
 	SIGNAL exc_data_ROB : STD_LOGIC_VECTOR(31 DOWNTO 0);
 	SIGNAL pc_ROB : STD_LOGIC_VECTOR(31 DOWNTO 0);
+	SIGNAL debug_dump_ROB : STD_LOGIC;
 
 	-- Segmentation registers signals
 	SIGNAL reg_F_D_reset : STD_LOGIC;
@@ -1056,8 +1061,7 @@ BEGIN
 	rb: reg_bank PORT MAP(
 		clk => clk,
 		reset => reset,
-		--debug_dump => debug_dump_W,
-		debug_dump => '0',
+		debug_dump => debug_dump_ROB,
 		src1 => reg_src1_D,
 		src2 => reg_src2_D,
 		data1 => reg_data1_D,
@@ -1494,9 +1498,8 @@ BEGIN
 		rob_idx_out => rob_idx_W
 	);
 
-    -- Signals pending:
-    -- priv_status
-    -- debug_dump
+	-- Signals pending:
+	-- priv_status
 	rob : reorder_buffer PORT MAP(
 		clk => clk,
 		reset => reset,
@@ -1510,6 +1513,7 @@ BEGIN
 		exc_code_in_1 => exc_code_W,
 		exc_data_in_1 => exc_data_W,
 		pc_in_1 => pc_W,
+		debug_dump_in_1 => debug_dump_W,
 		-- Multiplication
 		rob_we_2 => mul_M5,
 		rob_w_pos_2 => rob_idx_M5,
@@ -1520,6 +1524,7 @@ BEGIN
 		exc_code_in_2 => exc_code_M5,
 		exc_data_in_2 => exc_data_M5,
 		pc_in_2 => pc_M5,
+		debug_dump_in_2 => debug_dump_M5,
 		-- ALU
 		rob_we_3 => alu_inst_L,
 		rob_w_pos_3 => rob_idx_L,
@@ -1530,6 +1535,7 @@ BEGIN
 		exc_code_in_3 => exc_code_L,
 		exc_data_in_3 => exc_data_L,
 		pc_in_3 => pc_L,
+		debug_dump_in_3 => debug_dump_L,
 		-- Output
 		reg_v_out => reg_we_ROB,
 		reg_out => reg_dest_ROB,
@@ -1538,6 +1544,7 @@ BEGIN
 		exc_code_out => exc_code_ROB,
 		exc_data_out => exc_data_ROB,
 		pc_out => pc_ROB,
+		debug_dump_out => debug_dump_ROB,
 		-- Counter
 		tail_we => rob_count_DU,
 		tail_out => rob_idx_F
