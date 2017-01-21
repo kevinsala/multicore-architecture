@@ -13,14 +13,12 @@ ENTITY reg_status IS
 		exc_old : IN STD_LOGIC;
 		exc_code_old : IN STD_LOGIC_VECTOR(1 DOWNTO 0);
 		exc_data_old : IN STD_LOGIC_VECTOR(31 DOWNTO 0);
-		debug_dump_in : IN STD_LOGIC;
 		rob_idx_in : IN STD_LOGIC_VECTOR(3 DOWNTO 0);
 		pc_out : OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
 		priv_status_out : OUT STD_LOGIC;
 		exc_out : OUT STD_LOGIC;
 		exc_code_out : OUT STD_LOGIC_VECTOR(1 DOWNTO 0);
 		exc_data_out : OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
-		debug_dump_out : OUT STD_LOGIC;
 		rob_idx_out : OUT STD_LOGIC_VECTOR(3 DOWNTO 0)
 	);
 END reg_status;
@@ -34,13 +32,11 @@ BEGIN
 				pc_out <= x"00000000";
 				priv_status_out <= '0';
 				exc_out <= '0';
-				debug_dump_out <= '0';
 				rob_idx_out <= x"0";
 			ELSE
 				IF we = '1' THEN
 					pc_out <= pc_in;
 					priv_status_out <= priv_status_in;
-					debug_dump_out <= debug_dump_in;
 					rob_idx_out <= rob_idx_in;
 
 					IF exc_new = '1' THEN

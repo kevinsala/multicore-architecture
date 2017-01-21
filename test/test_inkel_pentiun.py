@@ -32,25 +32,15 @@ def init_test(dut):
             break
 
         if do_dump:
-            dut.debug_dump_F <= 1
+            dut.debug_dump_ROB <= 1
 
         # Move simulation forward
         yield clk_rising
-
-        # Signals in stage F are not propagated in case of stalling
-        if dut.debug_dump_D == 1:
-            do_dump = False
-            dut.debug_dump_F <= 0
 
         # One instruction may take many cycles
         count = 1
         while count < 30 and dut.pc_out == 0:
             yield clk_rising
-
-            # Signals in stage F are not propagated in case of stalling
-            if dut.debug_dump_D == 1:
-                do_dump = False
-                dut.debug_dump_F <= 0
 
             count = count + 1
 
@@ -61,9 +51,7 @@ def init_test(dut):
             first = False
             do_dump = True
 
-        # Check if dump has propagated
         if dut.debug_dump_ROB == 1:
-            # TODO: check if two debug signals are still injected
             do_dump = True
             if model.check_dump("dump"):
                 raise TestFailure("Memories don't have the expected values")

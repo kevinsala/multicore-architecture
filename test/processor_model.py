@@ -311,7 +311,7 @@ class InkelPentiun:
         # Dumps must be checked with the previous instruction
         error = False
         # TODO: enable memory checks when it works properly with the ROB
-       #with open(dump_folder + "/ram", "r") as f:
+        #with open(dump_folder + "/ram", "r") as f:
             #proc_mem_line = 0
             #idx = 0
             #for line in f:
@@ -326,20 +326,6 @@ class InkelPentiun:
                     #if idx == len(self.old_memory):
                         #break
                 #proc_mem_line = proc_mem_line + 1
-
-        with open(dump_folder + "/cache_i", "r") as f:
-            c_line = 0
-            for line in f:
-                if self.old_cache_i_v[c_line]:
-                    line = line[:-1].lower()
-                    cache_line = self._swap_mem_line_endianness(self.old_cache_i_data[c_line])
-                    str_cache_line = "%07x%s" % (self.old_cache_i_tag[c_line], cache_line)
-                    if str_cache_line != line:
-                        print "ERROR: Instruction cache line %x has not been updated properly" % c_line
-                        print "Expected tag: %s. Received tag: %s" % (str_cache_line[0:7], line[0:7])
-                        print "Expected data: %s. Received data: %s" % (str_cache_line[7:], line[7:])
-                        error = True
-                c_line = c_line + 1
 
         #f_data = open(dump_folder + "/cache_d", "r")
         #f_tags = open(dump_folder + "/cache_d_tags", "r")
@@ -376,7 +362,6 @@ class InkelPentiun:
 
         if not error:
             #os.remove(dump_folder + "/ram")
-            os.remove(dump_folder + "/cache_i")
             #os.remove(dump_folder + "/cache_d")
             #os.remove(dump_folder + "/cache_d_tags")
             os.remove(dump_folder + "/reg")

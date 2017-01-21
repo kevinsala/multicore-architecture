@@ -15,7 +15,6 @@ ENTITY reorder_buffer IS
 		exc_code_in_1 : IN STD_LOGIC_VECTOR(1 DOWNTO 0);
 		exc_data_in_1 : IN STD_LOGIC_VECTOR(31 DOWNTO 0);
 		pc_in_1 : IN STD_LOGIC_VECTOR(31 DOWNTO 0);
-		debug_dump_in_1 : IN STD_LOGIC;
 		rob_we_2 : IN STD_LOGIC;
 		rob_w_pos_2 : IN STD_LOGIC_VECTOR(3 DOWNTO 0);
 		reg_v_in_2 : IN STD_LOGIC;
@@ -25,7 +24,6 @@ ENTITY reorder_buffer IS
 		exc_code_in_2 : IN STD_LOGIC_VECTOR(1 DOWNTO 0);
 		exc_data_in_2 : IN STD_LOGIC_VECTOR(31 DOWNTO 0);
 		pc_in_2 : IN STD_LOGIC_VECTOR(31 DOWNTO 0);
-		debug_dump_in_2 : IN STD_LOGIC;
 		rob_we_3 : IN STD_LOGIC;
 		rob_w_pos_3 : IN STD_LOGIC_VECTOR(3 DOWNTO 0);
 		reg_v_in_3 : IN STD_LOGIC;
@@ -35,7 +33,6 @@ ENTITY reorder_buffer IS
 		exc_code_in_3 : IN STD_LOGIC_VECTOR(1 DOWNTO 0);
 		exc_data_in_3 : IN STD_LOGIC_VECTOR(31 DOWNTO 0);
 		pc_in_3 : IN STD_LOGIC_VECTOR(31 DOWNTO 0);
-		debug_dump_in_3 : IN STD_LOGIC;
 		reg_v_out : OUT STD_LOGIC;
 		reg_out : OUT STD_LOGIC_VECTOR(4 DOWNTO 0);
 		reg_data_out : OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
@@ -43,7 +40,6 @@ ENTITY reorder_buffer IS
 		exc_code_out : OUT STD_LOGIC_VECTOR(1 DOWNTO 0);
 		exc_data_out : OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
 		pc_out : OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
-		debug_dump_out : OUT STD_LOGIC;
 		tail_we : IN STD_LOGIC;
 		branch_taken : IN STD_LOGIC;
 		tail_out : OUT STD_LOGIC_VECTOR(3 DOWNTO 0)
@@ -65,8 +61,6 @@ ARCHITECTURE structure OF reorder_buffer IS
 
 	TYPE pc_fields_t IS ARRAY(ROB_POSITIONS - 1 DOWNTO 0) OF STD_LOGIC_VECTOR(31 DOWNTO 0);
 
-	TYPE debug_dump_t IS ARRAY(ROB_POSITIONS - 1 DOWNTO 0) OF STD_LOGIC;
-
 	SIGNAL valid_fields : valid_fields_t;
 	SIGNAL reg_v_fields : reg_v_fields_t;
 	SIGNAL reg_fields : reg_fields_t;
@@ -75,7 +69,6 @@ ARCHITECTURE structure OF reorder_buffer IS
 	SIGNAL exc_code_fields : exc_code_fields_t;
 	SIGNAL exc_data_fields : exc_data_fields_t;
 	SIGNAL pc_fields : pc_fields_t;
-	SIGNAL debug_dump_fields : debug_dump_t;
 
 	SIGNAL head : INTEGER RANGE 0 TO ROB_POSITIONS - 1;
 	SIGNAL tail : INTEGER RANGE 0 TO ROB_POSITIONS - 1;
@@ -114,7 +107,6 @@ BEGIN
 					exc_code_fields(rob_entry) <= exc_code_in_1;
 					exc_data_fields(rob_entry) <= exc_data_in_1;
 					pc_fields(rob_entry) <= pc_in_1;
-					debug_dump_fields(rob_entry) <= debug_dump_in_1;
 				END IF;
 
 				IF rob_we_2 = '1' THEN
@@ -128,7 +120,6 @@ BEGIN
 					exc_code_fields(rob_entry) <= exc_code_in_2;
 					exc_data_fields(rob_entry) <= exc_data_in_2;
 					pc_fields(rob_entry) <= pc_in_2;
-					debug_dump_fields(rob_entry) <= debug_dump_in_2;
 				END IF;
 
 				IF rob_we_3 = '1' THEN
@@ -142,7 +133,6 @@ BEGIN
 					exc_code_fields(rob_entry) <= exc_code_in_3;
 					exc_data_fields(rob_entry) <= exc_data_in_3;
 					pc_fields(rob_entry) <= pc_in_3;
-					debug_dump_fields(rob_entry) <= debug_dump_in_3;
 				END IF;
 			ELSIF rising_edge(clk) THEN
 				-- Commit instructions on rising edge
@@ -154,14 +144,12 @@ BEGIN
 					exc_code_out <= exc_code_fields(head);
 					exc_data_out <= exc_data_fields(head);
 					pc_out <= pc_fields(head);
-					debug_dump_out <= debug_dump_fields(head);
 
 					valid_fields(head) <= '0';
 					head <= (head + 1) mod ROB_POSITIONS;
 				ELSE
 					reg_v_out <= '0';
 					exc_out <= '0';
-					debug_dump_out <= '0';
 					pc_out <= x"00000000";
 				END IF;
 
