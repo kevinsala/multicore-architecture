@@ -579,6 +579,7 @@ ARCHITECTURE structure OF inkel_pentiun IS
 			pc_out : OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
 			debug_dump_out : OUT STD_LOGIC;
 			tail_we : IN STD_LOGIC;
+			branch_taken : IN STD_LOGIC;
 			tail_out : OUT STD_LOGIC_VECTOR(3 DOWNTO 0)
 		);
 	END COMPONENT;
@@ -1549,10 +1550,11 @@ BEGIN
 		debug_dump_out => debug_dump_ROB,
 		-- Counter
 		tail_we => rob_count_DU,
+		branch_taken => branch_taken_A,
 		tail_out => rob_idx_F
 	);
 
-	pc_out <= pc_W;
+	pc_out <= pc_ROB;
 
 END structure;
 

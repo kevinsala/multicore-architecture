@@ -45,6 +45,7 @@ ENTITY reorder_buffer IS
 		pc_out : OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
 		debug_dump_out : OUT STD_LOGIC;
 		tail_we : IN STD_LOGIC;
+		branch_taken : IN STD_LOGIC;
 		tail_out : OUT STD_LOGIC_VECTOR(3 DOWNTO 0)
 	);
 END reorder_buffer;
@@ -161,10 +162,14 @@ BEGIN
 					reg_v_out <= '0';
 					exc_out <= '0';
 					debug_dump_out <= '0';
+					pc_out <= x"00000000";
 				END IF;
 
-				-- Also increment tail if necessary
-				IF tail_we = '1' THEN
+				IF branch_taken = '1' THEN
+					-- We messed up!
+					tail <= (tail - 1) mod ROB_POSITIONS;
+				ELSIF tail_we = '1' THEN
+					-- Increment tail if necessary
 					tail <= (tail + 1) mod ROB_POSITIONS;
 				END IF;
 			END IF;
