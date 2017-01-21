@@ -13,7 +13,6 @@ ENTITY reg_LC IS
 		mem_we_in : IN STD_LOGIC;
 		byte_in : IN STD_LOGIC;
 		mem_read_in : IN STD_LOGIC;
-		mem_to_reg_in : IN STD_LOGIC;
 		reg_we_in : IN STD_LOGIC;
 		reg_dest_in : IN STD_LOGIC_VECTOR(4 DOWNTO 0);
 		ALU_out_in : IN STD_LOGIC_VECTOR(31 DOWNTO 0);
@@ -28,7 +27,6 @@ ENTITY reg_LC IS
 		mem_we_out : OUT STD_LOGIC;
 		byte_out : OUT STD_LOGIC;
 		mem_read_out : OUT STD_LOGIC;
-		mem_to_reg_out : OUT STD_LOGIC;
 		reg_we_out : OUT STD_LOGIC;
 		reg_dest_out : OUT STD_LOGIC_VECTOR(4 DOWNTO 0);
 		ALU_out_out : OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
@@ -53,7 +51,6 @@ BEGIN
 				mem_we_out <= '0';
 				byte_out <= '0';
 				mem_read_out <= '0';
-				mem_to_reg_out <= '0';
 				reg_we_out <= '0';
 				reg_dest_out <= (OTHERS => '0');
 				ALU_out_out <= (OTHERS => '0');
@@ -68,7 +65,6 @@ BEGIN
 					mem_we_out <= mem_we_in;
 					byte_out <= byte_in;
 					mem_read_out <= mem_read_in;
-					mem_to_reg_out <= mem_to_reg_in;
 					reg_we_out <= reg_we_in;
 					reg_dest_out <= reg_dest_in;
 					ALU_out_out <= ALU_out_in;

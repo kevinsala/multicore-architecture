@@ -29,7 +29,6 @@ ENTITY decode IS
 		mem_write : OUT STD_LOGIC;
 		byte : OUT STD_LOGIC;
 		mem_read : OUT STD_LOGIC;
-		mem_to_reg : OUT STD_LOGIC;
 		reg_we : OUT STD_LOGIC;
 		iret : OUT STD_LOGIC;
 		invalid_inst : OUT STD_LOGIC
@@ -151,7 +150,6 @@ BEGIN
 	mem_write <= to_std_logic(op_code_int = OP_STW OR op_code_int = OP_STB);
 	byte <= to_std_logic(op_code_int = OP_LDB OR op_code_int = OP_STB);
 	mem_read <= to_std_logic(op_code_int = OP_LDW OR op_code_int = OP_LDB);
-	mem_to_reg <= to_std_logic(op_code_int = OP_LDW OR op_code_int = OP_LDB);
 
 	reg_we_int <= to_std_logic(op_code_int = OP_ADD OR op_code_int = OP_SUB OR
 							op_code_int = OP_MUL OR op_code_int = OP_LDW OR
