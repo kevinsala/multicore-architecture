@@ -1368,7 +1368,9 @@ BEGIN
 		Dout => mem_data_L_BP
 	);
 
-	reg_L_C_reset <= reg_L_C_reset_DU OR exc_L_E;
+	-- If the instruction is not a memory instruction, it has already been sent
+	-- to ROB. Remove from pipeline to avoid interferences
+	reg_L_C_reset <= NOT mem_inst_L OR reg_L_C_reset_DU OR exc_L_E;
 
 	reg_L_C : reg_LC PORT MAP(
 		clk => clk,
