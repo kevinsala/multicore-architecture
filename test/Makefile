@@ -16,13 +16,10 @@ VHDL_SOURCES = $(PWD)/../utils.vhd \
                 $(PWD)/../inkel_pentiun.vhd \
                 $(PWD)/../lookup_stage.vhd \
                 $(PWD)/../memory.vhd \
-                $(PWD)/../mux2_5bits.vhd \
                 $(PWD)/../mux2_32bits.vhd \
                 $(PWD)/../mux4_32bits.vhd \
                 $(PWD)/../mux8_32bits.vhd \
-                $(PWD)/../Mux2_1bit.vhd \
                 $(PWD)/../Mux_2_3bits.vhd \
-                $(PWD)/../mux_reg_status.vhd \
                 $(PWD)/../pc.vhd \
                 $(PWD)/../ram.vhd \
                 $(PWD)/../reg_AL.vhd \
@@ -34,6 +31,7 @@ VHDL_SOURCES = $(PWD)/../utils.vhd \
                 $(PWD)/../reg_MUL.vhd \
                 $(PWD)/../reg_priv_status.vhd \
                 $(PWD)/../reg_status.vhd \
+                $(PWD)/../rob.vhd \
                 $(PWD)/../sign_ext.vhd \
                 $(PWD)/../tlb.vhd
 TOPLEVEL = inkel_pentiun

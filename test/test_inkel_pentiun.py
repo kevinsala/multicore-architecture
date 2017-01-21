@@ -62,14 +62,13 @@ def init_test(dut):
             do_dump = True
 
         # Check if dump has propagated
-        if dut.debug_dump_W == 1:
-            if dut.debug_dump_F == 0 and dut.debug_dump_D == 0 and dut.debug_dump_A == 0 and dut.debug_dump_C == 0:
-                # There is a bug: sometimes two debug signals are injected. I don't know why :(
-                do_dump = True
-                if model.check_dump("dump"):
-                    raise TestFailure("Memories don't have the expected values")
-                else:
-                    dut._log.info("PC 0x%08x (memory) ok", old_proc_pc)
+        if dut.debug_dump_ROB == 1:
+            # TODO: check if two debug signals are still injected
+            do_dump = True
+            if model.check_dump("dump"):
+                raise TestFailure("Memories don't have the expected values")
+            else:
+                dut._log.info("PC 0x%08x (memory) ok", old_proc_pc)
 
         # Check PC's
         proc_pc = dut.pc_out
