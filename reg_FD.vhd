@@ -5,7 +5,9 @@ ENTITY reg_FD IS
 	PORT(clk : IN STD_LOGIC;
 		reset : IN STD_LOGIC;
 		we : IN STD_LOGIC;
+		inst_v_in : IN STD_LOGIC;
 		inst_in : IN STD_LOGIC_VECTOR(31 DOWNTO 0);
+		inst_v_out : OUT STD_LOGIC;
 		inst_out : OUT STD_LOGIC_VECTOR(31 DOWNTO 0)
 	);
 END reg_FD;
@@ -16,11 +18,13 @@ BEGIN
 	BEGIN
 		IF rising_edge(clk) THEN
 			IF reset = '1' THEN
+				inst_v_out <= '0';
 				inst_out <= x"FE000000";
 			ELSE
 				IF we = '1' THEN
+					inst_v_out <= inst_v_in;
 					inst_out <= inst_in;
-				end if;
+				END IF;
 			END IF;
 		END IF;
 	END PROCESS p;

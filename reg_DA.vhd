@@ -5,7 +5,9 @@ ENTITY reg_DA IS
 	PORT(clk : IN STD_LOGIC;
 		reset : IN STD_LOGIC;
 		we : IN STD_LOGIC;
-		mul_in : IN STD_LOGIC;
+		alu_inst_in : IN STD_LOGIC;
+		mem_inst_in : IN STD_LOGIC;
+		mul_inst_in : IN STD_LOGIC;
 		dtlb_we_in : IN STD_LOGIC;
 		itlb_we_in : IN STD_LOGIC;
 		mem_we_in : IN STD_LOGIC;
@@ -27,7 +29,10 @@ ENTITY reg_DA IS
 		reg_data1_in : IN STD_LOGIC_VECTOR(31 DOWNTO 0);
 		reg_data2_in : IN STD_LOGIC_VECTOR(31 DOWNTO 0);
 		mem_data_in : IN STD_LOGIC_VECTOR(31 DOWNTO 0);
-		mul_out : OUT STD_LOGIC;
+		iret_in : IN STD_LOGIC;
+		alu_inst_out : OUT STD_LOGIC;
+		mem_inst_out : OUT STD_LOGIC;
+		mul_inst_out : OUT STD_LOGIC;
 		dtlb_we_out : OUT STD_LOGIC;
 		itlb_we_out : OUT STD_LOGIC;
 		mem_we_out : OUT STD_LOGIC;
@@ -48,7 +53,8 @@ ENTITY reg_DA IS
 		reg_dest_out : OUT STD_LOGIC_VECTOR(4 DOWNTO 0);
 		reg_data1_out : OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
 		reg_data2_out : OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
-		mem_data_out : OUT STD_LOGIC_VECTOR(31 DOWNTO 0)
+		mem_data_out : OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
+		iret_out : OUT STD_LOGIC
 	);
 END reg_DA;
 
@@ -58,7 +64,9 @@ BEGIN
 	BEGIN
 		IF rising_edge(clk) THEN
 			IF reset = '1' THEN
-				mul_out <= '0';
+				alu_inst_out <= '0';
+				mem_inst_out <= '0';
+				mul_inst_out <= '0';
 				dtlb_we_out <= '0';
 				itlb_we_out <= '0';
 				mem_we_out <= '0';
@@ -80,9 +88,12 @@ BEGIN
 				reg_data1_out <= (OTHERS => '0');
 				reg_data2_out <= (OTHERS => '0');
 				mem_data_out <= (OTHERS => '0');
+				iret_out <= '0';
 			ELSE
 				IF we = '1' THEN
-					mul_out <= mul_in;
+					alu_inst_out <= alu_inst_in;
+					mem_inst_out <= mem_inst_in;
+					mul_inst_out <= mul_inst_in;
 					dtlb_we_out <= dtlb_we_in;
 					itlb_we_out <= itlb_we_in;
 					mem_we_out <= mem_we_in;
@@ -104,6 +115,7 @@ BEGIN
 					reg_data1_out <= reg_data1_in;
 					reg_data2_out <= reg_data2_in;
 					mem_data_out <= mem_data_in;
+					iret_out <= iret_in;
 				END IF;
 			END IF;
 		END IF;
