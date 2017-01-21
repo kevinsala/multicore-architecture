@@ -157,6 +157,10 @@ BEGIN
 
 					valid_fields(head) <= '0';
 					head <= (head + 1) mod ROB_POSITIONS;
+				ELSE
+					reg_v_out <= '0';
+					exc_out <= '0';
+					debug_dump_out <= '0';
 				END IF;
 
 				-- Also increment tail if necessary
