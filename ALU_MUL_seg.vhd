@@ -36,12 +36,14 @@ ENTITY ALU_MUL_seg IS
 		exc_code_old : IN STD_LOGIC_VECTOR(1 DOWNTO 0);
 		exc_data_old : IN STD_LOGIC_VECTOR(31 DOWNTO 0);
 		rob_idx_in : IN STD_LOGIC_VECTOR(3 DOWNTO 0);
+		inst_type_in : IN STD_LOGIC_VECTOR(1 DOWNTO 0);
 		pc_out : OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
 		priv_status_out : OUT STD_LOGIC;
 		exc_out : OUT STD_LOGIC;
 		exc_code_out : OUT STD_LOGIC_VECTOR(1 DOWNTO 0);
 		exc_data_out : OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
-		rob_idx_out : OUT STD_LOGIC_VECTOR(3 DOWNTO 0)
+		rob_idx_out : OUT STD_LOGIC_VECTOR(3 DOWNTO 0);
+		inst_type_out : OUT STD_LOGIC_VECTOR(1 DOWNTO 0)
 	);
 END ALU_MUL_seg;
 
@@ -78,12 +80,14 @@ COMPONENT reg_status IS
 		exc_code_old : IN STD_LOGIC_VECTOR(1 DOWNTO 0);
 		exc_data_old : IN STD_LOGIC_VECTOR(31 DOWNTO 0);
 		rob_idx_in : IN STD_LOGIC_VECTOR(3 DOWNTO 0);
+		inst_type_in : IN STD_LOGIC_VECTOR(1 DOWNTO 0);
 		pc_out : OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
 		priv_status_out : OUT STD_LOGIC;
 		exc_out : OUT STD_LOGIC;
 		exc_code_out : OUT STD_LOGIC_VECTOR(1 DOWNTO 0);
 		exc_data_out : OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
-		rob_idx_out : OUT STD_LOGIC_VECTOR(3 DOWNTO 0)
+		rob_idx_out : OUT STD_LOGIC_VECTOR(3 DOWNTO 0);
+		inst_type_out : OUT STD_LOGIC_VECTOR(1 DOWNTO 0)
 	);
 END COMPONENT;
 
@@ -115,6 +119,7 @@ SIGNAL exc_2 : STD_LOGIC;
 SIGNAL exc_code_2 : STD_LOGIC_VECTOR(1 DOWNTO 0);
 SIGNAL exc_data_2 : STD_LOGIC_VECTOR(31 DOWNTO 0);
 SIGNAL rob_idx_2 : STD_LOGIC_VECTOR(3 DOWNTO 0);
+SIGNAL inst_type_2 : STD_LOGIC_VECTOR(1 DOWNTO 0);
 
 SIGNAL pc_3 : STD_LOGIC_VECTOR(31 DOWNTO 0);
 SIGNAL priv_status_3 : STD_LOGIC;
@@ -122,6 +127,7 @@ SIGNAL exc_3 : STD_LOGIC;
 SIGNAL exc_code_3 : STD_LOGIC_VECTOR(1 DOWNTO 0);
 SIGNAL exc_data_3 : STD_LOGIC_VECTOR(31 DOWNTO 0);
 SIGNAL rob_idx_3 : STD_LOGIC_VECTOR(3 DOWNTO 0);
+SIGNAL inst_type_3 : STD_LOGIC_VECTOR(1 DOWNTO 0);
 
 SIGNAL pc_4 : STD_LOGIC_VECTOR(31 DOWNTO 0);
 SIGNAL priv_status_4 : STD_LOGIC;
@@ -129,6 +135,7 @@ SIGNAL exc_4 : STD_LOGIC;
 SIGNAL exc_code_4 : STD_LOGIC_VECTOR(1 DOWNTO 0);
 SIGNAL exc_data_4 : STD_LOGIC_VECTOR(31 DOWNTO 0);
 SIGNAL rob_idx_4 : STD_LOGIC_VECTOR(3 DOWNTO 0);
+SIGNAL inst_type_4 : STD_LOGIC_VECTOR(1 DOWNTO 0);
 
 BEGIN
 
@@ -153,19 +160,21 @@ BEGIN
 		we => load_M1,
 		pc_in => pc_in,
 		priv_status_in => priv_status_in,
-		exc_new => exc_new,
-		exc_code_new => exc_code_new,
-		exc_data_new => exc_data_new,
+		exc_new => '0',
+		exc_code_new => (OTHERS => 'X'),
+		exc_data_new => (OTHERS => 'X'),
 		exc_old => exc_old,
 		exc_code_old => exc_code_old,
 		exc_data_old => exc_data_old,
 		rob_idx_in => rob_idx_in,
+		inst_type_in => inst_type_in,
 		pc_out => pc_2,
 		priv_status_out => priv_status_2,
 		exc_out => exc_2,
 		exc_code_out => exc_code_2,
 		exc_data_out => exc_data_2,
-		rob_idx_out => rob_idx_2
+		rob_idx_out => rob_idx_2,
+		inst_type_out => inst_type_2
 	);
 
 	m2_3: reg_MUL PORT MAP(
@@ -189,19 +198,21 @@ BEGIN
 		we => mul_M2,
 		pc_in => pc_2,
 		priv_status_in => priv_status_2,
-		exc_new => exc_2,
-		exc_code_new => exc_code_2,
-		exc_data_new => exc_data_2,
+		exc_new => '0',
+		exc_code_new => (OTHERS => 'X'),
+		exc_data_new => (OTHERS => 'X'),
 		exc_old => exc_2,
 		exc_code_old => exc_code_2,
 		exc_data_old => exc_data_2,
 		rob_idx_in => rob_idx_2,
+		inst_type_in => inst_type_2,
 		pc_out => pc_3,
 		priv_status_out => priv_status_3,
 		exc_out => exc_3,
 		exc_code_out => exc_code_3,
 		exc_data_out => exc_data_3,
-		rob_idx_out => rob_idx_3
+		rob_idx_out => rob_idx_3,
+		inst_type_out => inst_type_3
 	);
 
 	m3_4: reg_MUL PORT MAP(
@@ -225,19 +236,21 @@ BEGIN
 		we => mul_M3,
 		pc_in => pc_3,
 		priv_status_in => priv_status_3,
-		exc_new => exc_3,
-		exc_code_new => exc_code_3,
-		exc_data_new => exc_data_3,
+		exc_new => '0',
+		exc_code_new => (OTHERS => 'X'),
+		exc_data_new => (OTHERS => 'X'),
 		exc_old => exc_3,
 		exc_code_old => exc_code_3,
 		exc_data_old => exc_data_3,
 		rob_idx_in => rob_idx_3,
+		inst_type_in => inst_type_3,
 		pc_out => pc_4,
 		priv_status_out => priv_status_4,
 		exc_out => exc_4,
 		exc_code_out => exc_code_4,
 		exc_data_out => exc_data_4,
-		rob_idx_out => rob_idx_4
+		rob_idx_out => rob_idx_4,
+		inst_type_out => inst_type_4
 	);
 
 	m4_5: reg_MUL PORT MAP(
@@ -261,19 +274,21 @@ BEGIN
 		we => mul_M4,
 		pc_in => pc_4,
 		priv_status_in => priv_status_4,
-		exc_new => exc_4,
-		exc_code_new => exc_code_4,
-		exc_data_new => exc_data_4,
+		exc_new => '0',
+		exc_code_new => (OTHERS => 'X'),
+		exc_data_new => (OTHERS => 'X'),
 		exc_old => exc_4,
 		exc_code_old => exc_code_4,
 		exc_data_old => exc_data_4,
 		rob_idx_in => rob_idx_4,
+		inst_type_in => inst_type_4,
 		pc_out => pc_out,
 		priv_status_out => priv_status_out,
 		exc_out => exc_out,
 		exc_code_out => exc_code_out,
 		exc_data_out => exc_data_out,
-		rob_idx_out => rob_idx_out
+		rob_idx_out => rob_idx_out,
+		inst_type_out => inst_type_out
 	);
 
 	load_M1 <= load AND done_L;

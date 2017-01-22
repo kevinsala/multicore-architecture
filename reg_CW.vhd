@@ -6,7 +6,6 @@ ENTITY reg_CW IS
 		clk : IN STD_LOGIC;
 		reset : IN STD_LOGIC;
 		we : IN STD_LOGIC;
-		mem_inst_in : IN STD_LOGIC;
 		dtlb_we_in : IN STD_LOGIC;
 		itlb_we_in : IN STD_LOGIC;
 		reg_we_in : IN STD_LOGIC;
@@ -27,7 +26,6 @@ BEGIN
 	BEGIN
 		IF rising_edge(clk) THEN
 			IF reset = '1' THEN
-				mem_inst_out <= '0';
 				dtlb_we_out <= '0';
 				itlb_we_out <= '0';
 				reg_we_out <= '0';
@@ -35,7 +33,6 @@ BEGIN
 				reg_data_out <= (OTHERS => '0');
 			ELSE
 				IF we = '1' THEN
-					mem_inst_out <= mem_inst_in;
 					dtlb_we_out <= dtlb_we_in;
 					itlb_we_out <= itlb_we_in;
 					reg_we_out <= reg_we_in;
