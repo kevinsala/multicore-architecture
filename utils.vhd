@@ -2,7 +2,6 @@ LIBRARY ieee;
 USE ieee.std_logic_1164.all;
 USE ieee.numeric_std.all;
 
-
 PACKAGE utils IS
 	FUNCTION to_std_logic(value : BOOLEAN) RETURN std_logic;
 

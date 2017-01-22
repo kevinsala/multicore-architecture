@@ -39,14 +39,20 @@ BEGIN
 					priv_status_out <= priv_status_in;
 					debug_dump_out <= debug_dump_in;
 
-					IF exc_new = '1' THEN
-						exc_out <= exc_new;
-						exc_code_out <= exc_code_new;
-						exc_data_out <= exc_data_new;
-					ELSE
-						exc_out <= exc_old;
+					IF priv_status_in = '1' THEN
+						exc_out <= '0';
 						exc_code_out <= exc_code_old;
 						exc_data_out <= exc_data_old;
+					ELSE	
+						IF exc_new = '1' THEN
+							exc_out <= exc_new;
+							exc_code_out <= exc_code_new;
+							exc_data_out <= exc_data_new;
+						ELSE
+							exc_out <= exc_old;
+							exc_code_out <= exc_code_old;
+							exc_data_out <= exc_data_old;
+						END IF;
 					END IF;
 				END IF;
 			END IF;
