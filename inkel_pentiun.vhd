@@ -513,6 +513,20 @@ ARCHITECTURE structure OF inkel_pentiun IS
 		);
 	END COMPONENT;
 
+	COMPONENT reg_W IS
+		PORT(
+			clk : IN STD_LOGIC;
+			reset : IN STD_LOGIC;
+			we : IN STD_LOGIC;
+			reg_we_in : IN STD_LOGIC;
+			reg_dest_in : IN STD_LOGIC_VECTOR(4 DOWNTO 0);
+			reg_data_in : IN STD_LOGIC_VECTOR(31 DOWNTO 0);
+			reg_we_out : OUT STD_LOGIC;
+			reg_dest_out : OUT STD_LOGIC_VECTOR(4 DOWNTO 0);
+			reg_data_out : OUT STD_LOGIC_VECTOR(31 DOWNTO 0)
+		);
+	END COMPONENT;
+
 	COMPONENT reorder_buffer IS
 		PORT(
 			clk : IN STD_LOGIC;
@@ -722,6 +736,24 @@ ARCHITECTURE structure OF inkel_pentiun IS
 	SIGNAL pc_W : STD_LOGIC_VECTOR(31 DOWNTO 0);
 	SIGNAL reg_data_W : STD_LOGIC_VECTOR(31 DOWNTO 0);
 	SIGNAL mul_out_W : STD_LOGIC_VECTOR(31 DOWNTO 0);
+	SIGNAL reg_we_W_ALU : STD_LOGIC;
+	SIGNAL reg_dest_W_ALU : STD_LOGIC_VECTOR(4 DOWNTO 0);
+	SIGNAL reg_data_W_ALU : STD_LOGIC_VECTOR(31 DOWNTO 0);
+	SIGNAL pc_W_ALU : STD_LOGIC_VECTOR(31 DOWNTO 0);
+	SIGNAL exc_W_ALU : STD_LOGIC;
+	SIGNAL exc_code_W_ALU : STD_LOGIC_VECTOR(1 DOWNTO 0);
+	SIGNAL exc_data_W_ALU : STD_LOGIC_VECTOR(31 DOWNTO 0);
+	SIGNAL rob_idx_W_ALU : STD_LOGIC_VECTOR(3 DOWNTO 0);
+	SIGNAL inst_type_W_ALU : STD_LOGIC_VECTOR(1 DOWNTO 0);
+	SIGNAL reg_we_W_MUL : STD_LOGIC;
+	SIGNAL reg_dest_W_MUL : STD_LOGIC_VECTOR(4 DOWNTO 0);
+	SIGNAL reg_data_W_MUL : STD_LOGIC_VECTOR(31 DOWNTO 0);
+	SIGNAL pc_W_MUL : STD_LOGIC_VECTOR(31 DOWNTO 0);
+	SIGNAL exc_W_MUL : STD_LOGIC;
+	SIGNAL exc_code_W_MUL : STD_LOGIC_VECTOR(1 DOWNTO 0);
+	SIGNAL exc_data_W_MUL : STD_LOGIC_VECTOR(31 DOWNTO 0);
+	SIGNAL rob_idx_W_MUL : STD_LOGIC_VECTOR(3 DOWNTO 0);
+	SIGNAL inst_type_W_MUL : STD_LOGIC_VECTOR(1 DOWNTO 0);
 
 	-- ROB output signals
 	SIGNAL inst_alu_ROB : STD_LOGIC;
@@ -747,6 +779,8 @@ ARCHITECTURE structure OF inkel_pentiun IS
 	SIGNAL reg_L_C_reset_DU : STD_LOGIC;
 	SIGNAL reg_C_W_reset : STD_LOGIC;
 	SIGNAL reg_C_W_reset_DU : STD_LOGIC;
+	SIGNAL reg_W_ALU_reset : STD_LOGIC;
+	SIGNAL reg_W_MUL_reset : STD_LOGIC;
 	SIGNAL reg_F_D_we : STD_LOGIC;
 	SIGNAL reg_D_A_we : STD_LOGIC;
 	SIGNAL reg_A_L_we : STD_LOGIC;
@@ -1236,6 +1270,45 @@ BEGIN
 		inst_type_out => inst_type_L
 	);
 
+	-------------------------------- ALU Pipeline -----------------------------------------
+
+	reg_W_ALU_reset <= reset OR to_std_logic(inst_type_A /= INST_TYPE_ALU);
+
+	reg_W_ALU : reg_W PORT MAP (
+		clk => clk,
+		reset => reg_W_ALU_reset,
+		we => '1',
+		reg_we_in => reg_we_A,
+		reg_dest_in => reg_dest_A,
+		reg_data_in => ALU_out_A,
+		reg_we_out => reg_we_W_ALU,
+		reg_dest_out => reg_dest_W_ALU,
+		reg_data_out => reg_data_W_ALU
+	);
+
+	reg_status_W_ALU: reg_status PORT MAP(
+		clk => clk,
+		reset => reg_W_ALU_reset,
+		we => '1',
+		pc_in => pc_A,
+		priv_status_in => priv_status_A,
+		exc_new => exc_A_E,
+		exc_code_new => exc_code_A_E,
+		exc_data_new => exc_data_A_E,
+		exc_old => exc_A,
+		exc_code_old => exc_code_A,
+		exc_data_old => exc_data_A,
+		rob_idx_in => rob_idx_A,
+		inst_type_in => inst_type_A,
+		pc_out => pc_W_ALU,
+		priv_status_out => open,
+		exc_out => exc_W_ALU,
+		exc_code_out => exc_code_W_ALU,
+		exc_data_out => exc_data_W_ALU,
+		rob_idx_out => rob_idx_W_ALU,
+		inst_type_out => inst_type_W_ALU
+	);
+
 	-------------------------------- Mul Pipeline -----------------------------------------
 
 	mul_M1 <= to_std_logic(inst_type_A = INST_TYPE_MUL);
@@ -1277,6 +1350,43 @@ BEGIN
 		exc_data_out => exc_data_M5,
 		rob_idx_out => rob_idx_M5,
 		inst_type_out => inst_type_M5
+	);
+
+	reg_W_MUL_reset <= reset OR to_std_logic(inst_type_M5 /= INST_TYPE_MUL);
+
+	reg_W_MUL : reg_W PORT MAP (
+		clk => clk,
+		reset => reg_W_MUL_reset,
+		we => '1',
+		reg_we_in => reg_we_M5,
+		reg_dest_in => reg_dest_M5,
+		reg_data_in => mul_out_M5,
+		reg_we_out => reg_we_W_MUL,
+		reg_dest_out => reg_dest_W_MUL,
+		reg_data_out => reg_data_W_MUL
+	);
+
+	reg_status_W_MUL: reg_status PORT MAP(
+		clk => clk,
+		reset => reg_W_MUL_reset,
+		we => '1',
+		pc_in => pc_M5,
+		priv_status_in => priv_status_M5,
+		exc_new => '0',
+		exc_code_new => (OTHERS => '0'),
+		exc_data_new => (OTHERS => '0'),
+		exc_old => exc_M5,
+		exc_code_old => exc_code_M5,
+		exc_data_old => exc_data_M5,
+		rob_idx_in => rob_idx_M5,
+		inst_type_in => inst_type_M5,
+		pc_out => pc_W_MUL,
+		priv_status_out => open,
+		exc_out => exc_W_MUL,
+		exc_code_out => exc_code_W_MUL,
+		exc_data_out => exc_data_W_MUL,
+		rob_idx_out => rob_idx_W_MUL,
+		inst_type_out => inst_type_W_MUL
 	);
 
 	-------------------------------- Lookup  ----------------------------------------------
@@ -1434,9 +1544,11 @@ BEGIN
 		inst_type_out => inst_type_W
 	);
 
-	inst_alu_ROB <= to_std_logic(inst_type_L = INST_TYPE_ALU);
+	---------------------------- Reorder Buffer --------------------------------
+
+	inst_alu_ROB <= to_std_logic(inst_type_W_ALU = INST_TYPE_ALU);
 	inst_mem_ROB <= to_std_logic(inst_type_W = INST_TYPE_MEM);
-	inst_mul_ROB <= to_std_logic(inst_type_M5 = INST_TYPE_MUL);
+	inst_mul_ROB <= to_std_logic(inst_type_W_MUL = INST_TYPE_MUL);
 
 	rob : reorder_buffer PORT MAP(
 		clk => clk,
@@ -1454,25 +1566,25 @@ BEGIN
 		inst_type_1 => INST_TYPE_MEM,
 		-- Multiplication
 		rob_we_2 => inst_mul_ROB,
-		rob_w_pos_2 => rob_idx_M5,
-		reg_v_in_2 => reg_we_M5,
-		reg_in_2 => reg_dest_M5,
-		reg_data_in_2 => mul_out_M5,
-		exc_in_2 => exc_M5,
-		exc_code_in_2 => exc_code_M5,
-		exc_data_in_2 => exc_data_M5,
-		pc_in_2 => pc_M5,
+		rob_w_pos_2 => rob_idx_W_MUL,
+		reg_v_in_2 => reg_we_W_MUL,
+		reg_in_2 => reg_dest_W_MUL,
+		reg_data_in_2 => reg_data_W_MUL,
+		exc_in_2 => exc_W_MUL,
+		exc_code_in_2 => exc_code_W_MUL,
+		exc_data_in_2 => exc_data_W_MUL,
+		pc_in_2 => pc_W_MUL,
 		inst_type_2 => INST_TYPE_MUL,
 		-- ALU
 		rob_we_3 => inst_alu_ROB,
-		rob_w_pos_3 => rob_idx_L,
-		reg_v_in_3 => reg_we_L,
-		reg_in_3 => reg_dest_L,
-		reg_data_in_3 => ALU_out_L,
-		exc_in_3 => exc_L,
-		exc_code_in_3 => exc_code_L,
-		exc_data_in_3 => exc_data_L,
-		pc_in_3 => pc_L,
+		rob_w_pos_3 => rob_idx_W_ALU,
+		reg_v_in_3 => reg_we_W_ALU,
+		reg_in_3 => reg_dest_W_ALU,
+		reg_data_in_3 => reg_data_W_ALU,
+		exc_in_3 => exc_W_ALU,
+		exc_code_in_3 => exc_code_W_ALU,
+		exc_data_in_3 => exc_data_W_ALU,
+		pc_in_3 => pc_W_ALU,
 		inst_type_3 => INST_TYPE_ALU,
 		-- Output
 		reg_v_out => reg_we_ROB,
