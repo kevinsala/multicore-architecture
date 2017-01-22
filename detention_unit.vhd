@@ -63,6 +63,7 @@ ARCHITECTURE detention_unit_behavior OF detention_unit IS
 	SIGNAL conflict_MUL_M3 : STD_LOGIC; -- Detener instrucciones porque es dependiente de la inst MUL
 	SIGNAL conflict_MUL_M4 : STD_LOGIC; -- Detener instrucciones porque es dependiente de la inst MUL
 	SIGNAL conflict_i : STD_LOGIC;
+	SIGNAL conflict_MEM : STD_LOGIC;
 BEGIN
 	conflict_ALU_A <= '1' WHEN mem_read_A = '1' AND ((reg_src1_D = reg_dest_A AND reg_src1_v_D = '1') OR (reg_src2_D = reg_dest_A AND reg_src2_v_D = '1')) ELSE '0';
 	conflict_ALU_L <= '1' WHEN mem_read_L = '1' AND ((reg_src1_D = reg_dest_L AND reg_src1_v_D = '1') OR (reg_src2_D = reg_dest_L AND reg_src2_v_D = '1')) ELSE '0';
@@ -72,23 +73,24 @@ BEGIN
 	conflict_MUL_M4 <= '1' WHEN  mul_M4 = '1' AND ((reg_src1_D = reg_dest_M4 AND reg_src1_v_D = '1') OR (reg_src2_D = reg_dest_M4 AND reg_src2_v_D = '1' AND NOT mem_we_D = '1')) ELSE '0';
 
 	conflict_ALU <= conflict_ALU_A OR conflict_ALU_L;
-	conflict_MUL <= (mul_M1 OR mul_M2) AND to_std_logic(inst_type_D /= INST_TYPE_MUL);
 	conflict_MUL_ALU <= conflict_MUL_M1 OR conflict_MUL_M2 OR conflict_MUL_M3 OR conflict_MUL_M4;
 
-	conflict_i <= conflict_ALU OR conflict_MUL OR conflict_MUL_ALU;
+	conflict_i <= conflict_ALU OR conflict_MUL_ALU;
 
-	reg_PC_we <= NOT conflict_i AND done_F AND done_L;
-	rob_count <= NOT conflict_i AND done_F AND done_L;
-	reg_F_D_we <= NOT conflict_i AND done_L;
-	reg_D_A_we <= done_L AND NOT conflict_MUL;
+	conflict_MEM <= NOT done_L AND to_std_logic(inst_type_D = INST_TYPE_MEM);
+
+	reg_PC_we <= NOT conflict_i AND done_F AND NOT conflict_MEM;
+	rob_count <= NOT conflict_i AND done_F AND NOT conflict_MEM;
+	reg_F_D_we <= NOT conflict_i AND NOT conflict_MEM;
+	reg_D_A_we <= NOT conflict_MEM;
 	reg_A_L_we <= done_L;
 	reg_L_C_we <= '1';
 	reg_C_W_we <= '1';
 
 	reg_PC_reset <= reset;
-	reg_F_D_reset <= reset OR branch_taken_A OR (NOT done_F AND done_L AND NOT conflict_MUL AND NOT conflict_i) OR exc_D OR exc_A OR exc_L OR exc_C;
+	reg_F_D_reset <= reset OR branch_taken_A OR (NOT done_F AND NOT conflict_MEM AND NOT conflict_i) OR exc_D OR exc_A OR exc_L OR exc_C;
 	reg_D_A_reset <= reset OR branch_taken_A OR conflict_i OR exc_A OR exc_L OR exc_C;
-	reg_A_L_reset <= reset OR (conflict_MUL AND done_L) OR mul_M1 OR exc_L OR exc_C;
+	reg_A_L_reset <= reset OR exc_L OR exc_C;
 	reg_L_C_reset <= reset OR NOT done_L OR exc_C;
 	reg_C_W_reset <= reset;
 

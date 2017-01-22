@@ -251,6 +251,10 @@ ARCHITECTURE structure OF inkel_pentiun IS
 			reg_we_C          : IN STD_LOGIC;
 			reg_dest_M5       : IN STD_LOGIC_VECTOR (4 DOWNTO 0);
 			reg_we_M5         : IN STD_LOGIC;
+			reg_src1_D_p_ROB  : IN STD_LOGIC;
+			reg_src1_D_inst_type_ROB : IN STD_LOGIC_VECTOR(1 DOWNTO 0);
+			reg_src2_D_p_ROB  : IN STD_LOGIC;
+			reg_src2_D_inst_type_ROB : IN STD_LOGIC_VECTOR(1 DOWNTO 0);
 			mux_src1_D_BP     : OUT STD_LOGIC_VECTOR (2 DOWNTO 0);
 			mux_src2_D_BP     : OUT STD_LOGIC_VECTOR (2 DOWNTO 0);
 			mux_mem_data_D_BP : OUT STD_LOGIC_VECTOR (2 DOWNTO 0);
@@ -570,7 +574,17 @@ ARCHITECTURE structure OF inkel_pentiun IS
 			pc_out : OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
 			tail_we : IN STD_LOGIC;
 			branch_taken : IN STD_LOGIC;
-			tail_out : OUT STD_LOGIC_VECTOR(3 DOWNTO 0)
+			tail_out : OUT STD_LOGIC_VECTOR(3 DOWNTO 0);
+			reg_src1_D_BP : IN STD_LOGIC_VECTOR(4 DOWNTO 0);
+			reg_src1_D_v_BP : IN STD_LOGIC;
+			reg_src1_D_p_BP : OUT STD_LOGIC;
+			reg_src1_D_inst_type_BP : OUT STD_LOGIC_VECTOR(1 DOWNTO 0);
+			reg_src1_D_data_BP : OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
+			reg_src2_D_BP : IN STD_LOGIC_VECTOR(4 DOWNTO 0);
+			reg_src2_D_v_BP : IN STD_LOGIC;
+			reg_src2_D_p_BP : OUT STD_LOGIC;
+			reg_src2_D_inst_type_BP : OUT STD_LOGIC_VECTOR(1 DOWNTO 0);
+			reg_src2_D_data_BP : OUT STD_LOGIC_VECTOR(31 DOWNTO 0)
 		);
 	END COMPONENT;
 
@@ -678,6 +692,7 @@ ARCHITECTURE structure OF inkel_pentiun IS
 	SIGNAL dtlb_we_L : STD_LOGIC;
 	SIGNAL itlb_we_L : STD_LOGIC;
 	SIGNAL inst_type_L : STD_LOGIC_VECTOR(1 DOWNTO 0);
+	SIGNAL reg_mem_v_L : STD_LOGIC;
 	SIGNAL mem_req_L : STD_LOGIC;
 	SIGNAL mem_we_L : STD_LOGIC;
 	SIGNAL mem_done_L : STD_LOGIC;
@@ -767,6 +782,12 @@ ARCHITECTURE structure OF inkel_pentiun IS
 	SIGNAL exc_data_ROB : STD_LOGIC_VECTOR(31 DOWNTO 0);
 	SIGNAL pc_ROB : STD_LOGIC_VECTOR(31 DOWNTO 0);
 	SIGNAL debug_dump_ROB : STD_LOGIC;
+	SIGNAL reg_src1_D_p_ROB : STD_LOGIC;
+	SIGNAL reg_src1_D_inst_type_ROB : STD_LOGIC_VECTOR(1 DOWNTO 0);
+	SIGNAL reg_src1_D_data_ROB : STD_LOGIC_VECTOR(31 DOWNTO 0);
+	SIGNAL reg_src2_D_p_ROB : STD_LOGIC;
+	SIGNAL reg_src2_D_inst_type_ROB : STD_LOGIC_VECTOR(1 DOWNTO 0);
+	SIGNAL reg_src2_D_data_ROB : STD_LOGIC_VECTOR(31 DOWNTO 0);
 
 	-- Segmentation registers signals
 	SIGNAL reg_F_D_reset : STD_LOGIC;
@@ -942,6 +963,10 @@ BEGIN
 		reg_we_C => reg_we_C,
 		reg_dest_M5 => reg_dest_M5,
 		reg_we_M5 => reg_we_M5,
+		reg_src1_D_p_ROB => reg_src1_D_p_ROB,
+		reg_src1_D_inst_type_ROB => reg_src1_D_inst_type_ROB,
+		reg_src2_D_p_ROB => reg_src2_D_p_ROB,
+		reg_src2_D_inst_type_ROB => reg_src2_D_inst_type_ROB,
 		mux_src1_D_BP => mux_src1_D_BP_ctrl,
 		mux_src2_D_BP => mux_src2_D_BP_ctrl,
 		mux_mem_data_D_BP => mux_mem_data_D_BP_ctrl,
@@ -1069,10 +1094,10 @@ BEGIN
 
 	mux_src1_D_BP : mux8_32bits PORT MAP(
 		Din0 => reg_data1_D,
-		Din1 => reg_data_C,
-		Din2 => ALU_out_L,
-		Din3 => ALU_out_A,
-		Din4 => mul_out_M5,
+		Din1 => ALU_out_A,
+		Din2 => reg_data_C,
+		Din3 => mul_out_M5,
+		Din4 => reg_src1_D_data_ROB,
 		Din5 => (OTHERS => '0'),
 		Din6 => (OTHERS => '0'),
 		Din7 => (OTHERS => '0'),
@@ -1082,10 +1107,10 @@ BEGIN
 
 	mux_src2_D_BP : mux8_32bits PORT MAP(
 		Din0 => reg_data2_D,
-		Din1 => reg_data_C,
-		Din2 => ALU_out_L,
-		Din3 => ALU_out_A,
-		Din4 => mul_out_M5,
+		Din1 => ALU_out_A,
+		Din2 => reg_data_C,
+		Din3 => mul_out_M5,
+		Din4 => reg_src2_D_data_ROB,
 		Din5 => (OTHERS => '0'),
 		Din6 => (OTHERS => '0'),
 		Din7 => (OTHERS => '0'),
@@ -1095,10 +1120,10 @@ BEGIN
 
 	mux_mem_data_D_BP : mux8_32bits PORT MAP(
 		Din0 => reg_data2_D,
-		Din1 => reg_data_C,
-		Din2 => ALU_out_L,
-		Din3 => ALU_out_A,
-		Din4 => mul_out_M5,
+		Din1 => ALU_out_A,
+		Din2 => reg_data_C,
+		Din3 => mul_out_M5,
+		Din4 => reg_src2_D_data_ROB,
 		Din5 => (OTHERS => '0'),
 		Din6 => (OTHERS => '0'),
 		Din7 => (OTHERS => '0'),
@@ -1213,7 +1238,7 @@ BEGIN
 	mux_mem_data_A_BP : mux4_32bits PORT MAP(
 		Din0 => mem_data_A,
 		Din1 => reg_data_C,
-		Din2 => ALU_out_L,
+		Din2 => (OTHERS => '0'),
 		DIn3 => mul_out_M5,
 		ctrl => mux_mem_data_A_BP_ctrl,
 		Dout => mem_data_A_BP
@@ -1246,6 +1271,8 @@ BEGIN
 		mem_data_out => cache_data_in_L,
 		cache_state_out => state_L
 	);
+
+	reg_mem_v_L <= NOT reg_we_L;
 
 	reg_status_A_L: reg_status PORT MAP(
 		clk => clk,
@@ -1425,9 +1452,7 @@ BEGIN
 		Dout => mem_data_L_BP
 	);
 
-	-- If the instruction is not a memory instruction, it has already been sent
-	-- to ROB. Remove from pipeline to avoid interferences
-	reg_L_C_reset <= to_std_logic(inst_type_L /= INST_TYPE_MEM) OR reg_L_C_reset_DU OR exc_L_E;
+	reg_L_C_reset <= reg_L_C_reset_DU OR exc_L_E;
 
 	reg_L_C : reg_LC PORT MAP(
 		clk => clk,
@@ -1597,7 +1622,18 @@ BEGIN
 		-- Counter
 		tail_we => rob_count_DU,
 		branch_taken => branch_taken_A,
-		tail_out => rob_idx_F
+		tail_out => rob_idx_F,
+		-- Bypasses
+		reg_src1_D_BP => reg_src1_D,
+		reg_src1_D_v_BP => reg_src1_v_D,
+		reg_src1_D_p_BP => reg_src1_D_p_ROB,
+		reg_src1_D_inst_type_BP => reg_src1_D_inst_type_ROB,
+		reg_src1_D_data_BP => reg_src1_D_data_ROB,
+		reg_src2_D_BP => reg_src2_D,
+		reg_src2_D_v_BP => reg_src2_v_D,
+		reg_src2_D_p_BP => reg_src2_D_p_ROB,
+		reg_src2_D_inst_type_BP => reg_src2_D_inst_type_ROB,
+		reg_src2_D_data_BP => reg_src2_D_data_ROB
 	);
 
 	debug_dump_ROB <= '0';

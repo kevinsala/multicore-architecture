@@ -7,6 +7,7 @@ USE work.utils.ALL;
 ENTITY reorder_buffer IS
 	PORT(clk : IN STD_LOGIC;
 		reset : IN STD_LOGIC;
+		-- Pipeline inputs
 		rob_we_1 : IN STD_LOGIC;
 		rob_w_pos_1 : IN STD_LOGIC_VECTOR(3 DOWNTO 0);
 		reg_v_in_1 : IN STD_LOGIC;
@@ -37,6 +38,7 @@ ENTITY reorder_buffer IS
 		exc_data_in_3 : IN STD_LOGIC_VECTOR(31 DOWNTO 0);
 		pc_in_3 : IN STD_LOGIC_VECTOR(31 DOWNTO 0);
 		inst_type_3 : IN STD_LOGIC_VECTOR(1 DOWNTO 0);
+		-- Pipeline outputs
 		reg_v_out : OUT STD_LOGIC;
 		reg_out : OUT STD_LOGIC_VECTOR(4 DOWNTO 0);
 		reg_data_out : OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
@@ -44,9 +46,21 @@ ENTITY reorder_buffer IS
 		exc_code_out : OUT STD_LOGIC_VECTOR(1 DOWNTO 0);
 		exc_data_out : OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
 		pc_out : OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
+		-- Counter
 		tail_we : IN STD_LOGIC;
 		branch_taken : IN STD_LOGIC;
-		tail_out : OUT STD_LOGIC_VECTOR(3 DOWNTO 0)
+		tail_out : OUT STD_LOGIC_VECTOR(3 DOWNTO 0);
+		-- Bypasses
+		reg_src1_D_BP : IN STD_LOGIC_VECTOR(4 DOWNTO 0);
+		reg_src1_D_v_BP : IN STD_LOGIC;
+		reg_src1_D_p_BP : OUT STD_LOGIC;
+		reg_src1_D_inst_type_BP : OUT STD_LOGIC_VECTOR(1 DOWNTO 0);
+		reg_src1_D_data_BP : OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
+		reg_src2_D_BP : IN STD_LOGIC_VECTOR(4 DOWNTO 0);
+		reg_src2_D_v_BP : IN STD_LOGIC;
+		reg_src2_D_p_BP : OUT STD_LOGIC;
+		reg_src2_D_inst_type_BP : OUT STD_LOGIC_VECTOR(1 DOWNTO 0);
+		reg_src2_D_data_BP : OUT STD_LOGIC_VECTOR(31 DOWNTO 0)
 	);
 END reorder_buffer;
 
@@ -86,12 +100,49 @@ ARCHITECTURE structure OF reorder_buffer IS
 			SIGNAL tail : OUT INTEGER RANGE 0 TO ROB_POSITIONS - 1
 		) IS
 	BEGIN
-		FOR i in 0 TO ROB_POSITIONS - 1 LOOP
+		FOR i IN 0 TO ROB_POSITIONS - 1 LOOP
 			valid_fields(i) <= '0';
 		END LOOP;
 
 		head <= 0;
 		tail <= 0;
+	END PROCEDURE;
+
+	PROCEDURE bypass(
+			SIGNAL head : IN INTEGER RANGE 0 TO ROB_POSITIONS - 1;
+			SIGNAL tail : IN INTEGER RANGE 0 TO ROB_POSITIONS - 1;
+			SIGNAL valid_fields : IN valid_fields_t;
+			SIGNAL reg_v_fields : IN reg_v_fields_t;
+			SIGNAL reg_fields : IN reg_fields_t;
+			SIGNAL reg_data_fields : IN reg_data_fields_t;
+			SIGNAL inst_type_fields : IN inst_type_fields_t;
+			SIGNAL reg_src_v : IN STD_LOGIC;
+			SIGNAL reg_src : IN STD_LOGIC_VECTOR(4 DOWNTO 0);
+			SIGNAL reg_p : OUT STD_LOGIC;
+			SIGNAL reg_data : OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
+			SIGNAL inst_type : OUT STD_LOGIC_VECTOR(1 DOWNTO 0)
+		) IS
+		VARIABLE i : INTEGER RANGE 0 TO ROB_POSITIONS - 1;
+	BEGIN
+		IF reg_src_v = '0' THEN
+			reg_p <= '0';
+		ELSE
+			reg_p <= '0';
+			i := tail;
+			L: LOOP
+				IF valid_fields(i) = '1' THEN
+					IF reg_v_fields(i) = '1' AND reg_fields(i) = reg_src THEN
+						reg_p <= '1';
+						reg_data <= reg_data_fields(i);
+						inst_type <= inst_type_fields(i);
+						EXIT;
+					END IF;
+				END IF;
+
+				EXIT L WHEN i = head;
+				i := (i - 1) mod ROB_POSITIONS;
+			END LOOP;
+		END IF;
 	END PROCEDURE;
 
 BEGIN
@@ -176,5 +227,13 @@ BEGIN
 
 	-- Output current tail
 	tail_out <= STD_LOGIC_VECTOR(TO_UNSIGNED(tail, 4));
+
+	-- Bypasses
+	bypass(head, tail, valid_fields, reg_v_fields, reg_fields, reg_data_fields,
+			inst_type_fields, reg_src1_D_v_BP, reg_src1_D_BP, reg_src1_D_p_BP,
+			reg_src1_D_data_BP, reg_src1_D_inst_type_BP);
+	bypass(head, tail, valid_fields, reg_v_fields, reg_fields, reg_data_fields,
+			inst_type_fields, reg_src2_D_v_BP, reg_src2_D_BP, reg_src2_D_p_BP,
+			reg_src2_D_data_BP, reg_src2_D_inst_type_BP);
 END structure;
 
