@@ -7,8 +7,6 @@ ENTITY reg_LC IS
 		clk : IN STD_LOGIC;
 		reset : IN STD_LOGIC;
 		we : IN STD_LOGIC;
-		dtlb_we_in : IN STD_LOGIC;
-		itlb_we_in : IN STD_LOGIC;
 		mem_we_in : IN STD_LOGIC;
 		byte_in : IN STD_LOGIC;
 		mem_read_in : IN STD_LOGIC;
@@ -20,8 +18,6 @@ ENTITY reg_LC IS
 		line_num_in : IN INTEGER RANGE 0 TO 3;
 		line_we_in : IN STD_LOGIC;
 		line_data_in : IN STD_LOGIC_VECTOR(127 DOWNTO 0);
-		dtlb_we_out : OUT STD_LOGIC;
-		itlb_we_out : OUT STD_LOGIC;
 		mem_we_out : OUT STD_LOGIC;
 		byte_out : OUT STD_LOGIC;
 		mem_read_out : OUT STD_LOGIC;
@@ -43,8 +39,6 @@ BEGIN
 	BEGIN
 		IF rising_edge(clk) THEN
 			IF reset = '1' THEN
-				dtlb_we_out <= '0';
-				itlb_we_out <= '0';
 				mem_we_out <= '0';
 				byte_out <= '0';
 				mem_read_out <= '0';
@@ -69,8 +63,6 @@ BEGIN
 					line_num_out <= line_num_in;
 					line_we_out <= line_we_in;
 					line_data_out <= line_data_in;
-					dtlb_we_out <= dtlb_we_in;
-					itlb_we_out <= itlb_we_in;
 				END IF;
 			END IF;
 		END IF;

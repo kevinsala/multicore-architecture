@@ -70,7 +70,6 @@ BEGIN
 	p: PROCESS(clk)
 		VARIABLE object_line : INTEGER RANGE 0 TO 3;
 	BEGIN
-		-- Write on falling edge
 		IF falling_edge(clk) THEN
 			IF debug_dump = '1' THEN
 				dump_tlb("dump/tlb", tlb_tags);
@@ -102,8 +101,7 @@ BEGIN
 	hit_line_i(2) <= valid_entries(2) AND to_std_logic(tlb_tags(2) = VA(31 DOWNTO 12));
 	hit_line_i(3) <= valid_entries(3) AND to_std_logic(tlb_tags(3) = VA(31 DOWNTO 12));
 
-	--tlb_hit <= hit_line_i(0) OR hit_line_i(1) OR hit_line_i(2) OR hit_line_i(3);
-	tlb_hit <= '1';
+	tlb_hit <= hit_line_i(0) OR hit_line_i(1) OR hit_line_i(2) OR hit_line_i(3);
 
 	-- Determine which line has hit
 	hit_line_num_i <= 0 WHEN hit_line_i(0) = '1'
@@ -119,7 +117,7 @@ BEGIN
 		ELSE 3 WHEN lru_fields(3) = 3
 		ELSE 0;
 
-	PA <= VA - x"1000" WHEN tlb_hit = '1' AND priv_status_r = '0' 
+	PA <= VA + x"1000" WHEN tlb_hit = '1' AND priv_status_r = '0' 
 		ELSE VA;
 
 	tlb_hit_out <= tlb_hit;
