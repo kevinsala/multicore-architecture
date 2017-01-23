@@ -33,6 +33,7 @@ ARCHITECTURE structure OF fetch IS
 			reset : IN STD_LOGIC;
 			debug_dump : IN STD_LOGIC;
 			addr : IN STD_LOGIC_VECTOR(31 DOWNTO 0);
+            itlb_miss : IN STD_LOGIC;
 			data_out : OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
 			done : OUT STD_LOGIC;
 			invalid_access : OUT STD_LOGIC;
@@ -104,6 +105,7 @@ BEGIN
         reset => reset,
         debug_dump => debug_dump,
         addr => PA_pc,
+        itlb_miss => itlb_miss,
         data_out => cache_data_out,
         done => cache_done,
         invalid_access => invalid_access,
