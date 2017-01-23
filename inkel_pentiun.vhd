@@ -507,6 +507,7 @@ ARCHITECTURE structure OF inkel_pentiun IS
 			reg_we_in : IN STD_LOGIC;
 			reg_dest_in : IN STD_LOGIC_VECTOR(4 DOWNTO 0);
 			reg_data_in : IN STD_LOGIC_VECTOR(31 DOWNTO 0);
+			v : OUT STD_LOGIC;
 			reg_we_out : OUT STD_LOGIC;
 			reg_dest_out : OUT STD_LOGIC_VECTOR(4 DOWNTO 0);
 			reg_data_out : OUT STD_LOGIC_VECTOR(31 DOWNTO 0)
@@ -721,6 +722,7 @@ ARCHITECTURE structure OF inkel_pentiun IS
 	SIGNAL inst_type_M5 : STD_LOGIC_VECTOR(1 DOWNTO 0);
 
 	-- Writeback stage signals
+	SIGNAL v_W_MEM : STD_LOGIC;
 	SIGNAL reg_we_W_MEM : STD_LOGIC;
 	SIGNAL reg_dest_W_MEM : STD_LOGIC_VECTOR(4 DOWNTO 0);
 	SIGNAL reg_data_W_MEM : STD_LOGIC_VECTOR(31 DOWNTO 0);
@@ -730,6 +732,7 @@ ARCHITECTURE structure OF inkel_pentiun IS
 	SIGNAL exc_data_W_MEM : STD_LOGIC_VECTOR(31 DOWNTO 0);
 	SIGNAL rob_idx_W_MEM : STD_LOGIC_VECTOR(3 DOWNTO 0);
 	SIGNAL inst_type_W_MEM : STD_LOGIC_VECTOR(1 DOWNTO 0);
+	SIGNAL v_W_ALU : STD_LOGIC;
 	SIGNAL reg_we_W_ALU : STD_LOGIC;
 	SIGNAL reg_dest_W_ALU : STD_LOGIC_VECTOR(4 DOWNTO 0);
 	SIGNAL reg_data_W_ALU : STD_LOGIC_VECTOR(31 DOWNTO 0);
@@ -739,6 +742,7 @@ ARCHITECTURE structure OF inkel_pentiun IS
 	SIGNAL exc_data_W_ALU : STD_LOGIC_VECTOR(31 DOWNTO 0);
 	SIGNAL rob_idx_W_ALU : STD_LOGIC_VECTOR(3 DOWNTO 0);
 	SIGNAL inst_type_W_ALU : STD_LOGIC_VECTOR(1 DOWNTO 0);
+	SIGNAL v_W_MUL : STD_LOGIC;
 	SIGNAL reg_we_W_MUL : STD_LOGIC;
 	SIGNAL reg_dest_W_MUL : STD_LOGIC_VECTOR(4 DOWNTO 0);
 	SIGNAL reg_data_W_MUL : STD_LOGIC_VECTOR(31 DOWNTO 0);
@@ -750,9 +754,6 @@ ARCHITECTURE structure OF inkel_pentiun IS
 	SIGNAL inst_type_W_MUL : STD_LOGIC_VECTOR(1 DOWNTO 0);
 
 	-- ROB output signals
-	SIGNAL inst_alu_ROB : STD_LOGIC;
-	SIGNAL inst_mem_ROB : STD_LOGIC;
-	SIGNAL inst_mul_ROB : STD_LOGIC;
 	SIGNAL reg_we_ROB : STD_LOGIC;
 	SIGNAL reg_dest_ROB : STD_LOGIC_VECTOR(4 DOWNTO 0);
 	SIGNAL reg_data_ROB : STD_LOGIC_VECTOR(31 DOWNTO 0);
@@ -1286,6 +1287,7 @@ BEGIN
 		reg_we_in => reg_we_A,
 		reg_dest_in => reg_dest_A,
 		reg_data_in => ALU_out_A,
+		v => v_W_ALU,
 		reg_we_out => reg_we_W_ALU,
 		reg_dest_out => reg_dest_W_ALU,
 		reg_data_out => reg_data_W_ALU
@@ -1366,6 +1368,7 @@ BEGIN
 		reg_we_in => reg_we_M5,
 		reg_dest_in => reg_dest_M5,
 		reg_data_in => mul_out_M5,
+		v => v_W_MUL,
 		reg_we_out => reg_we_W_MUL,
 		reg_dest_out => reg_dest_W_MUL,
 		reg_data_out => reg_data_W_MUL
@@ -1511,6 +1514,7 @@ BEGIN
 		reg_we_in => reg_we_C,
 		reg_dest_in => reg_dest_C,
 		reg_data_in => reg_data_C,
+		v => v_W_MEM,
 		reg_we_out => reg_we_W_MEM,
 		reg_dest_out => reg_dest_W_MEM,
 		reg_data_out => reg_data_W_MEM
@@ -1541,15 +1545,11 @@ BEGIN
 
 	---------------------------- Reorder Buffer --------------------------------
 
-	inst_alu_ROB <= to_std_logic(inst_type_W_ALU = INST_TYPE_ALU);
-	inst_mem_ROB <= to_std_logic(inst_type_W_MEM = INST_TYPE_MEM);
-	inst_mul_ROB <= to_std_logic(inst_type_W_MUL = INST_TYPE_MUL);
-
 	rob : reorder_buffer PORT MAP(
 		clk => clk,
 		reset => reset,
 		-- Memory
-		rob_we_1 => inst_mem_ROB,
+		rob_we_1 => v_W_MEM,
 		rob_w_pos_1 => rob_idx_W_MEM,
 		reg_v_in_1 => reg_we_W_MEM,
 		reg_in_1 => reg_dest_W_MEM,
@@ -1560,7 +1560,7 @@ BEGIN
 		pc_in_1 => pc_W_MEM,
 		inst_type_1 => INST_TYPE_MEM,
 		-- Multiplication
-		rob_we_2 => inst_mul_ROB,
+		rob_we_2 => v_W_MUL,
 		rob_w_pos_2 => rob_idx_W_MUL,
 		reg_v_in_2 => reg_we_W_MUL,
 		reg_in_2 => reg_dest_W_MUL,
@@ -1571,7 +1571,7 @@ BEGIN
 		pc_in_2 => pc_W_MUL,
 		inst_type_2 => INST_TYPE_MUL,
 		-- ALU
-		rob_we_3 => inst_alu_ROB,
+		rob_we_3 => v_W_ALU,
 		rob_w_pos_3 => rob_idx_W_ALU,
 		reg_v_in_3 => reg_we_W_ALU,
 		reg_in_3 => reg_dest_W_ALU,
