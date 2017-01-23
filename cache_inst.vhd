@@ -92,7 +92,7 @@ BEGIN
 	state_nx <= LINEREQ WHEN state = READY AND hit_cache = '0' AND invalid_access_i = '0' AND itlb_miss ='0' ELSE
 				READY WHEN (state = LINEREQ AND mem_done = '1') OR mem_req_abort = '1';
 
-	mem_req <= '1' WHEN (state = READY AND hit_cache = '0' AND invalid_access_i = '0') ELSE
+	mem_req <= '1' WHEN (state = READY AND hit_cache = '0' AND invalid_access_i = '0' AND itlb_miss='0') ELSE
 				'1' WHEN (state = LINEREQ AND mem_done = '0') ELSE
 				'0';
 
