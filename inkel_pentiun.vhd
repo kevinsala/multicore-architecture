@@ -306,13 +306,11 @@ ARCHITECTURE structure OF inkel_pentiun IS
 			reg_D_A_reset  : OUT STD_LOGIC;
 			reg_A_L_reset  : OUT STD_LOGIC;
 			reg_L_C_reset  : OUT STD_LOGIC;
-			reg_C_W_reset  : OUT STD_LOGIC;
 			reg_PC_we      : OUT STD_LOGIC;
 			reg_F_D_we     : OUT STD_LOGIC;
 			reg_D_A_we     : OUT STD_LOGIC;
 			reg_A_L_we     : OUT STD_LOGIC;
 			reg_L_C_we     : OUT STD_LOGIC;
-			reg_C_W_we     : OUT STD_LOGIC;
 			rob_count      : OUT STD_LOGIC
 		);
 	END COMPONENT;
@@ -498,20 +496,6 @@ ARCHITECTURE structure OF inkel_pentiun IS
 			line_num_out : OUT INTEGER RANGE 0 TO 3;
 			line_we_out : OUT STD_LOGIC;
 			line_data_out : OUT STD_LOGIC_VECTOR(127 DOWNTO 0)
-		);
-	END COMPONENT;
-
-	COMPONENT reg_CW IS
-		PORT(
-			clk : IN STD_LOGIC;
-			reset : IN STD_LOGIC;
-			we : IN STD_LOGIC;
-			reg_we_in : IN STD_LOGIC;
-			reg_dest_in : IN STD_LOGIC_VECTOR(4 DOWNTO 0);
-			reg_data_in : IN STD_LOGIC_VECTOR(31 DOWNTO 0);
-			reg_we_out : OUT STD_LOGIC;
-			reg_dest_out : OUT STD_LOGIC_VECTOR(4 DOWNTO 0);
-			reg_data_out : OUT STD_LOGIC_VECTOR(31 DOWNTO 0)
 		);
 	END COMPONENT;
 
@@ -737,15 +721,15 @@ ARCHITECTURE structure OF inkel_pentiun IS
 	SIGNAL inst_type_M5 : STD_LOGIC_VECTOR(1 DOWNTO 0);
 
 	-- Writeback stage signals
-	SIGNAL reg_we_W : STD_LOGIC;
-	SIGNAL priv_status_W : STD_LOGIC;
-	SIGNAL mul_W : STD_LOGIC;
-	SIGNAL inst_type_W : STD_LOGIC_VECTOR(1 DOWNTO 0);
-	SIGNAL rob_idx_W : STD_LOGIC_VECTOR(3 DOWNTO 0);
-	SIGNAL reg_dest_W : STD_LOGIC_VECTOR(4 DOWNTO 0);
-	SIGNAL pc_W : STD_LOGIC_VECTOR(31 DOWNTO 0);
-	SIGNAL reg_data_W : STD_LOGIC_VECTOR(31 DOWNTO 0);
-	SIGNAL mul_out_W : STD_LOGIC_VECTOR(31 DOWNTO 0);
+	SIGNAL reg_we_W_MEM : STD_LOGIC;
+	SIGNAL reg_dest_W_MEM : STD_LOGIC_VECTOR(4 DOWNTO 0);
+	SIGNAL reg_data_W_MEM : STD_LOGIC_VECTOR(31 DOWNTO 0);
+	SIGNAL pc_W_MEM : STD_LOGIC_VECTOR(31 DOWNTO 0);
+	SIGNAL exc_W_MEM : STD_LOGIC;
+	SIGNAL exc_code_W_MEM : STD_LOGIC_VECTOR(1 DOWNTO 0);
+	SIGNAL exc_data_W_MEM : STD_LOGIC_VECTOR(31 DOWNTO 0);
+	SIGNAL rob_idx_W_MEM : STD_LOGIC_VECTOR(3 DOWNTO 0);
+	SIGNAL inst_type_W_MEM : STD_LOGIC_VECTOR(1 DOWNTO 0);
 	SIGNAL reg_we_W_ALU : STD_LOGIC;
 	SIGNAL reg_dest_W_ALU : STD_LOGIC_VECTOR(4 DOWNTO 0);
 	SIGNAL reg_data_W_ALU : STD_LOGIC_VECTOR(31 DOWNTO 0);
@@ -793,15 +777,13 @@ ARCHITECTURE structure OF inkel_pentiun IS
 	SIGNAL reg_A_L_reset_DU : STD_LOGIC;
 	SIGNAL reg_L_C_reset : STD_LOGIC;
 	SIGNAL reg_L_C_reset_DU : STD_LOGIC;
-	SIGNAL reg_C_W_reset : STD_LOGIC;
-	SIGNAL reg_C_W_reset_DU : STD_LOGIC;
+	SIGNAL reg_W_MEM_reset : STD_LOGIC;
 	SIGNAL reg_W_ALU_reset : STD_LOGIC;
 	SIGNAL reg_W_MUL_reset : STD_LOGIC;
 	SIGNAL reg_F_D_we : STD_LOGIC;
 	SIGNAL reg_D_A_we : STD_LOGIC;
 	SIGNAL reg_A_L_we : STD_LOGIC;
 	SIGNAL reg_L_C_we : STD_LOGIC;
-	SIGNAL reg_C_W_we : STD_LOGIC;
 
 	-- Stall unit signals
 	SIGNAL load_PC : STD_LOGIC;
@@ -827,7 +809,6 @@ ARCHITECTURE structure OF inkel_pentiun IS
 	SIGNAL exc_M5_E : STD_LOGIC;
 	SIGNAL exc_C : STD_LOGIC;
 	SIGNAL exc_C_E : STD_LOGIC;
-	SIGNAL exc_W : STD_LOGIC;
 	SIGNAL exc_code_F_E : STD_LOGIC_VECTOR(1 DOWNTO 0);
 	SIGNAL exc_code_D : STD_LOGIC_VECTOR(1 DOWNTO 0);
 	SIGNAL exc_code_D_E : STD_LOGIC_VECTOR(1 DOWNTO 0);
@@ -839,7 +820,6 @@ ARCHITECTURE structure OF inkel_pentiun IS
 	SIGNAL exc_code_M5_E : STD_LOGIC_VECTOR(1 DOWNTO 0);
 	SIGNAL exc_code_C : STD_LOGIC_VECTOR(1 DOWNTO 0);
 	SIGNAL exc_code_C_E : STD_LOGIC_VECTOR(1 DOWNTO 0);
-	SIGNAL exc_code_W : STD_LOGIC_VECTOR(1 DOWNTO 0);
 	SIGNAL exc_data_F_E : STD_LOGIC_VECTOR(31 DOWNTO 0);
 	SIGNAL exc_data_D : STD_LOGIC_VECTOR(31 DOWNTO 0);
 	SIGNAL exc_data_D_E : STD_LOGIC_VECTOR(31 DOWNTO 0);
@@ -851,7 +831,6 @@ ARCHITECTURE structure OF inkel_pentiun IS
 	SIGNAL exc_data_M5_E : STD_LOGIC_VECTOR(31 DOWNTO 0);
 	SIGNAL exc_data_C : STD_LOGIC_VECTOR(31 DOWNTO 0);
 	SIGNAL exc_data_C_E : STD_LOGIC_VECTOR(31 DOWNTO 0);
-	SIGNAL exc_data_W : STD_LOGIC_VECTOR(31 DOWNTO 0);
 
 BEGIN
 
@@ -935,13 +914,11 @@ BEGIN
 		reg_D_A_reset => reg_D_A_reset_DU,
 		reg_A_L_reset => reg_A_L_reset_DU,
 		reg_L_C_reset => reg_L_C_reset_DU,
-		reg_C_W_reset => reg_C_W_reset_DU,
 		reg_PC_we => load_PC,
 		reg_F_D_we => reg_F_D_we,
 		reg_D_A_we => reg_D_A_we,
 		reg_A_L_we => reg_A_L_we,
 		reg_L_C_we => reg_L_C_we,
-		reg_C_W_we => reg_C_W_we,
 		rob_count => rob_count_DU
 	);
 
@@ -1525,24 +1502,24 @@ BEGIN
 		mem_data_out => mem_data_out_L
 	);
 
-	reg_C_W_reset <= reg_C_W_reset_DU OR exc_C_E OR exc_M5_E;
+	reg_W_MEM_reset <= reset OR to_std_logic(inst_type_A /= INST_TYPE_MEM);
 
-	reg_C_W: reg_CW PORT MAP(
+	reg_W_MEM : reg_W PORT MAP (
 		clk => clk,
-		reset => reg_C_W_reset,
-		we => reg_C_W_we,
+		reset => reg_W_MEM_reset,
+		we => '1',
 		reg_we_in => reg_we_C,
 		reg_dest_in => reg_dest_C,
 		reg_data_in => reg_data_C,
-		reg_we_out => reg_we_W,
-		reg_dest_out => reg_dest_W,
-		reg_data_out => reg_data_W
+		reg_we_out => reg_we_W_MEM,
+		reg_dest_out => reg_dest_W_MEM,
+		reg_data_out => reg_data_W_MEM
 	);
 
-	reg_status_C_W: reg_status PORT MAP(
+	reg_status_W_MEM: reg_status PORT MAP(
 		clk => clk,
-		reset => reg_C_W_reset_DU,
-		we => reg_C_W_we,
+		reset => reg_W_MEM_reset,
+		we => '1',
 		pc_in => pc_C,
 		priv_status_in => priv_status_C,
 		exc_new => exc_C_E,
@@ -1553,19 +1530,19 @@ BEGIN
 		exc_data_old => exc_data_C,
 		rob_idx_in => rob_idx_C,
 		inst_type_in => inst_type_C,
-		pc_out => pc_W,
-		priv_status_out => priv_status_W,
-		exc_out => exc_W,
-		exc_code_out => exc_code_W,
-		exc_data_out => exc_data_W,
-		rob_idx_out => rob_idx_W,
-		inst_type_out => inst_type_W
+		pc_out => pc_W_MEM,
+		priv_status_out => open,
+		exc_out => exc_W_MEM,
+		exc_code_out => exc_code_W_MEM,
+		exc_data_out => exc_data_W_MEM,
+		rob_idx_out => rob_idx_W_MEM,
+		inst_type_out => inst_type_W_MEM
 	);
 
 	---------------------------- Reorder Buffer --------------------------------
 
 	inst_alu_ROB <= to_std_logic(inst_type_W_ALU = INST_TYPE_ALU);
-	inst_mem_ROB <= to_std_logic(inst_type_W = INST_TYPE_MEM);
+	inst_mem_ROB <= to_std_logic(inst_type_W_MEM = INST_TYPE_MEM);
 	inst_mul_ROB <= to_std_logic(inst_type_W_MUL = INST_TYPE_MUL);
 
 	rob : reorder_buffer PORT MAP(
@@ -1573,14 +1550,14 @@ BEGIN
 		reset => reset,
 		-- Memory
 		rob_we_1 => inst_mem_ROB,
-		rob_w_pos_1 => rob_idx_W,
-		reg_v_in_1 => reg_we_W,
-		reg_in_1 => reg_dest_W,
-		reg_data_in_1 => reg_data_W,
-		exc_in_1 => exc_W,
-		exc_code_in_1 => exc_code_W,
-		exc_data_in_1 => exc_data_W,
-		pc_in_1 => pc_W,
+		rob_w_pos_1 => rob_idx_W_MEM,
+		reg_v_in_1 => reg_we_W_MEM,
+		reg_in_1 => reg_dest_W_MEM,
+		reg_data_in_1 => reg_data_W_MEM,
+		exc_in_1 => exc_W_MEM,
+		exc_code_in_1 => exc_code_W_MEM,
+		exc_data_in_1 => exc_data_W_MEM,
+		pc_in_1 => pc_W_MEM,
 		inst_type_1 => INST_TYPE_MEM,
 		-- Multiplication
 		rob_we_2 => inst_mul_ROB,

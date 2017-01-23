@@ -39,13 +39,11 @@ ENTITY detention_unit IS
 		reg_D_A_reset  : OUT STD_LOGIC;
 		reg_A_L_reset  : OUT STD_LOGIC;
 		reg_L_C_reset  : OUT STD_LOGIC;
-		reg_C_W_reset  : OUT STD_LOGIC;
 		reg_PC_we      : OUT STD_LOGIC;
 		reg_F_D_we     : OUT STD_LOGIC;
 		reg_D_A_we     : OUT STD_LOGIC;
 		reg_A_L_we     : OUT STD_LOGIC;
 		reg_L_C_we     : OUT STD_LOGIC;
-		reg_C_W_we     : OUT STD_LOGIC;
 		rob_count      : OUT STD_LOGIC
 	);
 END detention_unit;
@@ -85,14 +83,12 @@ BEGIN
 	reg_D_A_we <= NOT conflict_MEM;
 	reg_A_L_we <= done_L;
 	reg_L_C_we <= '1';
-	reg_C_W_we <= '1';
 
 	reg_PC_reset <= reset;
 	reg_F_D_reset <= reset OR branch_taken_A OR (NOT done_F AND NOT conflict_MEM AND NOT conflict_i) OR exc_D OR exc_A OR exc_L OR exc_C;
 	reg_D_A_reset <= reset OR branch_taken_A OR conflict_i OR exc_A OR exc_L OR exc_C;
 	reg_A_L_reset <= reset OR exc_L OR exc_C;
 	reg_L_C_reset <= reset OR NOT done_L OR exc_C;
-	reg_C_W_reset <= reset;
 
 	conflict <= conflict_i;
 END detention_unit_behavior;
