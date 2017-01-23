@@ -22,6 +22,7 @@ ENTITY detention_unit IS
 		reg_dest_M4		: IN STD_LOGIC_VECTOR(4 DOWNTO 0);
 		mul_M5			: IN STD_LOGIC;
 		reg_dest_M5		: IN STD_LOGIC_VECTOR(4 DOWNTO 0);
+		inst_type_A	   : IN STD_LOGIC_VECTOR(1 DOWNTO 0);
 		reg_dest_A     : IN STD_LOGIC_VECTOR(4 DOWNTO 0);
 		reg_we_A       : IN STD_LOGIC;
 		mem_read_A     : IN STD_LOGIC;
@@ -87,7 +88,7 @@ BEGIN
 	reg_PC_reset <= reset;
 	reg_F_D_reset <= reset OR branch_taken_A OR (NOT done_F AND NOT conflict_MEM AND NOT conflict_i) OR exc_D OR exc_A OR exc_L OR exc_C;
 	reg_D_A_reset <= reset OR branch_taken_A OR conflict_i OR exc_A OR exc_L OR exc_C;
-	reg_A_L_reset <= reset OR exc_L OR exc_C;
+	reg_A_L_reset <= reset OR (done_L AND to_std_logic(inst_type_A /= INST_TYPE_MEM)) OR exc_L OR exc_C;
 	reg_L_C_reset <= reset OR NOT done_L OR exc_C;
 
 	conflict <= conflict_i;

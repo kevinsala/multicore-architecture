@@ -289,6 +289,7 @@ ARCHITECTURE structure OF inkel_pentiun IS
 			reg_dest_M4    : IN STD_LOGIC_VECTOR(4 downto 0);
 			reg_dest_M5    : IN STD_LOGIC_VECTOR(4 downto 0);
 			mul_M5 		   : IN STD_LOGIC;
+			inst_type_A    : IN STD_LOGIC_VECTOR(1 DOWNTO 0);
 			reg_dest_A     : IN STD_LOGIC_VECTOR(4 DOWNTO 0);
 			reg_we_A       : IN STD_LOGIC;
 			mem_read_A     : IN STD_LOGIC;
@@ -898,6 +899,7 @@ BEGIN
 		reg_dest_M4 => reg_dest_M4,
 		mul_M5 => mul_M5,
 		reg_dest_M5 => reg_dest_M5,
+		inst_type_A => inst_type_A,
 		reg_dest_A => reg_dest_A,
 		reg_we_A => reg_we_A,
 		mem_read_A => mem_read_A,
