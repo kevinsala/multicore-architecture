@@ -1278,7 +1278,8 @@ BEGIN
 
 	-------------------------------- ALU Pipeline -----------------------------------------
 
-	reg_W_ALU_reset <= reset OR to_std_logic(inst_type_A /= INST_TYPE_ALU);
+	-- We might get an exception from F. Therefor, we still don't know the type of instruction
+	reg_W_ALU_reset <= reset OR NOT (to_std_logic(inst_type_A = INST_TYPE_ALU) OR (to_std_logic(inst_type_A = INST_TYPE_NOP) AND exc_A));
 
 	reg_W_ALU : reg_W PORT MAP (
 		clk => clk,

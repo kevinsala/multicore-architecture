@@ -148,6 +148,7 @@ ARCHITECTURE structure OF reorder_buffer IS
 BEGIN
 	p: PROCESS(clk)
 		VARIABLE rob_entry : INTEGER RANGE 0 TO ROB_POSITIONS - 1;
+		VARIABLE exception : BOOLEAN;
 	BEGIN
 		IF reset = '1' THEN
 			reset_rob(valid_fields, head, tail);
@@ -196,6 +197,8 @@ BEGIN
 					inst_type_fields(rob_entry) <= inst_type_3;
 				END IF;
 			ELSIF rising_edge(clk) THEN
+				exception := FALSE;
+
 				-- Commit instructions on rising edge
 				IF valid_fields(head) = '1' THEN
 					reg_v_out <= reg_v_fields(head);
@@ -208,13 +211,28 @@ BEGIN
 
 					valid_fields(head) <= '0';
 					head <= (head + 1) mod ROB_POSITIONS;
+
+					IF exc_fields(head) = '1' THEN
+						exception := TRUE;
+					END IF;
 				ELSE
 					reg_v_out <= '0';
 					exc_out <= '0';
 					pc_out <= x"00000000";
 				END IF;
 
-				IF branch_taken = '1' THEN
+				IF exception THEN
+					-- Mayday, mayday, stop all instructions
+					-- Be careful: head still doesn't have the new value
+					rob_entry := (head + 1) mod ROB_POSITIONS;
+					L: LOOP
+						valid_fields(rob_entry) <= '0';
+
+						EXIT L WHEN rob_entry = tail;
+						rob_entry := (rob_entry + 1) mod ROB_POSITIONS;
+					END LOOP;
+					tail <= (head + 1) mod ROB_POSITIONS;
+				ELSIF branch_taken = '1' THEN
 					-- We messed up!
 					tail <= (tail - 1) mod ROB_POSITIONS;
 				ELSIF tail_we = '1' THEN
