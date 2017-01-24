@@ -65,10 +65,10 @@ ARCHITECTURE detention_unit_behavior OF detention_unit IS
 	SIGNAL conflict_MEM : STD_LOGIC;
 BEGIN
 	conflict_ALU_A <= '1' WHEN mem_read_A = '1' AND ((reg_src1_D = reg_dest_A AND reg_src1_v_D = '1') OR (reg_src2_D = reg_dest_A AND reg_src2_v_D = '1')) ELSE '0';
-	conflict_ALU_L <= '1' WHEN mem_read_L = '1' AND ((reg_src1_D = reg_dest_L AND reg_src1_v_D = '1') OR (reg_src2_D = reg_dest_L AND reg_src2_v_D = '1')) ELSE '0';
+	conflict_ALU_L <= '1' WHEN mem_read_L = '1' AND ((reg_src1_D = reg_dest_L AND reg_src1_v_D = '1') OR (reg_src2_D = reg_dest_L AND reg_src2_v_D = '1' AND NOT mem_we_D = '1')) ELSE '0';
 	conflict_MUL_M1 <= '1' WHEN  mul_M1 = '1' AND ((reg_src1_D = reg_dest_A AND reg_src1_v_D = '1') OR (reg_src2_D = reg_dest_A AND reg_src2_v_D = '1')) ELSE '0';
 	conflict_MUL_M2 <= '1' WHEN  mul_M2 = '1' AND ((reg_src1_D = reg_dest_M2 AND reg_src1_v_D = '1') OR (reg_src2_D = reg_dest_M2 AND reg_src2_v_D = '1')) ELSE '0';
-	conflict_MUL_M3 <= '1' WHEN  mul_M3 = '1' AND ((reg_src1_D = reg_dest_M3 AND reg_src1_v_D = '1') OR (reg_src2_D = reg_dest_M3 AND reg_src2_v_D = '1' AND NOT mem_we_D = '1')) ELSE '0';
+	conflict_MUL_M3 <= '1' WHEN  mul_M3 = '1' AND ((reg_src1_D = reg_dest_M3 AND reg_src1_v_D = '1') OR (reg_src2_D = reg_dest_M3 AND reg_src2_v_D = '1')) ELSE '0';
 	conflict_MUL_M4 <= '1' WHEN  mul_M4 = '1' AND ((reg_src1_D = reg_dest_M4 AND reg_src1_v_D = '1') OR (reg_src2_D = reg_dest_M4 AND reg_src2_v_D = '1' AND NOT mem_we_D = '1')) ELSE '0';
 
 	conflict_ALU <= conflict_ALU_A OR conflict_ALU_L;

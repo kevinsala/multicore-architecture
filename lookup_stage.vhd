@@ -11,12 +11,10 @@ ENTITY lookup_stage IS
 		priv_status    : IN  STD_LOGIC;
 		dtlb_we		   : IN  STD_LOGIC;
 		addr           : IN  STD_LOGIC_VECTOR(31 DOWNTO 0);
+		data_in        : IN  STD_LOGIC_VECTOR(31 DOWNTO 0);
 		re             : IN  STD_LOGIC;
 		we             : IN  STD_LOGIC;
 		is_byte        : IN  STD_LOGIC;
-		state          : IN  data_cache_state_t;
-		state_nx       : OUT data_cache_state_t;
-		hit            : OUT STD_LOGIC;
 		done           : OUT STD_LOGIC;
 		line_num       : OUT INTEGER RANGE 0 TO 3;
 		line_we        : OUT STD_LOGIC;
@@ -26,7 +24,12 @@ ENTITY lookup_stage IS
 		mem_req        : OUT STD_LOGIC;
 		mem_addr       : OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
 		mem_we         : OUT STD_LOGIC;
-		mem_done       : IN  STD_LOGIC
+		mem_done       : IN  STD_LOGIC;
+		cache_addr     : OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
+		cache_we       : OUT STD_LOGIC;
+		cache_is_byte  : OUT STD_LOGIC;
+		sb_data_out    : OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
+		mux_data_out   : OUT STD_LOGIC
 	);
 END lookup_stage;
 
@@ -40,10 +43,8 @@ ARCHITECTURE lookup_stage_behavior OF lookup_stage IS
 			re             : IN  STD_LOGIC;
 			we             : IN  STD_LOGIC;
 			is_byte        : IN  STD_LOGIC;
-			state          : IN  data_cache_state_t;
-			state_nx       : OUT data_cache_state_t;
-			hit            : OUT STD_LOGIC;
 			done           : OUT STD_LOGIC;
+			hit            : OUT STD_LOGIC;
 			line_num       : OUT INTEGER RANGE 0 TO 3;
 			line_we        : OUT STD_LOGIC;
 			lru_line_num   : OUT INTEGER RANGE 0 TO 3;
@@ -51,7 +52,35 @@ ARCHITECTURE lookup_stage_behavior OF lookup_stage IS
 			mem_req        : OUT STD_LOGIC;
 			mem_addr       : OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
 			mem_we         : OUT STD_LOGIC;
-			mem_done       : IN  STD_LOGIC
+			mem_done       : IN  STD_LOGIC;
+			repl           : OUT STD_LOGIC;
+			repl_addr      : OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
+			sb_done        : IN STD_LOGIC;
+			sb_addr        : IN STD_LOGIC_VECTOR(31 DOWNTO 0);
+			sb_we          : IN STD_LOGIC
+		);
+	END COMPONENT;
+
+	COMPONENT store_buffer IS
+		PORT(
+			clk            : IN STD_LOGIC;
+			reset          : IN STD_LOGIC;
+			addr           : IN STD_LOGIC_VECTOR(31 DOWNTO 0);
+			data_in        : IN STD_LOGIC_VECTOR(31 DOWNTO 0);
+			re             : IN STD_LOGIC;
+			we             : IN STD_LOGIC;
+			is_byte        : IN STD_LOGIC;
+			sleep          : IN STD_LOGIC;
+			repl           : IN STD_LOGIC;
+			repl_addr      : IN STD_LOGIC_VECTOR(31 DOWNTO 0);
+			done           : OUT STD_LOGIC;
+			hit            : OUT STD_LOGIC;
+			tags_we        : OUT STD_LOGIC;
+			tags_addr      : OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
+			cache_addr     : OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
+			cache_we       : OUT STD_LOGIC;
+			cache_is_byte  : OUT STD_LOGIC;
+			sb_data_out    : OUT STD_LOGIC_VECTOR(31 DOWNTO 0)
 		);
 	END COMPONENT;
 
@@ -74,9 +103,19 @@ ARCHITECTURE lookup_stage_behavior OF lookup_stage IS
 	SIGNAL mem_access : STD_LOGIC;
 	SIGNAL PA_tlb : STD_LOGIC_VECTOR(31 DOWNTO 0);
 	SIGNAL dtlb_hit : STD_LOGIC;
-	SIGNAL tags_re : STD_LOGIC;
-	SIGNAL tags_we : STD_LOGIC;
+	SIGNAL real_re : STD_LOGIC;
+	SIGNAL real_we : STD_LOGIC;
+	SIGNAL done_tags : STD_LOGIC;
+	SIGNAL done_sb : STD_LOGIC;
+	SIGNAL hit_tags : STD_LOGIC;
+	SIGNAL hit_sb : STD_LOGIC;
+	SIGNAL mem_req_i : STD_LOGIC;
 
+	-- Interface between tags and store buffer
+	SIGNAL repl         : STD_LOGIC;
+	SIGNAL repl_addr    : STD_LOGIC_VECTOR(31 DOWNTO 0);
+	SIGNAL sb_tags_we   : STD_LOGIC;
+	SIGNAL sb_tags_addr : STD_LOGIC_VECTOR(31 DOWNTO 0);
 BEGIN
 
 	mem_access <= re OR we;
@@ -95,30 +134,58 @@ BEGIN
 		data_in => addr(31 DOWNTO 12)
 	);
 
-	tags_re <= re AND (priv_status OR dtlb_hit);
-	tags_we <= we AND (priv_status OR dtlb_hit);
+	real_re <= re AND (priv_status OR dtlb_hit);
+	real_we <= we AND (priv_status OR dtlb_hit);
 
 	tags : cache_tags PORT MAP(
 		clk => clk,
 		reset => reset,
 		debug_dump => debug_dump,
 		addr => PA_tlb,
-		re => tags_re,
-		we => tags_we,
+		re => real_re,
+		we => real_we,
 		is_byte => is_byte,
-		state => state,
-		state_nx => state_nx,
-		hit => hit,
-		done => done,
+		done => done_tags,
+		hit => hit_tags,
 		line_num => line_num,
 		line_we => line_we,
 		lru_line_num => lru_line_num,
 		invalid_access => invalid_access,
-		mem_req => mem_req,
+		mem_req => mem_req_i,
 		mem_addr => mem_addr,
 		mem_we => mem_we,
-		mem_done => mem_done
+		mem_done => mem_done,
+		repl => repl,
+		repl_addr => repl_addr,
+		sb_done => done_sb,
+		sb_addr => sb_tags_addr,
+		sb_we => sb_tags_we
 	);
+
+	sb : store_buffer PORT MAP(
+		clk => clk,
+		reset => reset,
+		addr => PA_tlb,
+		data_in => data_in,
+		re => real_re,
+		we => real_we,
+		is_byte => is_byte,
+		sleep => mem_req_i,
+		repl => repl,
+		repl_addr => repl_addr,
+		done => done_sb,
+		hit => hit_sb,
+		tags_we => sb_tags_we,
+		tags_addr => sb_tags_addr,
+		cache_addr => cache_addr,
+		cache_we => cache_we,
+		cache_is_byte => cache_is_byte,
+		sb_data_out => sb_data_out
+	);
+
+	done <= done_tags AND done_sb;
+	mem_req <= mem_req_i;
+	mux_data_out <= hit_sb;
 
 	dtlb_miss <= mem_access AND NOT priv_status AND NOT dtlb_hit;
 

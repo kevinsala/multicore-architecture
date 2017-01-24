@@ -15,7 +15,6 @@ ENTITY cache_data IS
 		data_out     : OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
 		we           : IN STD_LOGIC;
 		is_byte      : IN STD_LOGIC;
-		hit          : IN STD_LOGIC;
 		line_num     : IN INTEGER RANGE 0 TO 3;
 		line_we      : IN STD_LOGIC;
 		line_data    : IN STD_LOGIC_VECTOR(127 DOWNTO 0);
@@ -71,7 +70,7 @@ BEGIN
 			data_fields(line_num) <= line_data;
 		END IF;
 
-		IF hit = '1' AND we = '1' THEN
+		IF we = '1' THEN
 			IF is_byte = '1' THEN
 				data_fields(line_num)(target_byte_msb DOWNTO target_byte_lsb) <= data_in(7 DOWNTO 0);
 			ELSE

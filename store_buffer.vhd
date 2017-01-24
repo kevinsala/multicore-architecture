@@ -5,26 +5,24 @@ USE work.utils.ALL;
 
 ENTITY store_buffer IS
 	PORT(
-		clk            : IN STD_LOGIC;
-		reset          : IN STD_LOGIC;
-		addr           : IN STD_LOGIC_VECTOR(31 DOWNTO 0);
-		data_in        : IN STD_LOGIC_VECTOR(31 DOWNTO 0);
-		re             : IN STD_LOGIC;
-		we             : IN STD_LOGIC;
-		is_byte        : IN STD_LOGIC;
-		no_action      : IN STD_LOGIC;
-		repl           : IN STD_LOGIC;
-		repl_addr      : IN STD_LOGIC_VECTOR(31 DOWNTO 0);
-		done           : OUT STD_LOGIC;
-		hit            : OUT STD_LOGIC;
-		permit_repl    : OUT STD_LOGIC;
-		tags_we        : OUT STD_LOGIC;
-		tags_addr      : OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
-		tags_is_byte   : OUT STD_LOGIC;
-		cache_we       : OUT STD_LOGIC;
-		cache_is_byte  : OUT STD_LOGIC;
-		cache_data_in  : OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
-		stbuf_data_out : OUT STD_LOGIC_VECTOR(31 DOWNTO 0)
+		clk           : IN STD_LOGIC;
+		reset         : IN STD_LOGIC;
+		addr          : IN STD_LOGIC_VECTOR(31 DOWNTO 0);
+		data_in       : IN STD_LOGIC_VECTOR(31 DOWNTO 0);
+		re            : IN STD_LOGIC;
+		we            : IN STD_LOGIC;
+		is_byte       : IN STD_LOGIC;
+		sleep         : IN STD_LOGIC;
+		repl          : IN STD_LOGIC;
+		repl_addr     : IN STD_LOGIC_VECTOR(31 DOWNTO 0);
+		done          : OUT STD_LOGIC;
+		hit           : OUT STD_LOGIC;
+		tags_we       : OUT STD_LOGIC;
+		tags_addr     : OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
+		cache_addr    : OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
+		cache_we      : OUT STD_LOGIC;
+		cache_is_byte : OUT STD_LOGIC;
+		sb_data_out   : OUT STD_LOGIC_VECTOR(31 DOWNTO 0)
 	);
 END store_buffer;
 
@@ -73,6 +71,7 @@ ARCHITECTURE store_buffer_behavior OF store_buffer IS
 	-- data cache. Not stable during the second half of the
 	-- cycle.
 	SIGNAL cache_we_i : STD_LOGIC := '0';
+	SIGNAL cache_we_nx_i : STD_LOGIC := '0';
 
 	-- Determine if the buffer needs to be flushed
 	SIGNAL start_flush_i : STD_LOGIC;
@@ -117,15 +116,15 @@ BEGIN
 		END IF;
 	ELSIF falling_edge(clk) THEN
 		IF reset = '1' THEN
-			cache_we <= '0';
+			cache_we_i <= '0';
 		ELSE
-			cache_we <= cache_we_i;
+			cache_we_i <= cache_we_nx_i;
 		END IF;
 	END IF;
 END PROCESS internal_reg_process;
 
 
-next_state_process : PROCESS(reset, state_i, we, re, start_flush_i, size_i)
+next_state_process : PROCESS(clk, reset, state_i, we, re, start_flush_i, size_i)
 BEGIN
 	IF reset = '0' THEN
 		-- Compute the next state only in
@@ -182,18 +181,18 @@ END PROCESS execution_process;
 
 -- Need a flush when there is a line replacement and the store buffer is holding a pending write in that line
 -- or there is a new write access and the buffer is full
-start_flush_i <= '1' WHEN (repl = '1' AND repl_hit_i = '1') OR (we = '1' AND size_i = 4) ELSE '0';
+start_flush_i <= '1' WHEN ((repl = '1' AND repl_hit_i = '1') OR (we = '1' AND size_i = 4)) AND sleep = '0' ELSE '0';
 
 -- Flush an entry of the buffer if the flushing process just started or the current state of the
 -- buffer is flush
-flushing_i <= '1' WHEN start_flush_i = '1' OR state_i = FLUSHING ELSE '0';
+flushing_i <= '1' WHEN (start_flush_i = '1' OR state_i = FLUSHING) AND sleep = '0' ELSE '0';
 
 -- The buffer can complete a previous write if there is no
 -- memory instruction and there is at least one entry
-complete_write_i <= '1' WHEN we = '0' AND re = '0' AND size_i > 0 ELSE '0';
+complete_write_i <= '1' WHEN (we = '0' AND re = '0' AND size_i > 0) AND sleep = '0' ELSE '0';
 
 -- Logic to determine if a new entry has to be added
-add_entry_i <= '1' WHEN we = '1' AND (state_i = FLUSHED OR (state_i = READY AND state_nx_i = READY AND no_action = '0')) ELSE '0';
+add_entry_i <= '1' WHEN (we = '1' AND (state_i = FLUSHED OR (state_i = READY AND state_nx_i = READY))) AND sleep = '0' ELSE '0';
 
 -- For each entry, determine if it has hit with the access
 hit_entry_i(0) <= valid_fields(0) AND to_std_logic(addr_fields(0)(31 DOWNTO 2) = addr(31 DOWNTO 2));
@@ -230,19 +229,19 @@ repl_hit_i <= repl_hit_entry_i(0) OR repl_hit_entry_i(1) OR repl_hit_entry_i(2) 
 -- Logic to send stores to the tags component
 tags_we <= flushing_i OR complete_write_i;
 tags_addr <= addr_fields(start_i);
-tags_is_byte <= byte_fields(start_i);
 
 -- Logic to send stores to the data component
-cache_we_i <= flushing_i OR complete_write_i;
-cache_is_byte <= byte_fields(start_i);
-cache_data_in <= data_fields(start_i);
+cache_addr <= addr_fields(start_i) WHEN cache_we_i = '1' ELSE addr;
+cache_we_nx_i <= flushing_i OR complete_write_i;
+cache_is_byte <= byte_fields(start_i) WHEN cache_we_i = '1' ELSE is_byte;
 
 -- Logic to control the output data from the store buffer
-stbuf_data_out <= data_fields(hit_entry_num_i);
-hit <= hit_i;
+sb_data_out <= data_fields(start_i) WHEN cache_we_i = '1'
+		ELSE data_fields(hit_entry_num_i);
 
--- Permit the replacement when the flushing process has finished
-permit_repl <= '1' WHEN state_i = FLUSHED ELSE '0';
+-- Determine if the store buffer has finished
 done <= '1' WHEN state_nx_i = READY ELSE '0';
+hit <= hit_i;
+cache_we <= cache_we_i;
 
 END store_buffer_behavior;
