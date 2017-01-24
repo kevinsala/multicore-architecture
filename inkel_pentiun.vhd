@@ -1035,8 +1035,6 @@ BEGIN
 		inst_type_out => open
 	);
 
-	pc_out <= pc_F;
-
 	----------------------------- Decode -------------------------------
 
 	d: decode PORT MAP(
