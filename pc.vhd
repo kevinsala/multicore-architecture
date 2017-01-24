@@ -16,7 +16,7 @@ ENTITY pc IS
 END pc;
 
 ARCHITECTURE structure OF pc IS
-    CONSTANT addr_boot : STD_LOGIC_VECTOR := x"00000000";
+    CONSTANT addr_boot : STD_LOGIC_VECTOR := x"00000100";
     CONSTANT addr_sys : STD_LOGIC_VECTOR := x"00002000";
 
     SIGNAL pc_int : STD_LOGIC_VECTOR(31 DOWNTO 0);
