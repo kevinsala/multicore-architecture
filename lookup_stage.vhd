@@ -15,7 +15,6 @@ ENTITY lookup_stage IS
 		re             : IN  STD_LOGIC;
 		we             : IN  STD_LOGIC;
 		is_byte        : IN  STD_LOGIC;
-		hit            : OUT STD_LOGIC;
 		done           : OUT STD_LOGIC;
 		line_num       : OUT INTEGER RANGE 0 TO 3;
 		line_we        : OUT STD_LOGIC;
@@ -26,6 +25,7 @@ ENTITY lookup_stage IS
 		mem_addr       : OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
 		mem_we         : OUT STD_LOGIC;
 		mem_done       : IN  STD_LOGIC;
+		cache_addr     : OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
 		cache_we       : OUT STD_LOGIC;
 		cache_is_byte  : OUT STD_LOGIC;
 		sb_data_out    : OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
@@ -77,6 +77,7 @@ ARCHITECTURE lookup_stage_behavior OF lookup_stage IS
 			hit            : OUT STD_LOGIC;
 			tags_we        : OUT STD_LOGIC;
 			tags_addr      : OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
+			cache_addr     : OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
 			cache_we       : OUT STD_LOGIC;
 			cache_is_byte  : OUT STD_LOGIC;
 			sb_data_out    : OUT STD_LOGIC_VECTOR(31 DOWNTO 0)
@@ -176,13 +177,13 @@ BEGIN
 		hit => hit_sb,
 		tags_we => sb_tags_we,
 		tags_addr => sb_tags_addr,
+		cache_addr => cache_addr,
 		cache_we => cache_we,
 		cache_is_byte => cache_is_byte,
 		sb_data_out => sb_data_out
 	);
 
 	done <= done_tags AND done_sb;
-	hit <= hit_tags AND hit_tags;
 	mem_req <= mem_req_i;
 	mux_data_out <= hit_sb;
 

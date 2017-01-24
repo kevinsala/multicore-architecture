@@ -191,6 +191,7 @@ BEGIN
 		IF state_i = READY OR state_i = WAITSB THEN
 			IF state_nx_i = READY THEN
 				IF re = '1' OR we = '1' THEN
+					line_num <= hit_line_num_i;
 					LRU_execute(lru_fields, hit_line_num_i);
 				END IF;
 			ELSIF state_nx_i = LINEREPL THEN
@@ -211,6 +212,7 @@ BEGIN
 		ELSIF state_i = LINEREQ THEN
 			IF state_nx_i = READY THEN
 				mem_req <= '0';
+				line_num <= lru_line_num_i;
 				valid_fields(lru_line_num_i) <= '1';
 				dirty_fields(lru_line_num_i) <= '0';
 				tag_fields(lru_line_num_i) <= addr(31 DOWNTO 4);
@@ -218,10 +220,9 @@ BEGIN
 			END IF;
 		END IF;
 
-		IF state_nx_i = WAITSB THEN
-			IF sb_we = '1' THEN
-				dirty_fields(sb_line_num_i) <= '1';
-			END IF;
+		IF sb_we = '1' THEN
+			line_num <= sb_line_num_i;
+			dirty_fields(sb_line_num_i) <= '1';
 		END IF;
 	END IF;
 END PROCESS execution_process;
@@ -275,7 +276,6 @@ repl_dirty_i <= repl_i AND dirty_fields(lru_line_num_i);
 done <= hit_i OR NOT(re OR we);
 
 -- Output signals to send new lines to the data cache
-line_num <= hit_line_num_i;
 line_we <= '1' WHEN state_i = LINEREQ AND state_nx_i = READY ELSE '0';
 
 -- Other output signals
