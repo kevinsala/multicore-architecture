@@ -8,8 +8,6 @@ ENTITY reg_DA IS
 		alu_inst_in : IN STD_LOGIC;
 		mem_inst_in : IN STD_LOGIC;
 		mul_inst_in : IN STD_LOGIC;
-		dtlb_we_in : IN STD_LOGIC;
-		itlb_we_in : IN STD_LOGIC;
 		mem_we_in : IN STD_LOGIC;
 		byte_in : IN STD_LOGIC;
 		mem_read_in : IN STD_LOGIC;
@@ -33,8 +31,6 @@ ENTITY reg_DA IS
 		alu_inst_out : OUT STD_LOGIC;
 		mem_inst_out : OUT STD_LOGIC;
 		mul_inst_out : OUT STD_LOGIC;
-		dtlb_we_out : OUT STD_LOGIC;
-		itlb_we_out : OUT STD_LOGIC;
 		mem_we_out : OUT STD_LOGIC;
 		byte_out : OUT STD_LOGIC;
 		mem_read_out : OUT STD_LOGIC;
@@ -67,8 +63,6 @@ BEGIN
 				alu_inst_out <= '0';
 				mem_inst_out <= '0';
 				mul_inst_out <= '0';
-				dtlb_we_out <= '0';
-				itlb_we_out <= '0';
 				mem_we_out <= '0';
 				byte_out <= '0';
 				mem_read_out <= '0';
@@ -94,8 +88,6 @@ BEGIN
 					alu_inst_out <= alu_inst_in;
 					mem_inst_out <= mem_inst_in;
 					mul_inst_out <= mul_inst_in;
-					dtlb_we_out <= dtlb_we_in;
-					itlb_we_out <= itlb_we_in;
 					mem_we_out <= mem_we_in;
 					byte_out <= byte_in;
 					mem_read_out <= mem_read_in;

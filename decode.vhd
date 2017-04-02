@@ -24,8 +24,6 @@ ENTITY decode IS
 		alu_inst : OUT STD_LOGIC;
 		mem_inst : OUT STD_LOGIC;
 		mul_inst : OUT STD_LOGIC;
-		dtlb_we : OUT STD_LOGIC;
-		itlb_we : OUT STD_LOGIC;
 		mem_write : OUT STD_LOGIC;
 		byte : OUT STD_LOGIC;
 		mem_read : OUT STD_LOGIC;
@@ -56,7 +54,6 @@ ARCHITECTURE structure OF decode IS
 	CONSTANT OP_BEQ : STD_LOGIC_VECTOR := "0110000";
 	CONSTANT OP_BNE : STD_LOGIC_VECTOR := "0110010";
 	CONSTANT OP_JMP : STD_LOGIC_VECTOR := "0110001";
-	CONSTANT OP_TLBWRITE : STD_LOGIC_VECTOR := "0110100";
 	CONSTANT OP_IRET : STD_LOGIC_VECTOR := "0110101";
 	CONSTANT OP_NOP : STD_LOGIC_VECTOR := "1111111";
 
@@ -107,7 +104,6 @@ BEGIN
 				"001" WHEN op_code_int = OP_SUB ELSE
 				"100" WHEN op_code_int = OP_LI ELSE
 				"101" WHEN op_code_int = OP_BEQ OR op_code_int = OP_BNE OR op_code_int = OP_JMP ELSE
-				"110" WHEN op_code_int = OP_TLBWRITE ELSE
 				"000";
 
 	-- Control signals
@@ -137,17 +133,11 @@ BEGIN
 	-- inst_v necessary to distinguish bubbles from real NOPs
 	alu_inst <= alu_inst_int AND inst_v;
 	mem_inst_int <= to_std_logic(op_code_int = OP_LDB OR op_code_int = OP_LDW OR
-								op_code_int = OP_STB OR op_code_int = OP_STW OR
-								op_code_int = OP_TLBWRITE);
+								op_code_int = OP_STB OR op_code_int = OP_STW);
 	mem_inst <= mem_inst_int;
 	mul_inst_int <= to_std_logic(op_code_int = OP_MUL);
 	mul_inst <= mul_inst_int;
 
-	dtlb_we <= '1' WHEN op_code_int = OP_TLBWRITE AND offset_low = "0000000001" ELSE
-				'0';
-
-	itlb_we <= '1' WHEN op_code_int = OP_TLBWRITE AND offset_low = "0000000000" ELSE
-				'0';
 	mem_write <= to_std_logic(op_code_int = OP_STW OR op_code_int = OP_STB);
 	byte <= to_std_logic(op_code_int = OP_LDB OR op_code_int = OP_STB);
 	mem_read <= to_std_logic(op_code_int = OP_LDW OR op_code_int = OP_LDB);
@@ -166,7 +156,7 @@ BEGIN
 								reg_src1_v_int AND NOT priv_status;
 	invalid_src2 <=  to_std_logic(reg_src2_int = REG_EXC_CODE OR reg_src2_int = REG_EXC_DATA) AND
 								reg_src2_v_int AND NOT priv_status;
-	priv_inst <= to_std_logic(op_code_int = OP_TLBWRITE OR op_code_int = OP_IRET);
+	priv_inst <= to_std_logic(op_code_int = OP_IRET);
 
 	invalid_inst <= NOT (alu_inst_int OR mem_inst_int OR mul_inst_int) OR
 					(priv_inst AND NOT priv_status) OR
