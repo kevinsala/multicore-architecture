@@ -1,19 +1,18 @@
-li r0, 0					1e000000
-li r1, 1					1e100001
-li r2, 2					1e200002
-li r3, 3					1e300003
-mov r30, r5					285f0000
-mov r31, r4					284f8000
-beq r5, r2, dtlb			60028803
-beq r5, r3, itlb			60028c04
+li r26, 2                   1fa00002
+li r27, 3                   1fb00003
+mov r31, r28                29cf8000
+mov r30, r29                29df0000
+beq r29, r26, dtlb          600ee803
+beq r29, r27, itlb          600eec04
 
 fin:
-jump fin					62000000
+jump fin                    62000000
 
 dtlb:
-tlbwrite r4, 1				68020001
-iret						6a000000
- 
+tlbwrite r28, 1             680e0001
+iret                        6a000000
+
 itlb:
-tlbwrite r4, 0				68020000
-iret						6a000000
+tlbwrite r28, 0             680e0000
+iret                        6a000000
+
