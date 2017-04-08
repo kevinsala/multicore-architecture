@@ -1468,7 +1468,7 @@ BEGIN
 		mem_data_out => mem_data_out_L
 	);
 
-	reg_W_MEM_reset <= reset OR to_std_logic(inst_type_A /= INST_TYPE_MEM);
+	reg_W_MEM_reset <= reset OR to_std_logic(inst_type_C /= INST_TYPE_MEM);
 
 	reg_W_MEM : reg_W PORT MAP (
 		clk => clk,
