@@ -3,7 +3,7 @@ li r1, 1
 li r2, 4
 # Matrix size
 li r3, 4
-# 128 * 4
+# r3 * 4
 li r20, 16
 
 # A
@@ -49,8 +49,8 @@ loopj:
 
 # @A = @A[i][0]
 mov r11, r10
-# @B = @B[0][0] + j
-mul r21, r5, r3
+# @B = @B[0][j]
+mul r21, r5, r2
 li r12, 0x11000
 add r12, r12, r21
 # C[i][j] = 0
@@ -76,11 +76,12 @@ bne r6, r3, loopk
 
 stw r18, 0(r13)
 
+# @C = @C + 1
+add r13, r2, r13
+
 add r5, r1, r5
 bne r5, r3, loopj
 
-# @C = @C + 1
-add r13, r2, r13
 # @A[i] = @A[i] + N
 add r10, r20, r10
 
