@@ -11,8 +11,6 @@ ENTITY bypass_unit IS
 		inm_src2_v_D      : IN STD_LOGIC;
 		reg_dest_A        : IN STD_LOGIC_VECTOR (4 DOWNTO 0);
 		reg_we_A          : IN STD_LOGIC;
-		reg_dest_L        : IN STD_LOGIC_VECTOR (4 DOWNTO 0);
-		reg_we_L          : IN STD_LOGIC;
 		reg_dest_C        : IN STD_LOGIC_VECTOR (4 DOWNTO 0);
 		reg_we_C          : IN STD_LOGIC;
 		reg_dest_M5       : IN STD_LOGIC_VECTOR (4 DOWNTO 0);
@@ -24,8 +22,7 @@ ENTITY bypass_unit IS
 		mux_src1_D_BP     : OUT STD_LOGIC_VECTOR (2 DOWNTO 0);
 		mux_src2_D_BP     : OUT STD_LOGIC_VECTOR (2 DOWNTO 0);
 		mux_mem_data_D_BP : OUT STD_LOGIC_VECTOR (2 DOWNTO 0);
-		mux_mem_data_A_BP : OUT STD_LOGIC_VECTOR (1 DOWNTO 0);
-		mux_mem_data_L_BP : OUT STD_LOGIC_VECTOR (1 DOWNTO 0)
+		mux_mem_data_A_BP : OUT STD_LOGIC_VECTOR (1 DOWNTO 0)
 	);
 END bypass_unit;
 
@@ -57,9 +54,5 @@ BEGIN
 
 	mux_mem_data_A_BP <= "01" WHEN (reg_dest_A = reg_dest_C AND reg_we_C = '1')
 			ELSE "11" WHEN (reg_dest_A = reg_dest_M5 AND reg_we_M5 = '1')
-			ELSE "00";
-
-	mux_mem_data_L_BP <= "10" WHEN (reg_dest_L = reg_dest_M5 AND reg_we_M5 = '1')
-			ELSE "01" WHEN (reg_dest_L = reg_dest_C AND reg_we_C = '1')
 			ELSE "00";
 END bypass_unit_behavior;

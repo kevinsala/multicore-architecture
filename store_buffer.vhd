@@ -5,34 +5,27 @@ USE work.utils.ALL;
 
 ENTITY store_buffer IS
 	PORT(
-		clk           : IN STD_LOGIC;
-		reset         : IN STD_LOGIC;
-		addr          : IN STD_LOGIC_VECTOR(31 DOWNTO 0);
-		data_in       : IN STD_LOGIC_VECTOR(31 DOWNTO 0);
-		re            : IN STD_LOGIC;
-		we            : IN STD_LOGIC;
-		is_byte       : IN STD_LOGIC;
-		sleep         : IN STD_LOGIC;
-		repl          : IN STD_LOGIC;
-		repl_addr     : IN STD_LOGIC_VECTOR(31 DOWNTO 0);
+		clk           : IN  STD_LOGIC;
+		reset         : IN  STD_LOGIC;
+		addr          : IN  STD_LOGIC_VECTOR(31 DOWNTO 0);
+		data_in       : IN  STD_LOGIC_VECTOR(31 DOWNTO 0);
+		data_out      : OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
+		re            : IN  STD_LOGIC;
+		we            : IN  STD_LOGIC;
+		is_byte       : IN  STD_LOGIC;
+		sleep         : IN  STD_LOGIC;
+		repl          : IN  STD_LOGIC;
+		repl_addr     : IN  STD_LOGIC_VECTOR(31 DOWNTO 0);
 		done          : OUT STD_LOGIC;
 		hit           : OUT STD_LOGIC;
-		tags_we       : OUT STD_LOGIC;
-		tags_addr     : OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
 		cache_addr    : OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
 		cache_we      : OUT STD_LOGIC;
 		cache_is_byte : OUT STD_LOGIC;
-		sb_data_out   : OUT STD_LOGIC_VECTOR(31 DOWNTO 0)
+		cache_data    : OUT STD_LOGIC_VECTOR(31 DOWNTO 0)
 	);
 END store_buffer;
 
 ARCHITECTURE store_buffer_behavior OF store_buffer IS
-	CONSTANT BYTE_BITS : INTEGER := 8;
-	CONSTANT WORD_BITS : INTEGER := 32;
-	CONSTANT NONE_OP : INTEGER := 0;
-	CONSTANT LOAD_OP : INTEGER := 1;
-	CONSTANT STORE_OP : INTEGER := 2;
-
 	TYPE valid_fields_t IS ARRAY(3 DOWNTO 0) OF STD_LOGIC;
 	TYPE addr_fields_t IS ARRAY(3 DOWNTO 0) OF STD_LOGIC_VECTOR(31 DOWNTO 0);
 	TYPE byte_fields_t IS ARRAY(3 DOWNTO 0) OF STD_LOGIC;
@@ -45,20 +38,15 @@ ARCHITECTURE store_buffer_behavior OF store_buffer IS
 	SIGNAL byte_fields : byte_fields_t;
 	SIGNAL data_fields : data_fields_t;
 
-	-- Determine the next state
+	-- State, size and first buffer entry
 	SIGNAL state_i : store_buffer_state_t;
 	SIGNAL state_nx_i : store_buffer_state_t;
-
-	-- Current occupation of the buffer
 	SIGNAL size_i : INTEGER RANGE 0 TO 4;
 	SIGNAL size_nx_i : INTEGER RANGE 0 TO 4;
-
-	-- Pointer to the start
 	SIGNAL start_i : INTEGER RANGE 0 TO 3;
 	SIGNAL start_nx_i : INTEGER RANGE 0 TO 3;
 
 	-- Determine the entry of the buffer that has hit with the access
-	SIGNAL hit_i : STD_LOGIC := '0';
 	SIGNAL hit_entry_i : hit_t;
 	SIGNAL hit_entry_num_i : INTEGER RANGE 0 TO 3 := 0;
 
@@ -66,12 +54,6 @@ ARCHITECTURE store_buffer_behavior OF store_buffer IS
 	SIGNAL repl_hit_i : STD_LOGIC := '0';
 	SIGNAL repl_hit_entry_i : hit_t;
 	SIGNAL repl_hit_entry_num_i : INTEGER RANGE 0 TO 3 := 0;
-
-	-- Internal signal to control the write enable of the
-	-- data cache. Not stable during the second half of the
-	-- cycle.
-	SIGNAL cache_we_i : STD_LOGIC := '0';
-	SIGNAL cache_we_nx_i : STD_LOGIC := '0';
 
 	-- Determine if the buffer needs to be flushed
 	SIGNAL start_flush_i : STD_LOGIC;
@@ -88,6 +70,8 @@ ARCHITECTURE store_buffer_behavior OF store_buffer IS
 	-- Procedure to reset and initialize the buffer
 	PROCEDURE init_store_buffer(
 			SIGNAL valid_fields : OUT valid_fields_t;
+			SIGNAL addr_fields : OUT addr_fields_t;
+			SIGNAL byte_fields : OUT byte_fields_t;
 			SIGNAL size_nx_i : OUT INTEGER RANGE 0 TO 4;
 			SIGNAL start_nx_i : OUT INTEGER RANGE 0 TO 3
 		) IS
@@ -95,6 +79,8 @@ ARCHITECTURE store_buffer_behavior OF store_buffer IS
 		-- Initialize valid fields
 		FOR i IN 0 TO 3 LOOP
 			valid_fields(i) <= '0';
+			addr_fields(i) <= x"FFFFFFFF";
+			byte_fields(i) <= '0';
 		END LOOP;
 
 		size_nx_i <= 0;
@@ -113,12 +99,6 @@ BEGIN
 			state_i <= state_nx_i;
 			start_i <= start_nx_i;
 			size_i <= size_nx_i;
-		END IF;
-	ELSIF falling_edge(clk) THEN
-		IF reset = '1' THEN
-			cache_we_i <= '0';
-		ELSE
-			cache_we_i <= cache_we_nx_i;
 		END IF;
 	END IF;
 END PROCESS internal_reg_process;
@@ -174,7 +154,7 @@ BEGIN
 				size_nx_i <= size_nx_i + 1;
 			END IF;
 		ELSE
-			init_store_buffer(valid_fields, size_nx_i, start_nx_i);
+			init_store_buffer(valid_fields, addr_fields, byte_fields, size_nx_i, start_nx_i);
 		END IF;
 	END IF;
 END PROCESS execution_process;
@@ -194,54 +174,44 @@ complete_write_i <= '1' WHEN (we = '0' AND re = '0' AND size_i > 0) AND sleep = 
 -- Logic to determine if a new entry has to be added
 add_entry_i <= '1' WHEN (we = '1' AND (state_i = FLUSHED OR (state_i = READY AND state_nx_i = READY))) AND sleep = '0' ELSE '0';
 
--- For each entry, determine if it has hit with the access
+-- Determine if the access hits in the store buffer
 hit_entry_i(0) <= valid_fields(0) AND to_std_logic(addr_fields(0)(31 DOWNTO 2) = addr(31 DOWNTO 2));
 hit_entry_i(1) <= valid_fields(1) AND to_std_logic(addr_fields(1)(31 DOWNTO 2) = addr(31 DOWNTO 2));
 hit_entry_i(2) <= valid_fields(2) AND to_std_logic(addr_fields(2)(31 DOWNTO 2) = addr(31 DOWNTO 2));
 hit_entry_i(3) <= valid_fields(3) AND to_std_logic(addr_fields(3)(31 DOWNTO 2) = addr(31 DOWNTO 2));
 
--- For each entry, determine if it has hit with the replaced cache line
-repl_hit_entry_i(0) <= valid_fields(0) AND to_std_logic(addr_fields(0)(31 DOWNTO 4) = repl_addr(31 DOWNTO 4));
-repl_hit_entry_i(1) <= valid_fields(1) AND to_std_logic(addr_fields(1)(31 DOWNTO 4) = repl_addr(31 DOWNTO 4));
-repl_hit_entry_i(2) <= valid_fields(2) AND to_std_logic(addr_fields(2)(31 DOWNTO 4) = repl_addr(31 DOWNTO 4));
-repl_hit_entry_i(3) <= valid_fields(3) AND to_std_logic(addr_fields(3)(31 DOWNTO 4) = repl_addr(31 DOWNTO 4));
-
--- Determine which entry has hit with the access
 hit_entry_num_i <= 0 WHEN hit_entry_i(0) = '1'
 		ELSE 1 WHEN hit_entry_i(1) = '1'
 		ELSE 2 WHEN hit_entry_i(2) = '1'
 		ELSE 3 WHEN hit_entry_i(3) = '1'
 		ELSE 0;
 
--- Determine which entry has hit with the replaced cache line
+hit <= hit_entry_i(0) OR hit_entry_i(1) OR hit_entry_i(2) OR hit_entry_i(3);
+
+-- Determine if there is any buffered store waiting to modify the replaced line
+repl_hit_entry_i(0) <= valid_fields(0) AND to_std_logic(addr_fields(0)(31 DOWNTO 4) = repl_addr(31 DOWNTO 4));
+repl_hit_entry_i(1) <= valid_fields(1) AND to_std_logic(addr_fields(1)(31 DOWNTO 4) = repl_addr(31 DOWNTO 4));
+repl_hit_entry_i(2) <= valid_fields(2) AND to_std_logic(addr_fields(2)(31 DOWNTO 4) = repl_addr(31 DOWNTO 4));
+repl_hit_entry_i(3) <= valid_fields(3) AND to_std_logic(addr_fields(3)(31 DOWNTO 4) = repl_addr(31 DOWNTO 4));
+
 repl_hit_entry_num_i <= 0 WHEN repl_hit_entry_i(0) = '1'
 		ELSE 1 WHEN repl_hit_entry_i(1) = '1'
 		ELSE 2 WHEN repl_hit_entry_i(2) = '1'
 		ELSE 3 WHEN repl_hit_entry_i(3) = '1'
 		ELSE 0;
 
--- Determine if the access has hit
-hit_i <= hit_entry_i(0) OR hit_entry_i(1) OR hit_entry_i(2) OR hit_entry_i(3);
-
--- Determine if the replaced cache line has hit
 repl_hit_i <= repl_hit_entry_i(0) OR repl_hit_entry_i(1) OR repl_hit_entry_i(2) OR repl_hit_entry_i(3);
 
--- Logic to send stores to the tags component
-tags_we <= flushing_i OR complete_write_i;
-tags_addr <= addr_fields(start_i);
+-- Logic to flush/complete a buffered store
+cache_we <= flushing_i OR complete_write_i;
+cache_addr <= addr_fields(start_i);
+cache_is_byte <= byte_fields(start_i);
+cache_data <= data_fields(start_i);
 
--- Logic to send stores to the data component
-cache_addr <= addr_fields(start_i) WHEN cache_we_i = '1' ELSE addr;
-cache_we_nx_i <= flushing_i OR complete_write_i;
-cache_is_byte <= byte_fields(start_i) WHEN cache_we_i = '1' ELSE is_byte;
-
--- Logic to control the output data from the store buffer
-sb_data_out <= data_fields(start_i) WHEN cache_we_i = '1'
-		ELSE data_fields(hit_entry_num_i);
+-- Output Data logic
+data_out <= data_fields(hit_entry_num_i);
 
 -- Determine if the store buffer has finished
 done <= '1' WHEN state_nx_i = READY ELSE '0';
-hit <= hit_i;
-cache_we <= cache_we_i;
 
 END store_buffer_behavior;

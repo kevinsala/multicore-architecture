@@ -8,8 +8,8 @@ ENTITY exception_unit IS
 		mem_addr_F : IN STD_LOGIC_VECTOR(31 DOWNTO 0);
 		invalid_inst_D : IN STD_LOGIC;
 		inst_D : IN STD_LOGIC_VECTOR(31 DOWNTO 0);
-		invalid_access_L : IN STD_LOGIC;
-		mem_addr_L : IN STD_LOGIC_VECTOR(31 DOWNTO 0);
+		invalid_access_C : IN STD_LOGIC;
+		mem_addr_C : IN STD_LOGIC_VECTOR(31 DOWNTO 0);
 		exc_F : OUT STD_LOGIC;
 		exc_code_F : OUT STD_LOGIC_VECTOR(1 DOWNTO 0);
 		exc_data_F : OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
@@ -19,9 +19,6 @@ ENTITY exception_unit IS
 		exc_A : OUT STD_LOGIC;
 		exc_code_A : OUT STD_LOGIC_VECTOR(1 DOWNTO 0);
 		exc_data_A : OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
-		exc_L : OUT STD_LOGIC;
-		exc_code_L : OUT STD_LOGIC_VECTOR(1 DOWNTO 0);
-		exc_data_L : OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
 		exc_C : OUT STD_LOGIC;
 		exc_code_C : OUT STD_LOGIC_VECTOR(1 DOWNTO 0);
 		exc_data_C : OUT STD_LOGIC_VECTOR(31 DOWNTO 0)
@@ -48,13 +45,9 @@ BEGIN
 	exc_code_A <= (OTHERS => 'X');
 	exc_data_A <= (OTHERS => 'X');
 
-	exc_L <= invalid_access_L;
-	exc_code_L <= INVALID_ACCESS_CODE WHEN invalid_access_L = '1' ELSE
+	exc_C <= invalid_access_C;
+	exc_code_C <= INVALID_ACCESS_CODE WHEN invalid_access_C = '1' ELSE
 					(OTHERS => 'X');
-	exc_data_L <= mem_addr_L WHEN invalid_access_L = '1' ELSE
+	exc_data_C <= mem_addr_C WHEN invalid_access_C = '1' ELSE
 					(OTHERS => 'X');
-
-	exc_C <= '0';
-	exc_code_C <= (OTHERS => 'X');
-	exc_data_C <= (OTHERS => 'X');
 END structure;

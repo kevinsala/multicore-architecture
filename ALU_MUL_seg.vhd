@@ -11,7 +11,7 @@ ENTITY ALU_MUL_seg IS
 		clk : IN STD_LOGIC;
 		reset : IN STD_LOGIC;
 		load : IN STD_LOGIC;
-		done_L : IN STD_LOGIC;
+		done_C : IN STD_LOGIC;
 		DA : IN  STD_LOGIC_VECTOR (31 downto 0); --entrada 1
 		DB : IN  STD_LOGIC_VECTOR (31 downto 0); --entrada 2
 		reg_dest_in : IN STD_LOGIC_VECTOR(4 downto 0);
@@ -291,7 +291,7 @@ BEGIN
 		inst_type_out => inst_type_out
 	);
 
-	load_M1 <= load AND done_L;
+	load_M1 <= load AND done_C;
 
 	M2_mul <= mul_M2;
 	M3_mul <= mul_M3;

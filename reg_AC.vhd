@@ -2,7 +2,7 @@ LIBRARY ieee;
 USE ieee.std_logic_1164.all;
 USE work.utils.all;
 
-ENTITY reg_AL IS
+ENTITY reg_AC IS
 	PORT(clk : IN STD_LOGIC;
 		reset : IN STD_LOGIC;
 		we : IN STD_LOGIC;
@@ -21,9 +21,9 @@ ENTITY reg_AL IS
 		ALU_out_out : OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
 		mem_data_out : OUT STD_LOGIC_VECTOR(31 DOWNTO 0)
 	);
-END reg_AL;
+END reg_AC;
 
-ARCHITECTURE structure OF reg_AL IS
+ARCHITECTURE structure OF reg_AC IS
 BEGIN
 	p: PROCESS(clk)
 	BEGIN
