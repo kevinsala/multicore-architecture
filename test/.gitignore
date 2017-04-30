@@ -1,0 +1,6 @@
+cocotb
+
+sim_build/inkel_pentiun
+sim_build/results.xml
+sim_build/*.cf
+sim_build/*.o

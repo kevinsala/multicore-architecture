@@ -34,12 +34,14 @@ VHDL_SOURCES = $(PWD)/../utils.vhd \
                 $(PWD)/../reg_MUL.vhd \
                 $(PWD)/../reg_priv_status.vhd \
                 $(PWD)/../reg_status.vhd \
-                $(PWD)/../sign_ext.vhd \
-                $(PWD)/../tlb.vhd
+                $(PWD)/../sign_ext.vhd
 TOPLEVEL = inkel_pentiun
 MODULE = test_inkel_pentiun
 
-COCOTB = /home/markmb/vhdl/cocotb
+COCOTB = ./cocotb
+SIM = ghdl
+
+GHDL_ARGS = --ieee=synopsys -fexplicit
 
 include $(COCOTB)/makefiles/Makefile.inc
 include $(COCOTB)/makefiles/Makefile.sim
