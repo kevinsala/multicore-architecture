@@ -18,6 +18,7 @@ ENTITY reorder_buffer IS
 		exc_data_in_1 : IN STD_LOGIC_VECTOR(31 DOWNTO 0);
 		pc_in_1 : IN STD_LOGIC_VECTOR(31 DOWNTO 0);
 		inst_type_1 : IN STD_LOGIC_VECTOR(1 DOWNTO 0);
+		store_1 : IN STD_LOGIC;
 		rob_we_2 : IN STD_LOGIC;
 		rob_w_pos_2 : IN STD_LOGIC_VECTOR(3 DOWNTO 0);
 		reg_v_in_2 : IN STD_LOGIC;
@@ -60,7 +61,11 @@ ENTITY reorder_buffer IS
 		reg_src2_D_v_BP : IN STD_LOGIC;
 		reg_src2_D_p_BP : OUT STD_LOGIC;
 		reg_src2_D_inst_type_BP : OUT STD_LOGIC_VECTOR(1 DOWNTO 0);
-		reg_src2_D_data_BP : OUT STD_LOGIC_VECTOR(31 DOWNTO 0)
+		reg_src2_D_data_BP : OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
+		-- Store buffer
+		sb_store_id : OUT STD_LOGIC_VECTOR(3 DOWNTO 0);
+		sb_store_commit : OUT STD_LOGIC;
+		sb_squash : OUT STD_LOGIC
 	);
 END reorder_buffer;
 
@@ -81,6 +86,8 @@ ARCHITECTURE structure OF reorder_buffer IS
 
 	TYPE inst_type_fields_t IS ARRAY(ROB_POSITIONS - 1 DOWNTO 0) OF STD_LOGIC_VECTOR(1 DOWNTO 0);
 
+	TYPE store_fields_t IS ARRAY(ROB_POSITIONS - 1 DOWNTO 0) OF STD_LOGIC;
+
 	SIGNAL valid_fields : valid_fields_t;
 	SIGNAL reg_v_fields : reg_v_fields_t;
 	SIGNAL reg_fields : reg_fields_t;
@@ -90,6 +97,7 @@ ARCHITECTURE structure OF reorder_buffer IS
 	SIGNAL exc_data_fields : exc_data_fields_t;
 	SIGNAL pc_fields : pc_fields_t;
 	SIGNAL inst_type_fields : inst_type_fields_t;
+	SIGNAL store_fields : store_fields_t;
 
 	SIGNAL head : INTEGER RANGE 0 TO ROB_POSITIONS - 1;
 	SIGNAL tail : INTEGER RANGE 0 TO ROB_POSITIONS - 1;
@@ -167,6 +175,7 @@ BEGIN
 					exc_data_fields(rob_entry) <= exc_data_in_1;
 					pc_fields(rob_entry) <= pc_in_1;
 					inst_type_fields(rob_entry) <= inst_type_1;
+					store_fields(rob_entry) <= store_1;
 				END IF;
 
 				IF rob_we_2 = '1' THEN
@@ -181,6 +190,7 @@ BEGIN
 					exc_data_fields(rob_entry) <= exc_data_in_2;
 					pc_fields(rob_entry) <= pc_in_2;
 					inst_type_fields(rob_entry) <= inst_type_2;
+					store_fields(rob_entry) <= '0';
 				END IF;
 
 				IF rob_we_3 = '1' THEN
@@ -195,9 +205,13 @@ BEGIN
 					exc_data_fields(rob_entry) <= exc_data_in_3;
 					pc_fields(rob_entry) <= pc_in_3;
 					inst_type_fields(rob_entry) <= inst_type_3;
+					store_fields(rob_entry) <= '0';
 				END IF;
 			ELSIF rising_edge(clk) THEN
 				exception := FALSE;
+
+				sb_store_commit <= '0';
+				sb_squash <= '0';
 
 				-- Commit instructions on rising edge
 				IF valid_fields(head) = '1' THEN
@@ -215,6 +229,13 @@ BEGIN
 					IF exc_fields(head) = '1' THEN
 						exception := TRUE;
 					END IF;
+
+					-- Commit the store buffer entry only when
+					-- no execption has been detected
+					IF store_fields(head) = '1' AND NOT exception THEN
+						sb_store_id <= STD_LOGIC_VECTOR(to_unsigned(head, sb_store_id'LENGTH));
+						sb_store_commit <= '1';
+					END IF;
 				ELSE
 					reg_v_out <= '0';
 					exc_out <= '0';
@@ -231,6 +252,7 @@ BEGIN
 						EXIT L WHEN rob_entry = tail;
 						rob_entry := (rob_entry + 1) mod ROB_POSITIONS;
 					END LOOP;
+					sb_squash <= '1';
 					tail <= (head + 1) mod ROB_POSITIONS;
 				ELSIF branch_taken = '1' THEN
 					-- We messed up!

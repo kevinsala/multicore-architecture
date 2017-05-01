@@ -146,7 +146,7 @@ ARCHITECTURE cache_data_behavior OF cache_data IS
 BEGIN
 
 -- Process that represents the internal register
-internal_reg_process : PROCESS(clk, reset)
+internal_register : PROCESS(clk, reset)
 BEGIN
 	IF rising_edge(clk) THEN
 		IF reset = '1' THEN
@@ -155,7 +155,7 @@ BEGIN
 			state_i <= state_nx_i;
 		END IF;
 	END IF;
-END PROCESS internal_reg_process;
+END PROCESS internal_register;
 
 -- Process that computes the next state of the cache
 next_state_process : PROCESS(reset, state_i, re, we, mem_done, sb_done, hit_i, repl_dirty_i, invalid_access_i)
