@@ -592,7 +592,6 @@ ARCHITECTURE structure OF inkel_pentiun IS
 	SIGNAL mem_addr_C : STD_LOGIC_VECTOR(31 DOWNTO 0);
 	SIGNAL mem_data_in_C : STD_LOGIC_VECTOR(127 DOWNTO 0);
 	SIGNAL mem_data_out_C : STD_LOGIC_VECTOR(127 DOWNTO 0);
-	SIGNAL debug_dump_C : STD_LOGIC;
 	SIGNAL inst_type_C : STD_LOGIC_VECTOR(1 DOWNTO 0);
 	SIGNAL rob_idx_C : STD_LOGIC_VECTOR(3 DOWNTO 0);
 	SIGNAL reg_dest_C : STD_LOGIC_VECTOR(4 DOWNTO 0);
@@ -729,7 +728,7 @@ BEGIN
 	mem: memory PORT MAP(
 		clk => clk,
 		reset => reset,
-		debug_dump => '0',
+		debug_dump => debug_dump_ROB,
 		f_req => mem_req_F,
 		d_req => mem_req_C,
 		d_we => mem_we_C,
@@ -1269,7 +1268,7 @@ BEGIN
 	cache : cache_stage PORT MAP(
 		clk => clk,
 		reset => reset,
-		debug_dump => '0',
+		debug_dump => debug_dump_ROB,
 		priv_status => priv_status_C,
 		addr => ALU_out_C,
 		data_in => cache_data_in_C,

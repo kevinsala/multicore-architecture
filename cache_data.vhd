@@ -125,19 +125,21 @@ ARCHITECTURE cache_data_behavior OF cache_data IS
 		END LOOP;
 	END PROCEDURE;
 
-	PROCEDURE dump_cache_tags(CONSTANT filename : IN STRING;
+	PROCEDURE dump_cache_d(CONSTANT filename : IN STRING;
 						SIGNAL cache_valid : IN valid_fields_t;
-						SIGNAL cache_tags : IN tag_fields_t) IS
+						SIGNAL cache_tags : IN tag_fields_t;
+						SIGNAL cache_data : IN data_fields_t) IS
 		FILE dumpfile : TEXT OPEN write_mode IS filename;
 		VARIABLE lbuf : LINE;
-		VARIABLE dummy_tag : STD_LOGIC_VECTOR(27 DOWNTO 0) := (OTHERS => 'X');
+		VARIABLE dummy_line : STD_LOGIC_VECTOR(155 DOWNTO 0) := (OTHERS => 'X');
 	BEGIN
 		FOR n_line IN 0 TO 3 LOOP
 			IF cache_valid(n_line) = '1' THEN
 				-- Hex convert
 				hwrite(lbuf, cache_tags(n_line));
+				hwrite(lbuf, cache_data(n_line));
 			ELSE
-				hwrite(lbuf, dummy_tag);
+				hwrite(lbuf, dummy_line);
 			END IF;
 			-- Write to file
 			writeline(dumpfile, lbuf);
@@ -210,7 +212,7 @@ BEGIN
 
 	ELSIF falling_edge(clk) AND reset = '0' THEN
 		IF debug_dump = '1' THEN
-			dump_cache_tags("dump/cache_d_tags", valid_fields, tag_fields);
+			dump_cache_d("dump/cache_d", valid_fields, tag_fields, data_fields);
 		END IF;
 
 		IF state_i = READY OR state_i = WAITSB THEN
@@ -246,7 +248,7 @@ BEGIN
 
 		IF sb_we = '1' THEN
 			dirty_fields(sb_line_num_i) <= '1';
-			
+
 			IF sb_is_byte = '1' THEN
                 data_fields(sb_line_num_i)(sb_byte_msb DOWNTO sb_byte_lsb) <= sb_data_in(7 DOWNTO 0);
             ELSE
