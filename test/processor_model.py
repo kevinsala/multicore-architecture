@@ -8,7 +8,8 @@ class InkelPentiun:
     verbose = False
 
     def _physical_addr(self, vaddr):
-        return vaddr - 0x1000
+        return vaddr
+        #return vaddr - 0x1000
 
     def _swap_mem_line_endianness(self, mem_line):
         if len(mem_line) % 8:
@@ -63,7 +64,7 @@ class InkelPentiun:
             i = i + 1
 
         if i < len(self.memory) and self.memory[i][0] == line:
-            return self.memory[i][1]
+            self.memory[i] = (line, data)
         else:
             self.memory.append((line, data))
             self.memory.sort(key = lambda x: x[0])
@@ -368,3 +369,27 @@ class InkelPentiun:
 
         return error
 
+    def dump_verbose(self):
+        print "--- MEMORY ---"
+        for m in self.memory:
+            print "0x%04x -> %s" % (m[0], m[1])
+
+        print "--- ICACHE ---"
+        for i in range(len(self.cache_i_v)):
+            if self.cache_i_v[i]:
+                v = 'V'
+            else:
+                v = 'I'
+            print "%d %s 0x%04x %s" % (i, v, self.cache_i_tag[i], self.cache_i_data[i])
+
+        print "--- DCACHE ---"
+        for i in range(len(self.cache_d_v)):
+            if self.cache_d_v[i]:
+                v = 'V'
+            else:
+                v = 'I'
+            print "%d %s 0x%04x %s" % (i, v, self.cache_d_tag[i], self.cache_d_data[i])
+
+        print "--- RB ---"
+        for i in range(len(self.reg_b)):
+            print "%d 0x%04x" % (i, self.reg_b[i])

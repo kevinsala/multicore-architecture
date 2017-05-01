@@ -7,14 +7,12 @@ VHDL_SOURCES = $(PWD)/../utils.vhd \
                 $(PWD)/../cache_data.vhd \
                 $(PWD)/../cache_inst.vhd \
                 $(PWD)/../cache_stage.vhd \
-                $(PWD)/../cache_tags.vhd \
                 $(PWD)/../comp_28bits.vhd \
                 $(PWD)/../decode.vhd \
                 $(PWD)/../detention_unit.vhd \
                 $(PWD)/../exception.vhd \
                 $(PWD)/../fetch.vhd \
                 $(PWD)/../inkel_pentiun.vhd \
-                $(PWD)/../lookup_stage.vhd \
                 $(PWD)/../memory.vhd \
                 $(PWD)/../mux2_32bits.vhd \
                 $(PWD)/../mux4_32bits.vhd \
@@ -22,7 +20,7 @@ VHDL_SOURCES = $(PWD)/../utils.vhd \
                 $(PWD)/../Mux_2_3bits.vhd \
                 $(PWD)/../pc.vhd \
                 $(PWD)/../ram.vhd \
-                $(PWD)/../reg_AL.vhd \
+                $(PWD)/../reg_AC.vhd \
                 $(PWD)/../reg_bank.vhd \
                 $(PWD)/../reg_DA.vhd \
                 $(PWD)/../reg_FD.vhd \
@@ -33,12 +31,14 @@ VHDL_SOURCES = $(PWD)/../utils.vhd \
                 $(PWD)/../reg_W.vhd \
                 $(PWD)/../rob.vhd \
                 $(PWD)/../sign_ext.vhd \
-                $(PWD)/../store_buffer.vhd \
-                $(PWD)/../tlb.vhd
+                $(PWD)/../store_buffer.vhd
 TOPLEVEL = inkel_pentiun
 MODULE = test_inkel_pentiun
 
-COCOTB = /home/markmb/vhdl/cocotb
+COCOTB = ./cocotb
+SIM = ghdl
+
+GHDL_ARGS = --ieee=synopsys -fexplicit
 
 include $(COCOTB)/makefiles/Makefile.inc
 include $(COCOTB)/makefiles/Makefile.sim
