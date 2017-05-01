@@ -24,7 +24,6 @@ VHDL_SOURCES = $(PWD)/../utils.vhd \
                 $(PWD)/../reg_bank.vhd \
                 $(PWD)/../reg_DA.vhd \
                 $(PWD)/../reg_FD.vhd \
-                $(PWD)/../reg_LC.vhd \
                 $(PWD)/../reg_MUL.vhd \
                 $(PWD)/../reg_priv_status.vhd \
                 $(PWD)/../reg_status.vhd \
