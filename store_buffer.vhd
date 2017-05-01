@@ -31,7 +31,7 @@ ENTITY store_buffer IS
 END store_buffer;
 
 ARCHITECTURE store_buffer_behavior OF store_buffer IS
-	CONSTANT SB_ENTRIES : INTEGER := 4;
+	CONSTANT SB_ENTRIES : INTEGER := 12;
 
 	TYPE id_fields_t IS ARRAY(SB_ENTRIES - 1 DOWNTO 0) OF STD_LOGIC_VECTOR(3 DOWNTO 0);
 	TYPE valid_fields_t IS ARRAY(SB_ENTRIES - 1 DOWNTO 0) OF STD_LOGIC;
@@ -76,7 +76,7 @@ ARCHITECTURE store_buffer_behavior OF store_buffer IS
 		) IS
 	BEGIN
 		-- Initialize valid fields
-		FOR i IN 0 TO 3 LOOP
+		FOR i IN 0 TO SB_ENTRIES - 1 LOOP
 			valid_fields(i) <= '0';
 			addr_fields(i) <= x"FFFFFFFF";
 			byte_fields(i) <= '0';
@@ -170,17 +170,27 @@ add_entry_i <= we AND NOT invalid_access AND NOT sleep;
 output_data(size_i, head_i, addr, addr_fields, data_fields, hit, data_out);
 
 -- Determine if there is any buffered store waiting to modify the replaced line
-repl_hit_entry_i(0) <= valid_fields(0) AND to_std_logic(addr_fields(0)(31 DOWNTO 4) = repl_addr(31 DOWNTO 4));
-repl_hit_entry_i(1) <= valid_fields(1) AND to_std_logic(addr_fields(1)(31 DOWNTO 4) = repl_addr(31 DOWNTO 4));
-repl_hit_entry_i(2) <= valid_fields(2) AND to_std_logic(addr_fields(2)(31 DOWNTO 4) = repl_addr(31 DOWNTO 4));
-repl_hit_entry_i(3) <= valid_fields(3) AND to_std_logic(addr_fields(3)(31 DOWNTO 4) = repl_addr(31 DOWNTO 4));
-repl_hit_i <= repl_hit_entry_i(0) OR repl_hit_entry_i(1) OR repl_hit_entry_i(2) OR repl_hit_entry_i(3);
+repl_generator : FOR i IN 0 TO SB_ENTRIES - 1 GENERATE
+	repl_hit_entry_i(i) <= valid_fields(i) AND to_std_logic(addr_fields(i)(31 DOWNTO 4) = repl_addr(31 DOWNTO 4));
+END GENERATE repl_generator;
+
+repl_hit_i <= repl_hit_entry_i(0) OR repl_hit_entry_i(1) OR repl_hit_entry_i(2) OR repl_hit_entry_i(3)
+		OR repl_hit_entry_i(4) OR repl_hit_entry_i(5) OR repl_hit_entry_i(6) OR repl_hit_entry_i(7)
+		OR repl_hit_entry_i(8) OR repl_hit_entry_i(9) OR repl_hit_entry_i(10) OR repl_hit_entry_i(11);
 
 -- Determine the entry to be commited
 commit_entry_num_i <= 0 WHEN id_fields(0) = store_id AND valid_fields(0) = '1'
 		ELSE 1 WHEN id_fields(1) = store_id AND valid_fields(1) = '1'
 		ELSE 2 WHEN id_fields(2) = store_id AND valid_fields(2) = '1'
 		ELSE 3 WHEN id_fields(3) = store_id AND valid_fields(3) = '1'
+		ELSE 4 WHEN id_fields(4) = store_id AND valid_fields(4) = '1'
+		ELSE 5 WHEN id_fields(5) = store_id AND valid_fields(5) = '1'
+		ELSE 6 WHEN id_fields(6) = store_id AND valid_fields(6) = '1'
+		ELSE 7 WHEN id_fields(7) = store_id AND valid_fields(7) = '1'
+		ELSE 8 WHEN id_fields(8) = store_id AND valid_fields(8) = '1'
+		ELSE 9 WHEN id_fields(9) = store_id AND valid_fields(9) = '1'
+		ELSE 10 WHEN id_fields(10) = store_id AND valid_fields(10) = '1'
+		ELSE 11 WHEN id_fields(11) = store_id AND valid_fields(11) = '1'
 		ELSE 0;
 
 -- Logic to commit a buffered store
