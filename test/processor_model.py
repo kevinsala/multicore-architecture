@@ -326,20 +326,6 @@ class InkelPentiun:
                         break
                 proc_mem_line = proc_mem_line + 1
 
-        with open(dump_folder + "/cache_d", "r") as f:
-            c_line = 0
-            for line in f:
-                if self.old_cache_d_v[c_line]:
-                    line = line[:-1].lower()
-                    cache_line = self._swap_mem_line_endianness(self.old_cache_d_data[c_line])
-                    str_cache_line = "%07x%s" % (self.old_cache_d_tag[c_line], cache_line)
-                    if str_cache_line != line:
-                        print "ERROR: Data cache line %x has not been updated properly" % c_line
-                        print "Expected tag: %s. Received tag: %s" % (str_cache_line[0:7], line[0:7])
-                        print "Expected data: %s. Received data: %s" % (str_cache_line[7:], line[7:])
-                        error = True
-                c_line = c_line + 1
-
         with open(dump_folder + "/reg", "r") as f:
             reg_line = 0
             for line in f:
@@ -354,7 +340,6 @@ class InkelPentiun:
 
         if not error:
             os.remove(dump_folder + "/ram")
-            os.remove(dump_folder + "/cache_d")
             os.remove(dump_folder + "/reg")
 
         return error

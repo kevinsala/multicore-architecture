@@ -104,7 +104,6 @@ ARCHITECTURE structure OF inkel_pentiun IS
 		PORT(
 			clk : IN STD_LOGIC;
 			reset : IN STD_LOGIC;
-			debug_dump : IN STD_LOGIC;
 			priv_status_r : IN STD_LOGIC;
         	priv_status_w : IN STD_LOGIC;
 			pc : IN STD_LOGIC_VECTOR(31 DOWNTO 0);
@@ -123,7 +122,6 @@ ARCHITECTURE structure OF inkel_pentiun IS
 		PORT(
 			clk             : IN  STD_LOGIC;
 			reset           : IN  STD_LOGIC;
-			debug_dump      : IN  STD_LOGIC;
 			priv_status     : IN  STD_LOGIC;
 			addr            : IN  STD_LOGIC_VECTOR(31 DOWNTO 0);
 			data_in         : IN  STD_LOGIC_VECTOR(31 DOWNTO 0);
@@ -851,7 +849,6 @@ BEGIN
 	f: fetch PORT MAP(
 		clk => clk,
 		reset => reset,
-		debug_dump => '0',
 		priv_status_r => priv_status_F,
 		priv_status_w => priv_status_C,
 		pc => pc_F,
@@ -1268,7 +1265,6 @@ BEGIN
 	cache : cache_stage PORT MAP(
 		clk => clk,
 		reset => reset,
-		debug_dump => debug_dump_ROB,
 		priv_status => priv_status_C,
 		addr => ALU_out_C,
 		data_in => cache_data_in_C,

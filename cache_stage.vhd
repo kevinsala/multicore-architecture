@@ -7,7 +7,6 @@ ENTITY cache_stage IS
 	PORT(
 		clk             : IN  STD_LOGIC;
 		reset           : IN  STD_LOGIC;
-		debug_dump      : IN  STD_LOGIC;
 		priv_status     : IN  STD_LOGIC;
 		addr            : IN  STD_LOGIC_VECTOR(31 DOWNTO 0);
 		data_in         : IN  STD_LOGIC_VECTOR(31 DOWNTO 0);
@@ -35,7 +34,6 @@ ARCHITECTURE cache_stage_behavior OF cache_stage IS
 		PORT(
 			clk            : IN  STD_LOGIC;
 			reset          : IN  STD_LOGIC;
-			debug_dump     : IN  STD_LOGIC;
 			addr           : IN  STD_LOGIC_VECTOR(31 DOWNTO 0);
 			re             : IN  STD_LOGIC;
 			we             : IN  STD_LOGIC;
@@ -109,7 +107,6 @@ BEGIN
 	cache : cache_data PORT MAP(
 		clk => clk,
 		reset => reset,
-		debug_dump => debug_dump,
 		addr => addr,
 		re => re,
 		we => we,

@@ -9,7 +9,6 @@ ENTITY cache_data IS
 	PORT(
 		clk            : IN  STD_LOGIC;
 		reset          : IN  STD_LOGIC;
-		debug_dump     : IN  STD_LOGIC;
 		addr           : IN  STD_LOGIC_VECTOR(31 DOWNTO 0);
 		re             : IN  STD_LOGIC;
 		we             : IN  STD_LOGIC;
@@ -124,27 +123,6 @@ ARCHITECTURE cache_data_behavior OF cache_data IS
 		lru_fields(line_id) <= 0;
 		END LOOP;
 	END PROCEDURE;
-
-	PROCEDURE dump_cache_d(CONSTANT filename : IN STRING;
-						SIGNAL cache_valid : IN valid_fields_t;
-						SIGNAL cache_tags : IN tag_fields_t;
-						SIGNAL cache_data : IN data_fields_t) IS
-		FILE dumpfile : TEXT OPEN write_mode IS filename;
-		VARIABLE lbuf : LINE;
-		VARIABLE dummy_line : STD_LOGIC_VECTOR(155 DOWNTO 0) := (OTHERS => 'X');
-	BEGIN
-		FOR n_line IN 0 TO 3 LOOP
-			IF cache_valid(n_line) = '1' THEN
-				-- Hex convert
-				hwrite(lbuf, cache_tags(n_line));
-				hwrite(lbuf, cache_data(n_line));
-			ELSE
-				hwrite(lbuf, dummy_line);
-			END IF;
-			-- Write to file
-			writeline(dumpfile, lbuf);
-		END LOOP;
-	END PROCEDURE;
 BEGIN
 
 -- Process that represents the internal register
@@ -211,10 +189,6 @@ BEGIN
 		reset_cache(lru_fields, valid_fields, dirty_fields, mem_req);
 
 	ELSIF falling_edge(clk) AND reset = '0' THEN
-		IF debug_dump = '1' THEN
-			dump_cache_d("dump/cache_d", valid_fields, tag_fields, data_fields);
-		END IF;
-
 		IF state_i = READY OR state_i = WAITSB THEN
 			IF state_nx_i = READY THEN
 				IF re = '1' OR we = '1' THEN
