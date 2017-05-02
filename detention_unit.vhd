@@ -71,7 +71,7 @@ BEGIN
 	conflict_i <= conflict_ALU OR conflict_MUL_ALU;
 
 	conflict_MEM_dep <= '1' WHEN mem_read_C = '1' AND ((reg_src1_D = reg_dest_C AND reg_src1_v_D = '1') OR (reg_src2_D = reg_dest_C AND reg_src2_v_D = '1')) ELSE '0';
-	conflict_MEM <= NOT done_C AND (conflict_MEM_dep OR to_std_logic(inst_type_D = INST_TYPE_MEM));
+	conflict_MEM <= NOT done_C AND (conflict_MEM_dep OR to_std_logic(inst_type_A = INST_TYPE_MEM));
 
 	reg_PC_we <= NOT conflict_i AND done_F AND NOT conflict_MEM;
 	rob_count <= NOT conflict_i AND done_F AND NOT conflict_MEM;
