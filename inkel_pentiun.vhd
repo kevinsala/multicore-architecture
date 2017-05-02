@@ -259,6 +259,8 @@ ARCHITECTURE structure OF inkel_pentiun IS
 			reg_dest_A     : IN STD_LOGIC_VECTOR(4 DOWNTO 0);
 			reg_we_A       : IN STD_LOGIC;
 			mem_read_A     : IN STD_LOGIC;
+			reg_dest_C     : IN STD_LOGIC_VECTOR(4 DOWNTO 0);
+			mem_read_C     : IN STD_LOGIC;
 			done_F         : IN STD_LOGIC;
 			done_C         : IN STD_LOGIC;
 			exc_D          : IN STD_LOGIC;
@@ -785,6 +787,8 @@ BEGIN
 		reg_dest_A => reg_dest_A,
 		reg_we_A => reg_we_A,
 		mem_read_A => mem_read_A,
+		reg_dest_C => reg_dest_C,
+		mem_read_C => cache_re_C,
 		done_F => inst_v_F,
 		done_C => done_C,
 		exc_D => exc_D,

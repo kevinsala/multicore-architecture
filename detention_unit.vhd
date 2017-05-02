@@ -26,6 +26,8 @@ ENTITY detention_unit IS
 		reg_dest_A     : IN STD_LOGIC_VECTOR(4 DOWNTO 0);
 		reg_we_A       : IN STD_LOGIC;
 		mem_read_A     : IN STD_LOGIC;
+		reg_dest_C     : IN STD_LOGIC_VECTOR(4 DOWNTO 0);
+		mem_read_C     : IN STD_LOGIC;
 		done_F         : IN STD_LOGIC;
 		done_C         : IN STD_LOGIC;
 		exc_D          : IN STD_LOGIC;
@@ -55,6 +57,7 @@ ARCHITECTURE detention_unit_behavior OF detention_unit IS
 	SIGNAL conflict_MUL_M3 : STD_LOGIC; -- Detener instrucciones porque es dependiente de la inst MUL
 	SIGNAL conflict_MUL_M4 : STD_LOGIC; -- Detener instrucciones porque es dependiente de la inst MUL
 	SIGNAL conflict_i : STD_LOGIC;
+	SIGNAL conflict_MEM_dep : STD_LOGIC;
 	SIGNAL conflict_MEM : STD_LOGIC;
 BEGIN
 	conflict_ALU <= '1' WHEN mem_read_A = '1' AND ((reg_src1_D = reg_dest_A AND reg_src1_v_D = '1') OR (reg_src2_D = reg_dest_A AND reg_src2_v_D = '1' AND NOT mem_we_D = '1')) ELSE '0';
@@ -67,7 +70,8 @@ BEGIN
 
 	conflict_i <= conflict_ALU OR conflict_MUL_ALU;
 
-	conflict_MEM <= NOT done_C AND to_std_logic(inst_type_D = INST_TYPE_MEM);
+	conflict_MEM_dep <= '1' WHEN mem_read_C = '1' AND ((reg_src1_D = reg_dest_C AND reg_src1_v_D = '1') OR (reg_src2_D = reg_dest_C AND reg_src2_v_D = '1')) ELSE '0';
+	conflict_MEM <= NOT done_C AND (conflict_MEM_dep OR to_std_logic(inst_type_D = INST_TYPE_MEM));
 
 	reg_PC_we <= NOT conflict_i AND done_F AND NOT conflict_MEM;
 	rob_count <= NOT conflict_i AND done_F AND NOT conflict_MEM;
