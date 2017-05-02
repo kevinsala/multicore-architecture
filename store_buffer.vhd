@@ -85,7 +85,7 @@ ARCHITECTURE store_buffer_behavior OF store_buffer IS
 		size_nx_i <= 0;
 		head_nx_i <= 0;
 	END PROCEDURE;
-	
+
 	PROCEDURE output_data(
 			SIGNAL size : IN INTEGER RANGE 0 TO SB_ENTRIES;
 			SIGNAL head : IN INTEGER RANGE 0 TO SB_ENTRIES - 1;
@@ -98,18 +98,21 @@ ARCHITECTURE store_buffer_behavior OF store_buffer IS
 		VARIABLE i : INTEGER RANGE 0 TO SB_ENTRIES - 1;
 	BEGIN
 		hit <= '0';
-		i := (head + size - 1) MOD SB_ENTRIES;
 
-		L : LOOP
-			IF addr_fields(0)(31 DOWNTO 2) = addr(31 DOWNTO 2) THEN
-				data_out <= data_fields(i);
-				hit <= '1';
-				EXIT;
-			END IF;
+		IF size > 0 THEN
+			i := (head + size - 1) MOD SB_ENTRIES;
 
-			EXIT L WHEN i = head_i;
-			i := (i - 1) MOD SB_ENTRIES;
-		END LOOP;
+			L : LOOP
+				IF addr_fields(i)(31 DOWNTO 2) = addr(31 DOWNTO 2) THEN
+					data_out <= data_fields(i);
+					hit <= '1';
+					EXIT;
+				END IF;
+
+				EXIT L WHEN i = head_i;
+				i := (i - 1) MOD SB_ENTRIES;
+			END LOOP;
+		END IF;
 	END PROCEDURE;
 BEGIN
 
