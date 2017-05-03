@@ -15,3 +15,8 @@ To finish the installation go to multicore-architecture/test and get the cocotb 
     git clone https://github.com/potentialventures/cocotb
 
 If everything is right, you could now run `make` and you should be validating the processor!
+
+### Known issues
+ - If you get the error `vpi_get: unknown property`, download and compile the latest version of GHDL from sources (https://github.com/tgingold/ghdl.git)
+
+ - Sometimes, after updating `memory_boot`, the validator fails (it detects errors in memory where the instructions are loaded). Simply run again the validator and it will work.
