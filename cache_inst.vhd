@@ -42,33 +42,49 @@ ARCHITECTURE structure OF cache_inst IS
 	SIGNAL req_word : STD_LOGIC_VECTOR(1 DOWNTO 0);
 
 	SIGNAL invalid_access_i : STD_LOGIC;
+	SIGNAL state_nx_i : inst_cache_state_t;
 BEGIN
-	p : PROCESS(clk)
+	next_state_process : PROCESS(reset, state, hit_cache, addr, mem_req_abort, mem_done, mem_data_in)
 	BEGIN
-		IF falling_edge(clk) THEN
-			IF reset = '1' THEN
-				FOR i IN 0 TO CACHE_LINES - 1 LOOP
-					valid_fields(i) <= '0';
-				END LOOP;
+		IF reset = '1' THEN
+			state_nx_i <= READY;
+		ELSE
+			state_nx_i <= state;
+			IF state = READY THEN
+				IF hit_cache = '0' AND invalid_access_i = '0' THEN
+					state_nx_i <= LINEREQ;
+				END IF;
 			ELSE
-				IF state = LINEREQ AND mem_done = '1' THEN
+				IF mem_done = '1' OR mem_req_abort = '1' THEN
+					state_nx_i <= READY;
+				END IF;
+			END IF;
+		END IF;
+	END PROCESS next_state_process;
+
+	execution_process : PROCESS(clk)
+	BEGIN
+		IF rising_edge(clk) AND reset = '1' THEN
+			FOR i IN 0 TO CACHE_LINES - 1 LOOP
+				valid_fields(i) <= '0';
+			END LOOP;
+			mem_req <= '0';
+		ELSIF falling_edge(clk) AND reset = '0' THEN
+			IF state = LINEREQ AND state_nx_i = READY THEN
+				IF mem_req_abort = '0' THEN
 					tag_fields(cache_line) <= addr(31 DOWNTO 6);
 					valid_fields(cache_line) <= '1';
 					data_fields(cache_line) <= mem_data_in;
 				END IF;
+
+				mem_req <= '0';
+			ELSIF state = READY AND state_nx_i = LINEREQ THEN
+				mem_req <= '1';
 			END IF;
 		END IF;
-	END PROCESS p;
+	END PROCESS execution_process;
 
 	invalid_access_i <= '1' WHEN addr(1 DOWNTO 0) /= "00" ELSE '0';
-
-	state_nx <= LINEREQ WHEN state = READY AND hit_cache = '0' AND invalid_access_i = '0' ELSE
-				READY WHEN (state = LINEREQ AND mem_done = '1') OR mem_req_abort = '1';
-
-	mem_req <= '1' WHEN (state = READY AND hit_cache = '0' AND invalid_access_i = '0') ELSE
-				'1' WHEN (state = LINEREQ AND mem_done = '0') ELSE
-				'0';
-
 	cache_line <= to_integer(unsigned(addr(5 DOWNTO 4)));
 	hit_cache <= '1' WHEN addr(31 DOWNTO 6) = tag_fields(cache_line) AND valid_fields(cache_line) = '1'
 				ELSE '0';
@@ -80,6 +96,7 @@ BEGIN
 		data_fields(cache_line)(127 DOWNTO 96) WHEN x"C",
 		(OTHERS => 'Z') WHEN OTHERS;
 
+	state_nx <= state_nx_i;
 	invalid_access <= invalid_access_i;
 	done <= hit_cache;
 	mem_addr <= addr;

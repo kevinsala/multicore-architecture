@@ -25,9 +25,9 @@ BEGIN
     -- Clock process definitions
     CLK_process : PROCESS
     BEGIN
-        clk <= '0';
-	    WAIT FOR CLK_period / 2;
 	    clk <= '1';
+	    WAIT FOR CLK_period / 2;
+        clk <= '0';
 	    WAIT FOR CLK_period / 2;
     END PROCESS;
 
