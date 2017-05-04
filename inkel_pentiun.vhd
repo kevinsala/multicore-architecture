@@ -1224,7 +1224,7 @@ BEGIN
 		inst_type_out => inst_type_M5
 	);
 
-	reg_W_MUL_reset <= reset OR to_std_logic(inst_type_M5 /= INST_TYPE_MUL);
+	reg_W_MUL_reset <= reset OR to_std_logic(inst_type_M5 /= INST_TYPE_MUL) OR NOT mul_M5;
 
 	reg_W_MUL : reg_W PORT MAP (
 		clk => clk,
