@@ -275,7 +275,8 @@ ARCHITECTURE structure OF inkel_pentiun IS
 			reg_F_D_we     : OUT STD_LOGIC;
 			reg_D_A_we     : OUT STD_LOGIC;
 			reg_A_C_we     : OUT STD_LOGIC;
-			rob_count      : OUT STD_LOGIC
+			rob_count      : OUT STD_LOGIC;
+			rob_rollback   : OUT STD_LOGIC
 		);
 	END COMPONENT;
 
@@ -483,7 +484,7 @@ ARCHITECTURE structure OF inkel_pentiun IS
 			exc_data_out : OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
 			pc_out : OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
 			tail_we : IN STD_LOGIC;
-			branch_taken : IN STD_LOGIC;
+			rollback_tail : IN STD_LOGIC;
 			tail_out : OUT STD_LOGIC_VECTOR(3 DOWNTO 0);
 			reg_src1_D_BP : IN STD_LOGIC_VECTOR(4 DOWNTO 0);
 			reg_src1_D_v_BP : IN STD_LOGIC;
@@ -687,6 +688,7 @@ ARCHITECTURE structure OF inkel_pentiun IS
 	SIGNAL load_PC : STD_LOGIC;
 	SIGNAL reset_PC : STD_LOGIC;
 	SIGNAL rob_count_DU : STD_LOGIC;
+	SIGNAL rob_rollback_DU : STD_LOGIC;
 
 	-- Bypass unit signals
 	SIGNAL mux_src1_D_BP_ctrl : STD_LOGIC_VECTOR(2 DOWNTO 0);
@@ -803,7 +805,8 @@ BEGIN
 		reg_F_D_we => reg_F_D_we,
 		reg_D_A_we => reg_D_A_we,
 		reg_A_C_we => reg_A_C_we,
-		rob_count => rob_count_DU
+		rob_count => rob_count_DU,
+		rob_rollback => rob_rollback_DU
 	);
 
 	BP : bypass_unit PORT MAP(
@@ -1379,7 +1382,7 @@ BEGIN
 		pc_out => pc_ROB,
 		-- Counter
 		tail_we => rob_count_DU,
-		branch_taken => branch_taken_A,
+		rollback_tail => rob_rollback_DU,
 		tail_out => rob_idx_F,
 		-- Bypasses
 		reg_src1_D_BP => reg_src1_D,

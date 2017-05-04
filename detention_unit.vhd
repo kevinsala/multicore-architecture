@@ -42,7 +42,8 @@ ENTITY detention_unit IS
 		reg_F_D_we     : OUT STD_LOGIC;
 		reg_D_A_we     : OUT STD_LOGIC;
 		reg_A_C_we     : OUT STD_LOGIC;
-		rob_count      : OUT STD_LOGIC
+		rob_count      : OUT STD_LOGIC;
+		rob_rollback   : OUT STD_LOGIC
 	);
 END detention_unit;
 
@@ -75,6 +76,7 @@ BEGIN
 
 	reg_PC_we <= NOT conflict_i AND done_F AND NOT conflict_MEM;
 	rob_count <= NOT conflict_i AND done_F AND NOT conflict_MEM;
+	rob_rollback <= branch_taken_A AND NOT to_std_logic(inst_type_D = INST_TYPE_NOP); -- Don't decrease the ROB counter if the instruction just after the branch was a iCache miss
 	reg_F_D_we <= NOT conflict_i AND NOT conflict_MEM;
 	reg_D_A_we <= NOT conflict_MEM;
 	reg_A_C_we <= done_C;

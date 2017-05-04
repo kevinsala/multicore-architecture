@@ -49,7 +49,7 @@ ENTITY reorder_buffer IS
 		pc_out : OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
 		-- Counter
 		tail_we : IN STD_LOGIC;
-		branch_taken : IN STD_LOGIC;
+		rollback_tail : IN STD_LOGIC;
 		tail_out : OUT STD_LOGIC_VECTOR(3 DOWNTO 0);
 		-- Bypasses
 		reg_src1_D_BP : IN STD_LOGIC_VECTOR(4 DOWNTO 0);
@@ -254,7 +254,7 @@ BEGIN
 					END LOOP;
 					sb_squash <= '1';
 					tail <= (head + 1) mod ROB_POSITIONS;
-				ELSIF branch_taken = '1' THEN
+				ELSIF rollback_tail = '1' THEN
 					-- We messed up!
 					tail <= (tail - 1) mod ROB_POSITIONS;
 				ELSIF tail_we = '1' THEN
