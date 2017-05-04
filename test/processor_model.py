@@ -33,6 +33,20 @@ class InkelPentiun:
         self.old_reg_b = list(self.reg_b)
 
 
+    def _update_old_mem(self, data, addr):
+        line = addr >> 4
+
+        i = 0
+        while i < len(self.old_memory) and self.old_memory[i][0] < line:
+            i = i + 1
+
+        if i < len(self.old_memory) and self.old_memory[i][0] == line:
+            self.old_memory[i] = (line, data)
+        else:
+            self.old_memory.append((line, data))
+            self.old_memory.sort(key = lambda x: x[0])
+
+
     def _read_from_mem(self, addr):
         line = addr >> 4
 
@@ -85,6 +99,15 @@ class InkelPentiun:
         return self.cache_i_data[line][elem * 8 : (elem + 1) * 8]
 
 
+    def _update_lru_cache_d(self, line):
+        old_lru = self.cache_d_lru[line]
+        for i in range(4):
+            if self.cache_d_lru[i] < old_lru:
+                self.cache_d_lru[i] = self.cache_d_lru[i] + 1
+
+        self.cache_d_lru[line] = 0
+
+
     def _update_cache_d(self, addr):
         elem = (addr >> 2) & (2**2 - 1) # Bits 2 and 3
         tag = addr >> 4
@@ -100,14 +123,16 @@ class InkelPentiun:
             if self.cache_d_d[index]:
                 self._write_to_mem(self.cache_d_data[index], self.cache_d_tag[index] << 4)
 
-            for i in range(4):
-                self.cache_d_lru[i] = self.cache_d_lru[i] + 1
+                # A dirty eviction is seen already at the end of the execution of the instruction
+                # that it is being run, instead of the next one
+                self._update_old_mem(self.cache_d_data[index], self.cache_d_tag[index] << 4)
 
             self.cache_d_v[index] = True
             self.cache_d_d[index] = False
             self.cache_d_tag[index] = tag
-            self.cache_d_lru[index] = 0
             self.cache_d_data[index] = self._read_from_mem(addr)
+
+        self._update_lru_cache_d(index)
 
         return index
 
