@@ -231,7 +231,7 @@ BEGIN
 					END IF;
 
 					-- Commit the store buffer entry only when
-					-- no execption has been detected
+					-- no exception has been detected
 					IF store_fields(head) = '1' AND NOT exception THEN
 						sb_store_id <= STD_LOGIC_VECTOR(to_unsigned(head, sb_store_id'LENGTH));
 						sb_store_commit <= '1';
