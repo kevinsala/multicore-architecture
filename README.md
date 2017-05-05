@@ -15,5 +15,7 @@
 
 ## Etapas del procesador segmentado
 Fetch - Decode - ALU - Write Back
+
 Fetch - Decode - ALU - Cache - Write Back
+
 Fetch - Decode - M1 - M2 - M3 - M4 - M5 - Write Back
