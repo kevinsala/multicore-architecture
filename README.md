@@ -1,5 +1,5 @@
 # Inkel Pentiun processor
-"Blocking is for cowards, but it always works" - Development Team, 2016
+"Blocking is for cowards, but it always works" - Development Team, 2017
 
 ## Etapas de implementación
 1. Set completo de instrucciones sin caché (directamente memoria)
@@ -14,11 +14,6 @@
 8. Out of order execution
 
 ## Etapas del procesador segmentado
+Fetch - Decode - ALU - Write Back
 Fetch - Decode - ALU - Cache - Write Back
-
-## Instrucciones no implementadas en procesador básico
-* SUB
-* MUL
-* LDB
-* STB
-* JUMP
+Fetch - Decode - M1 - M2 - M3 - M4 - M5 - Write Back
