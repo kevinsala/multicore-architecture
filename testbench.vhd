@@ -6,7 +6,7 @@ ENTITY testbench IS
 END testbench;
 
 ARCHITECTURE structure OF testbench IS
-    COMPONENT inkel_pentiun is
+    COMPONENT inkel_pentwice is
         PORT(
     		clk     : IN  STD_LOGIC;
     		reset   : IN  STD_LOGIC;
@@ -20,7 +20,7 @@ ARCHITECTURE structure OF testbench IS
     CONSTANT CLK_period : TIME := 1 ns;
 BEGIN
     -- Component Instantiation
-    uut: inkel_pentiun PORT MAP(clk => clk, reset => reset, pc_out => pc);
+    uut: inkel_pentwice PORT MAP(clk => clk, reset => reset, pc_out => pc);
 
     -- Clock process definitions
     CLK_process : PROCESS

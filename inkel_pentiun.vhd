@@ -4,9 +4,19 @@ USE WORK.UTILS.ALL;
 
 ENTITY inkel_pentiun IS
 	PORT(
-		clk     : IN  STD_LOGIC;
-		reset   : IN  STD_LOGIC;
-		pc_out  : OUT STD_LOGIC_VECTOR(31 DOWNTO 0)
+		clk            : IN  STD_LOGIC;
+		reset          : IN  STD_LOGIC;
+		i_req_mem      : OUT STD_LOGIC;
+		d_req_mem      : OUT STD_LOGIC;
+		i_addr_mem     : OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
+		d_addr_mem     : OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
+		d_we_mem       : OUT STD_LOGIC;
+		i_done_mem     : IN  STD_LOGIC;
+		d_done_mem     : IN  STD_LOGIC;
+		d_data_out_mem : OUT STD_LOGIC_VECTOR(127 DOWNTO 0);
+		i_data_in_mem  : IN STD_LOGIC_VECTOR(127 DOWNTO 0);
+		d_data_in_mem  : IN STD_LOGIC_VECTOR(127 DOWNTO 0);
+		pc_out         : OUT STD_LOGIC_VECTOR(31 DOWNTO 0)
 	);
 END inkel_pentiun;
 
@@ -33,24 +43,6 @@ ARCHITECTURE structure OF inkel_pentiun IS
 			exc_data_out : OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
 			rob_idx_out : OUT STD_LOGIC_VECTOR(3 DOWNTO 0);
 			inst_type_out : OUT STD_LOGIC_VECTOR(1 DOWNTO 0)
-		);
-	END COMPONENT;
-
-	COMPONENT memory IS
-		PORT(
-			clk : IN STD_LOGIC;
-			reset : IN STD_LOGIC;
-			debug_dump : IN STD_LOGIC;
-			f_req : IN STD_LOGIC;
-			d_req : IN STD_LOGIC;
-			d_we : IN STD_LOGIC;
-			f_done : OUT STD_LOGIC;
-			d_done : OUT STD_LOGIC;
-			f_addr : IN STD_LOGIC_VECTOR(31 DOWNTO 0);
-			d_addr : IN STD_LOGIC_VECTOR(31 DOWNTO 0);
-			d_data_in : IN STD_LOGIC_VECTOR(127 DOWNTO 0);
-			f_data_out : OUT STD_LOGIC_VECTOR(127 DOWNTO 0);
-			d_data_out : OUT STD_LOGIC_VECTOR(127 DOWNTO 0)
 		);
 	END COMPONENT;
 
@@ -727,21 +719,18 @@ ARCHITECTURE structure OF inkel_pentiun IS
 
 BEGIN
 
-	mem: memory PORT MAP(
-		clk => clk,
-		reset => reset,
-		debug_dump => debug_dump_ROB,
-		f_req => mem_req_F,
-		d_req => mem_req_C,
-		d_we => mem_we_C,
-		f_done => mem_done_F,
-		d_done => mem_done_C,
-		f_addr => mem_addr_F,
-		d_addr => mem_addr_C,
-		d_data_in => mem_data_out_C,
-		f_data_out => mem_data_in_F,
-		d_data_out => mem_data_in_C
-	);
+	------------------------- Memory interface ---------------------------
+
+	i_req_mem <= mem_req_F;
+	d_req_mem <= mem_req_C;
+	i_addr_mem <= mem_addr_F;
+	d_addr_mem <= mem_addr_C;
+	d_we_mem <= mem_we_C;
+	mem_done_F <= i_done_mem;
+	mem_done_C <= d_done_mem;
+	d_data_out_mem <= mem_data_out_C;
+	mem_data_in_F <= i_data_in_mem;
+	mem_data_in_C <= d_data_in_mem;
 
 	----------------------------- Control -------------------------------
 
