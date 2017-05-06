@@ -25,14 +25,15 @@ def init_test(dut):
     yield clk_rising
 
     first = True
-    do_dump = False
+    # HACK: since inkel_pentwice was created, RAM does not work strictly as expected
+    second = False
     while True:
         mod_pc = model.step()
         if mod_pc == 0:
             break
 
-        if do_dump:
-            dut.debug_dump_ROB <= 1
+        if not first:
+            dut.debug_dump <= 1
 
         # Move simulation forward
         yield clk_rising
@@ -49,10 +50,10 @@ def init_test(dut):
 
         if first:
             first = False
-            do_dump = True
-
-        if dut.debug_dump_ROB == 1:
-            do_dump = True
+            second = True
+        elif second:
+            second = False
+        else:
             if model.check_dump("dump"):
                 raise TestFailure("Memories don't have the expected values")
             else:

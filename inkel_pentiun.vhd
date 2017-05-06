@@ -6,6 +6,7 @@ ENTITY inkel_pentiun IS
 	PORT(
 		clk            : IN  STD_LOGIC;
 		reset          : IN  STD_LOGIC;
+		debug_dump     : IN  STD_LOGIC;
 		i_req_mem      : OUT STD_LOGIC;
 		d_req_mem      : OUT STD_LOGIC;
 		i_addr_mem     : OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
@@ -654,7 +655,6 @@ ARCHITECTURE structure OF inkel_pentiun IS
 	SIGNAL exc_code_ROB : STD_LOGIC_VECTOR(1 DOWNTO 0);
 	SIGNAL exc_data_ROB : STD_LOGIC_VECTOR(31 DOWNTO 0);
 	SIGNAL pc_ROB : STD_LOGIC_VECTOR(31 DOWNTO 0);
-	SIGNAL debug_dump_ROB : STD_LOGIC;
 	SIGNAL reg_src1_D_p_ROB : STD_LOGIC;
 	SIGNAL reg_src1_D_inst_type_ROB : STD_LOGIC_VECTOR(1 DOWNTO 0);
 	SIGNAL reg_src1_D_data_ROB : STD_LOGIC_VECTOR(31 DOWNTO 0);
@@ -924,7 +924,7 @@ BEGIN
 	rb: reg_bank PORT MAP(
 		clk => clk,
 		reset => reset,
-		debug_dump => debug_dump_ROB,
+		debug_dump => debug_dump,
 		src1 => reg_src1_D,
 		src2 => reg_src2_D,
 		data1 => reg_data1_D,
@@ -1390,7 +1390,6 @@ BEGIN
 		sb_squash => sb_squash_C
 	);
 
-	debug_dump_ROB <= '0';
 	pc_out <= pc_ROB;
 END structure;
 

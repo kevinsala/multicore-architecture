@@ -15,6 +15,7 @@ ARCHITECTURE structure OF inkel_pentwice IS
 		PORT(
 			clk            : IN  STD_LOGIC;
 			reset          : IN  STD_LOGIC;
+			debug_dump     : IN  STD_LOGIC;
 			i_req_mem      : OUT STD_LOGIC;
 			d_req_mem      : OUT STD_LOGIC;
 			i_addr_mem     : OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
@@ -42,7 +43,7 @@ ARCHITECTURE structure OF inkel_pentwice IS
 			data_out : OUT STD_LOGIC_VECTOR(127 DOWNTO 0)
 		);
 	END COMPONENT;
-    
+
 	COMPONENT arbiter IS
         PORT (clk : IN STD_LOGIC;
               reset : IN STD_LOGIC;
@@ -82,12 +83,14 @@ ARCHITECTURE structure OF inkel_pentwice IS
 	SIGNAL done_MEM : STD_LOGIC;
 	SIGNAL data_in_MEM : STD_LOGIC_VECTOR(127 DOWNTO 0);
 	SIGNAL data_out_MEM : STD_LOGIC_VECTOR(127 DOWNTO 0);
+
+	SIGNAL debug_dump : STD_LOGIC;
 BEGIN
 
 	mem : memory PORT MAP(
 		clk => clk,
 		reset => reset,
-		debug_dump => '0',
+		debug_dump => debug_dump,
 		req => req_MEM,
 		we => we_MEM,
 		done => done_MEM,
@@ -120,6 +123,7 @@ BEGIN
 	proc : inkel_pentiun PORT MAP(
 		clk => clk,
 		reset => reset,
+		debug_dump => debug_dump,
 		i_req_mem => i_req_MEM,
 		d_req_mem => d_req_MEM,
 		i_addr_mem => i_addr_MEM,
@@ -132,4 +136,6 @@ BEGIN
 		d_data_in_mem => d_data_out_MEM,
 		pc_out => pc_out
 	);
+
+	debug_dump <= '0';
 END structure;

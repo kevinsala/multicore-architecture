@@ -13,6 +13,7 @@ VHDL_SOURCES = $(PWD)/../utils.vhd \
                 $(PWD)/../exception.vhd \
                 $(PWD)/../fetch.vhd \
                 $(PWD)/../inkel_pentiun.vhd \
+                $(PWD)/../inkel_pentwice.vhd \
                 $(PWD)/../memory.vhd \
                 $(PWD)/../mux2_32bits.vhd \
                 $(PWD)/../mux4_32bits.vhd \
@@ -31,8 +32,8 @@ VHDL_SOURCES = $(PWD)/../utils.vhd \
                 $(PWD)/../rob.vhd \
                 $(PWD)/../sign_ext.vhd \
                 $(PWD)/../store_buffer.vhd
-TOPLEVEL = inkel_pentiun
-MODULE = test_inkel_pentiun
+TOPLEVEL = inkel_pentwice
+MODULE = test_inkel_pentwice
 
 COCOTB = ./cocotb
 SIM = ghdl
