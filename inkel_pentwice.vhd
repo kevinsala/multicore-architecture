@@ -123,6 +123,7 @@ BEGIN
 		i_req_mem => i_req_MEM,
 		d_req_mem => d_req_MEM,
 		i_addr_mem => i_addr_MEM,
+		d_addr_mem => d_addr_MEM,
 		d_we_mem => d_we_MEM,
 		i_done_mem => i_done_MEM,
 		d_done_mem => d_done_MEM,
