@@ -9,8 +9,7 @@ ARCHITECTURE structure OF testbench IS
     COMPONENT inkel_pentwice is
         PORT(
     		clk     : IN  STD_LOGIC;
-    		reset   : IN  STD_LOGIC;
-    		pc_out  : OUT STD_LOGIC_VECTOR(31 DOWNTO 0)
+			reset   : IN  STD_LOGIC
     	);
 	END COMPONENT;
 
@@ -20,7 +19,7 @@ ARCHITECTURE structure OF testbench IS
     CONSTANT CLK_period : TIME := 1 ns;
 BEGIN
     -- Component Instantiation
-    uut: inkel_pentwice PORT MAP(clk => clk, reset => reset, pc_out => pc);
+    uut: inkel_pentwice PORT MAP(clk => clk, reset => reset);
 
     -- Clock process definitions
     CLK_process : PROCESS

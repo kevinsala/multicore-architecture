@@ -5,8 +5,7 @@ USE WORK.UTILS.ALL;
 ENTITY inkel_pentwice IS
 	PORT(
 		clk    : IN STD_LOGIC;
-		reset  : IN STD_LOGIC;
-		pc_out : OUT STD_LOGIC_VECTOR(31 DOWNTO 0)
+		reset  : IN STD_LOGIC
 	);
 END inkel_pentwice;
 
@@ -134,7 +133,7 @@ BEGIN
 		d_data_out_mem => d_data_in_MEM,
 		i_data_in_mem => i_data_out_MEM,
 		d_data_in_mem => d_data_out_MEM,
-		pc_out => pc_out
+		pc_out => OPEN
 	);
 
 	debug_dump <= '0';

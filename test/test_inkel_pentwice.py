@@ -40,7 +40,7 @@ def init_test(dut):
 
         # One instruction may take many cycles
         count = 1
-        while count < 30 and dut.pc_out == 0:
+        while count < 30 and dut.proc.pc_out == 0:
             yield clk_rising
 
             count = count + 1
@@ -60,7 +60,7 @@ def init_test(dut):
                 dut._log.info("PC 0x%08x (memory) ok", old_proc_pc)
 
         # Check PC's
-        proc_pc = dut.pc_out
+        proc_pc = dut.proc.pc_out
         if mod_pc != proc_pc:
             raise TestFailure("Processor is at PC 0x%08x, whereas model is at PC 0x%08x" % (proc_pc, mod_pc))
 
