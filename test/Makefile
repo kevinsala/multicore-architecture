@@ -15,6 +15,7 @@ VHDL_SOURCES = $(PWD)/../utils.vhd \
                 $(PWD)/../inkel_pentiun.vhd \
                 $(PWD)/../inkel_pentwice.vhd \
                 $(PWD)/../memory.vhd \
+                $(PWD)/../memory_controller.vhd \
                 $(PWD)/../mux2_32bits.vhd \
                 $(PWD)/../mux4_32bits.vhd \
                 $(PWD)/../mux8_32bits.vhd \
