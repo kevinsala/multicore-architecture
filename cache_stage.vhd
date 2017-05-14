@@ -19,8 +19,7 @@ ENTITY cache_stage IS
 		invalid_access  : OUT   STD_LOGIC;
 		arb_req         : OUT   STD_LOGIC;
 		arb_ack         : IN    STD_LOGIC;
-		mem_req         : OUT   STD_LOGIC;
-		mem_we          : OUT   STD_LOGIC;
+		mem_cmd         : OUT   STD_LOGIC_VECTOR(2 DOWNTO 0);
 		mem_addr        : OUT   STD_LOGIC_VECTOR(31 DOWNTO 0);
 		mem_done        : IN    STD_LOGIC;
 		mem_data        : INOUT STD_LOGIC_VECTOR(127 DOWNTO 0);
@@ -45,8 +44,7 @@ ARCHITECTURE cache_stage_behavior OF cache_stage IS
 			invalid_access : OUT   STD_LOGIC;
 			arb_req        : OUT   STD_LOGIC;
 			arb_ack        : IN    STD_LOGIC;
-			mem_req        : OUT   STD_LOGIC;
-			mem_we         : OUT   STD_LOGIC;
+			mem_cmd        : OUT   STD_LOGIC_VECTOR(2 DOWNTO 0);
 			mem_addr       : OUT   STD_LOGIC_VECTOR(31 DOWNTO 0);
 			mem_done       : IN    STD_LOGIC;
 			mem_data       : INOUT STD_LOGIC_VECTOR(127 DOWNTO 0);
@@ -98,7 +96,7 @@ ARCHITECTURE cache_stage_behavior OF cache_stage IS
 
 	SIGNAL invalid_access_i : STD_LOGIC;
 	SIGNAL arb_req_i : STD_LOGIC;
-	SIGNAL mem_req_i : STD_LOGIC;
+	SIGNAL mem_cmd_i : STD_LOGIC_VECTOR(2 DOWNTO 0);
 
 	-- Interface between cache and store buffer
 	SIGNAL cache_sb_repl      : STD_LOGIC;
@@ -121,8 +119,7 @@ BEGIN
 		invalid_access => invalid_access_i,
 		arb_req => arb_req_i,
 		arb_ack => arb_ack,
-		mem_req => mem_req_i,
-		mem_we => mem_we,
+		mem_cmd => mem_cmd_i,
 		mem_addr => mem_addr,
 		mem_done => mem_done,
 		mem_data => mem_data,
@@ -164,7 +161,7 @@ BEGIN
 	data_out <= sb_data_out WHEN sb_hit = '1' ELSE cache_data_out;
 	invalid_access <= invalid_access_i;
 	arb_req <= arb_req_i;
-	mem_req <= mem_req_i;
+	mem_cmd <= mem_cmd_i;
 
-	sb_sleep <= '1' WHEN arb_req_i = '1' OR mem_req_i = '1' ELSE '0';
+	sb_sleep <= '1' WHEN arb_req_i = '1' OR mem_cmd_i = CMD_GET OR mem_cmd_i = CMD_PUT ELSE '0';
 END cache_stage_behavior;

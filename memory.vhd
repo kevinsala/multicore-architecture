@@ -10,8 +10,7 @@ ENTITY memory IS
 		clk        : IN    STD_LOGIC;
 		reset      : IN    STD_LOGIC;
 		debug_dump : IN    STD_LOGIC;
-		req        : IN    STD_LOGIC;
-		we         : IN    STD_LOGIC;
+		cmd        : IN    STD_LOGIC_VECTOR(2 DOWNTO 0);
 		done       : OUT   STD_LOGIC;
 		addr       : IN    STD_LOGIC_VECTOR(31 DOWNTO 0);
 		data       : INOUT STD_LOGIC_VECTOR(127 DOWNTO 0)
@@ -24,8 +23,7 @@ ARCHITECTURE structure OF memory IS
 		PORT (
 			clk          : IN    STD_LOGIC;
 			reset        : IN    STD_LOGIC;
-			req          : IN    STD_LOGIC;
-			we           : IN    STD_LOGIC;
+			cmd          : IN    STD_LOGIC_VECTOR(2 DOWNTO 0);
 			done         : OUT   STD_LOGIC;
 			addr         : IN    STD_LOGIC_VECTOR(31 DOWNTO 0);
 			data         : INOUT STD_LOGIC_VECTOR(127 DOWNTO 0);
@@ -63,8 +61,7 @@ BEGIN
 	controller : memory_controller PORT MAP (
 		clk => clk,
 		reset => reset,
-		req => req,
-		we => we,
+		cmd => cmd,
 		done => done,
 		addr => addr,
 		data => data,

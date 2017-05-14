@@ -19,8 +19,7 @@ ENTITY fetch IS
 		invalid_access : OUT STD_LOGIC;
 		arb_req        : OUT STD_LOGIC;
 		arb_ack        : IN  STD_LOGIC;
-		mem_req        : OUT STD_LOGIC;
-		mem_we         : OUT STD_LOGIC;
+		mem_cmd        : OUT STD_LOGIC_VECTOR(2 DOWNTO 0);
 		mem_addr       : OUT STD_LOGIC_VECTOR(31  DOWNTO 0);
 		mem_done       : IN  STD_LOGIC;
 		mem_data       : IN  STD_LOGIC_VECTOR(127 DOWNTO 0)
@@ -40,9 +39,8 @@ ARCHITECTURE structure OF fetch IS
 			state_nx       : OUT inst_cache_state_t;
 			arb_req        : OUT STD_LOGIC;
 			arb_ack        : IN  STD_LOGIC;
-			mem_req        : OUT STD_LOGIC;
+			mem_cmd        : OUT STD_LOGIC_VECTOR(2 DOWNTO 0);
 			mem_req_abort  : IN  STD_LOGIC;
-			mem_we         : OUT STD_LOGIC;
 			mem_addr       : OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
 			mem_done       : IN  STD_LOGIC;
 			mem_data       : IN  STD_LOGIC_VECTOR(127 DOWNTO 0)
@@ -78,8 +76,7 @@ ARCHITECTURE structure OF fetch IS
         state_nx => cache_state_nx,
 		arb_req => arb_req,
 		arb_ack => arb_ack,
-        mem_req => mem_req,
-		mem_we => mem_we,
+		mem_cmd => mem_cmd,
         mem_req_abort => branch_taken,
         mem_addr => mem_addr,
         mem_done => mem_done,

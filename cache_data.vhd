@@ -19,8 +19,7 @@ ENTITY cache_data IS
 		invalid_access : OUT   STD_LOGIC;
 		arb_req        : OUT   STD_LOGIC;
 		arb_ack        : IN    STD_LOGIC;
-		mem_req        : OUT   STD_LOGIC;
-		mem_we         : OUT   STD_LOGIC;
+		mem_cmd        : OUT   STD_LOGIC_VECTOR(2 DOWNTO 0);
 		mem_addr       : OUT   STD_LOGIC_VECTOR(31 DOWNTO 0);
 		mem_done       : IN    STD_LOGIC;
 		mem_data       : INOUT STD_LOGIC_VECTOR(127 DOWNTO 0);
@@ -110,14 +109,12 @@ ARCHITECTURE cache_data_behavior OF cache_data IS
 	END PROCEDURE;
 
 	PROCEDURE clear_bus(
-			SIGNAL mem_req  : OUT STD_LOGIC;
-			SIGNAL mem_we   : OUT STD_LOGIC;
+			SIGNAL mem_cmd  : OUT STD_LOGIC_VECTOR(2   DOWNTO 0);
 			SIGNAL mem_addr : OUT STD_LOGIC_VECTOR(31  DOWNTO 0);
 			SIGNAL mem_data : OUT STD_LOGIC_VECTOR(127 DOWNTO 0)
 		) IS
 	BEGIN
-		mem_req  <= 'Z';
-		mem_we   <= 'Z';
+		mem_cmd  <= (OTHERS => 'Z');
 		mem_addr <= (OTHERS => 'Z');
 		mem_data <= (OTHERS => 'Z');
 	END PROCEDURE;
@@ -208,7 +205,7 @@ execution_process : PROCESS(clk)
 BEGIN
 	IF rising_edge(clk) AND reset = '1' THEN
 		reset_cache(lru_fields, valid_fields, dirty_fields, arb_req);
-		clear_bus(mem_req, mem_we, mem_addr, mem_data);
+		clear_bus(mem_cmd, mem_addr, mem_data);
 
 	ELSIF falling_edge(clk) AND reset = '0' THEN
 		IF state_i = READY OR state_i = WAITSB THEN
@@ -221,20 +218,18 @@ BEGIN
 			END IF;
 		ELSIF state_i = ARBREQ THEN
 			IF state_nx_i = LINEREPL THEN
-				mem_req <= '1';
-				mem_we <= '1';
+				mem_cmd <= CMD_PUT;
 				mem_addr <= tag_fields(lru_line_num_i) & "0000";
 				mem_data <= data_fields(lru_line_num_i);
 			ELSIF state_nx_i = LINEREQ THEN
-				mem_req <= '1';
-				mem_we <= '0';
+				mem_cmd <= CMD_GET;
 				mem_addr <= addr;
 			END IF;
 		ELSIF state_i = LINEREPL THEN
 			IF state_nx_i = ARBREQ THEN
 				arb_req <= '1';
 				dirty_fields(lru_line_num_i) <= '0';
-				clear_bus(mem_req, mem_we, mem_addr, mem_data);
+				clear_bus(mem_cmd, mem_addr, mem_data);
 			END IF;
 		ELSIF state_i = LINEREQ THEN
 			IF state_nx_i = READY THEN
@@ -244,7 +239,7 @@ BEGIN
 				tag_fields(lru_line_num_i) <= addr(31 DOWNTO 4);
 				data_fields(lru_line_num_i) <= mem_data;
 				LRU_execute(lru_fields, lru_line_num_i);
-				clear_bus(mem_req, mem_we, mem_addr, mem_data);
+				clear_bus(mem_cmd, mem_addr, mem_data);
 			END IF;
 		END IF;
 

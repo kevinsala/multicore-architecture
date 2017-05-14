@@ -17,9 +17,8 @@ ENTITY cache_inst IS
 		state_nx       : OUT inst_cache_state_t;
 		arb_req        : OUT STD_LOGIC;
 		arb_ack        : IN  STD_LOGIC;
-		mem_req        : OUT STD_LOGIC;
+		mem_cmd        : OUT STD_LOGIC_VECTOR(2 DOWNTO 0);
 		mem_req_abort  : IN  STD_LOGIC;
-		mem_we         : OUT STD_LOGIC;
 		mem_addr       : OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
 		mem_done       : IN  STD_LOGIC;
 		mem_data       : IN  STD_LOGIC_VECTOR(127 DOWNTO 0)
@@ -50,13 +49,11 @@ ARCHITECTURE structure OF cache_inst IS
 	SIGNAL state_nx_i : inst_cache_state_t;
 
 	PROCEDURE clear_bus(
-			SIGNAL mem_req  : OUT STD_LOGIC;
-			SIGNAL mem_we   : OUT STD_LOGIC;
+			SIGNAL mem_cmd  : OUT STD_LOGIC_VECTOR(2 DOWNTO 0);
 			SIGNAL mem_addr : OUT STD_LOGIC_VECTOR(31  DOWNTO 0)
 		) IS
 	BEGIN
-		mem_req  <= 'Z';
-		mem_we   <= 'Z';
+		mem_cmd  <= (OTHERS => 'Z');
 		mem_addr <= (OTHERS => 'Z');
 	END PROCEDURE;
 BEGIN
@@ -91,7 +88,7 @@ BEGIN
 				valid_fields(i) <= '0';
 			END LOOP;
 			arb_req <= '0';
-			clear_bus(mem_req, mem_we, mem_addr);
+			clear_bus(mem_cmd, mem_addr);
 		ELSIF falling_edge(clk) AND reset = '0' THEN
 			IF state = READY THEN
 				IF state_nx_i = ARBREQ THEN
@@ -102,13 +99,11 @@ BEGIN
 					arb_req <= '0';
 					IF arb_ack = '1' THEN
 						-- The request must be sent
-						mem_req <= '1';
-						mem_we <= '0';
+						mem_cmd <= CMD_GET;
 						mem_addr <= addr;
 					END IF;
 				ELSIF state_nx_i = LINEREQ THEN
-					mem_req <= '1';
-					mem_we <= '0';
+					mem_cmd <= CMD_GET;
 					mem_addr <= addr;
 				END IF;
 			ELSIF state = LINEREQ THEN
@@ -119,7 +114,7 @@ BEGIN
 						valid_fields(cache_line) <= '1';
 						data_fields(cache_line) <= mem_data;
 					END IF;
-					clear_bus(mem_req, mem_we, mem_addr);
+					clear_bus(mem_cmd, mem_addr);
 				END IF;
 			END IF;
 		END IF;

@@ -11,8 +11,7 @@ ENTITY inkel_pentiun IS
 		d_arb_req  : OUT   STD_LOGIC;
 		i_arb_ack  : IN    STD_LOGIC;
 		d_arb_ack  : IN    STD_LOGIC;
-		mem_req    : OUT   STD_LOGIC;
-		mem_we     : OUT   STD_LOGIC;
+		mem_cmd    : OUT   STD_LOGIC_VECTOR(2 DOWNTO 0);
 		mem_addr   : OUT   STD_LOGIC_VECTOR(31 DOWNTO 0);
 		mem_done   : IN    STD_LOGIC;
 		mem_data   : INOUT STD_LOGIC_VECTOR(127 DOWNTO 0);
@@ -105,8 +104,7 @@ ARCHITECTURE structure OF inkel_pentiun IS
 			invalid_access : OUT STD_LOGIC;
 			arb_req        : OUT STD_LOGIC;
 			arb_ack        : IN  STD_LOGIC;
-			mem_req        : OUT STD_LOGIC;
-			mem_we         : OUT STD_LOGIC;
+			mem_cmd        : OUT STD_LOGIC_VECTOR(2 DOWNTO 0);
 			mem_addr       : OUT STD_LOGIC_VECTOR(31  DOWNTO 0);
 			mem_done       : IN  STD_LOGIC;
 			mem_data       : IN  STD_LOGIC_VECTOR(127 DOWNTO 0)
@@ -129,8 +127,7 @@ ARCHITECTURE structure OF inkel_pentiun IS
 			invalid_access  : OUT   STD_LOGIC;
 			arb_req         : OUT   STD_LOGIC;
 			arb_ack         : IN    STD_LOGIC;
-			mem_req         : OUT   STD_LOGIC;
-			mem_we          : OUT   STD_LOGIC;
+			mem_cmd         : OUT   STD_LOGIC_VECTOR(2 DOWNTO 0);
 			mem_addr        : OUT   STD_LOGIC_VECTOR(31  DOWNTO 0);
 			mem_done        : IN    STD_LOGIC;
 			mem_data        : INOUT STD_LOGIC_VECTOR(127 DOWNTO 0);
@@ -847,8 +844,7 @@ BEGIN
 		invalid_access => invalid_access_F,
 		arb_req => i_arb_req,
 		arb_ack => i_arb_ack,
-		mem_req => mem_req,
-		mem_we => mem_we,
+		mem_cmd => mem_cmd,
 		mem_addr => mem_addr,
 		mem_done => mem_done,
 		mem_data => mem_data
@@ -1269,8 +1265,7 @@ BEGIN
 		invalid_access => invalid_access_C,
 		arb_req => d_arb_req,
 		arb_ack => d_arb_ack,
-		mem_req => mem_req,
-		mem_we => mem_we,
+		mem_cmd => mem_cmd,
 		mem_addr => mem_addr,
 		mem_done => mem_done,
 		mem_data => mem_data,

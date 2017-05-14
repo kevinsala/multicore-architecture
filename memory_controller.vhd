@@ -9,8 +9,7 @@ ENTITY memory_controller IS
 	PORT (
 		clk          : IN STD_LOGIC;
 		reset        : IN STD_LOGIC;
-		req          : IN STD_LOGIC;
-		we           : IN STD_lOGIC;
+		cmd          : IN STD_LOGIC_VECTOR(2 DOWNTO 0);
 		done         : OUT STD_LOGIC;
 		addr         : IN STD_LOGIC_VECTOR(31 DOWNTO 0);
 		data         : INOUT STD_LOGIC_VECTOR(127 DOWNTO 0);
@@ -57,17 +56,19 @@ BEGIN
 	END IF;
 END PROCESS internal_register;
 
-next_state : PROCESS(reset, req, we, addr, mem_done, available)
+next_state : PROCESS(reset, cmd, addr, mem_done, available)
 BEGIN
 	IF reset = '1' THEN
 		state_nx <= READY;
 	ELSE
 		state_nx <= state;
 		IF state = READY THEN
-			IF req = '1' AND we = '0' AND available = '1' THEN
-				state_nx <= WAIT_GET;
-			ELSIF req = '1' AND we = '1' THEN
-				state_nx <= WAIT_PUT;
+			IF is_cmd(cmd) THEN
+				IF cmd = CMD_GET AND available = '1' THEN
+					state_nx <= WAIT_GET;
+				ELSIF cmd = CMD_PUT THEN
+					state_nx <= WAIT_PUT;
+				END IF;
 			END IF;
 		ELSE
 			IF mem_done = '1' THEN
