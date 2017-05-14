@@ -67,8 +67,7 @@ BEGIN
 		ELSE
 			state_nx_i <= state;
 			IF state = READY THEN
-				-- FIXME: Could be aborted at this moment?
-				IF hit_cache = '0' AND invalid_access_i = '0' THEN
+				IF hit_cache = '0' AND invalid_access_i = '0' AND mem_req_abort = '0' THEN
 					state_nx_i <= ARBREQ;
 				END IF;
 			ELSIF state = ARBREQ THEN
