@@ -6,19 +6,23 @@ USE std.textio.ALL;
 USE work.utils.ALL;
 
 ENTITY cache_inst IS
-	PORT (clk : IN STD_LOGIC;
-		reset : IN STD_LOGIC;
-		addr : IN STD_LOGIC_VECTOR(31 DOWNTO 0);
-		data_out : OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
-		done : OUT STD_LOGIC;
+	PORT (
+		clk            : IN  STD_LOGIC;
+		reset          : IN  STD_LOGIC;
+		addr           : IN  STD_LOGIC_VECTOR(31 DOWNTO 0);
+		data_out       : OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
+		done           : OUT STD_LOGIC;
 		invalid_access : OUT STD_LOGIC;
-		state : IN inst_cache_state_t;
-		state_nx : OUT inst_cache_state_t;
-		mem_req : OUT STD_LOGIC;
-		mem_req_abort : IN STD_LOGIC;
-		mem_addr : OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
-		mem_done : IN STD_LOGIC;
-		mem_data_in : IN STD_LOGIC_VECTOR(127 DOWNTO 0)
+		state          : IN  inst_cache_state_t;
+		state_nx       : OUT inst_cache_state_t;
+		arb_req        : OUT STD_LOGIC;
+		arb_ack        : IN  STD_LOGIC;
+		mem_req        : OUT STD_LOGIC;
+		mem_req_abort  : IN  STD_LOGIC;
+		mem_we         : OUT STD_LOGIC;
+		mem_addr       : OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
+		mem_done       : IN  STD_LOGIC;
+		mem_data       : IN  STD_LOGIC_VECTOR(127 DOWNTO 0)
 	);
 END cache_inst;
 
@@ -37,24 +41,43 @@ ARCHITECTURE structure OF cache_inst IS
 	SIGNAL tag_fields	: tag_fields_t;
 	SIGNAL data_fields	: data_fields_t;
 
-	SIGNAL hit_cache : STD_LOGIC;
+	SIGNAL hit_cache  : STD_LOGIC;
 	SIGNAL cache_line : INTEGER RANGE 0 TO CACHE_LINES - 1;
-	SIGNAL req_word : STD_LOGIC_VECTOR(1 DOWNTO 0);
+	SIGNAL req_word   : STD_LOGIC_VECTOR(1 DOWNTO 0);
 
 	SIGNAL invalid_access_i : STD_LOGIC;
+
 	SIGNAL state_nx_i : inst_cache_state_t;
+
+	PROCEDURE clear_bus(
+			SIGNAL mem_req  : OUT STD_LOGIC;
+			SIGNAL mem_we   : OUT STD_LOGIC;
+			SIGNAL mem_addr : OUT STD_LOGIC_VECTOR(31  DOWNTO 0)
+		) IS
+	BEGIN
+		mem_req  <= 'Z';
+		mem_we   <= 'Z';
+		mem_addr <= (OTHERS => 'Z');
+	END PROCEDURE;
 BEGIN
-	next_state_process : PROCESS(reset, state, hit_cache, addr, mem_req_abort, mem_done, mem_data_in)
+	next_state_process : PROCESS(reset, state, hit_cache, addr, mem_req_abort, mem_done, mem_data, arb_ack)
 	BEGIN
 		IF reset = '1' THEN
 			state_nx_i <= READY;
 		ELSE
 			state_nx_i <= state;
 			IF state = READY THEN
+				-- FIXME: Could be aborted at this moment?
 				IF hit_cache = '0' AND invalid_access_i = '0' THEN
+					state_nx_i <= ARBREQ;
+				END IF;
+			ELSIF state = ARBREQ THEN
+				IF mem_req_abort = '1' THEN
+					state_nx_i <= READY;
+				ELSIF arb_ack = '1' THEN
 					state_nx_i <= LINEREQ;
 				END IF;
-			ELSE
+			ELSIF state = LINEREQ THEN
 				IF mem_done = '1' OR mem_req_abort = '1' THEN
 					state_nx_i <= READY;
 				END IF;
@@ -68,18 +91,37 @@ BEGIN
 			FOR i IN 0 TO CACHE_LINES - 1 LOOP
 				valid_fields(i) <= '0';
 			END LOOP;
-			mem_req <= '0';
+			arb_req <= '0';
+			clear_bus(mem_req, mem_we, mem_addr);
 		ELSIF falling_edge(clk) AND reset = '0' THEN
-			IF state = LINEREQ AND state_nx_i = READY THEN
-				IF mem_req_abort = '0' THEN
-					tag_fields(cache_line) <= addr(31 DOWNTO 6);
-					valid_fields(cache_line) <= '1';
-					data_fields(cache_line) <= mem_data_in;
+			IF state = READY THEN
+				IF state_nx_i = ARBREQ THEN
+					arb_req <= '1';
 				END IF;
-
-				mem_req <= '0';
-			ELSIF state = READY AND state_nx_i = LINEREQ THEN
-				mem_req <= '1';
+			ELSIF state = ARBREQ THEN
+				IF state_nx_i = READY THEN
+					arb_req <= '0';
+					IF arb_ack = '1' THEN
+						-- The request must be sent
+						mem_req <= '1';
+						mem_we <= '0';
+						mem_addr <= addr;
+					END IF;
+				ELSIF state_nx_i = LINEREQ THEN
+					mem_req <= '1';
+					mem_we <= '0';
+					mem_addr <= addr;
+				END IF;
+			ELSIF state = LINEREQ THEN
+				IF state_nx_i = READY THEN
+					arb_req <= '0';
+					IF mem_req_abort = '0' THEN
+						tag_fields(cache_line) <= addr(31 DOWNTO 6);
+						valid_fields(cache_line) <= '1';
+						data_fields(cache_line) <= mem_data;
+					END IF;
+					clear_bus(mem_req, mem_we, mem_addr);
+				END IF;
 			END IF;
 		END IF;
 	END PROCESS execution_process;
@@ -99,6 +141,5 @@ BEGIN
 	state_nx <= state_nx_i;
 	invalid_access <= invalid_access_i;
 	done <= hit_cache;
-	mem_addr <= addr;
 END structure;
 

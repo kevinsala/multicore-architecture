@@ -7,27 +7,25 @@ USE std.textio.ALL;
 USE work.utils.ALL;
 
 ENTITY ram IS
-    PORT (clk : IN STD_LOGIC;
-        reset : IN STD_LOGIC;
-        debug_dump : IN STD_LOGIC;
-        req : IN STD_LOGIC;
-        we : IN STD_LOGIC;
-        done : OUT STD_LOGIC;
-        addr : IN STD_LOGIC_VECTOR(31 DOWNTO 0);
-        data_in : IN STD_LOGIC_VECTOR(127 DOWNTO 0);
-        data_out : OUT STD_LOGIC_VECTOR(127 DOWNTO 0)
-    );
+	PORT (clk      : IN  STD_LOGIC;
+		reset      : IN  STD_LOGIC;
+		debug_dump : IN  STD_LOGIC;
+		req        : IN  STD_LOGIC;
+		we         : IN  STD_LOGIC;
+		done       : OUT STD_LOGIC;
+		addr       : IN  STD_LOGIC_VECTOR(31 DOWNTO 0);
+		data_in    : IN  STD_LOGIC_VECTOR(127 DOWNTO 0);
+		data_out   : OUT STD_LOGIC_VECTOR(127 DOWNTO 0)
+	);
 END ram;
 
 ARCHITECTURE structure OF ram IS
-    CONSTANT addr_bits : INTEGER := 32;
-    CONSTANT data_bits : INTEGER := 128;
-    CONSTANT mem_line_bits: INTEGER := 4;
-    CONSTANT depth : INTEGER := 16384;
-    CONSTANT depth_bits : INTEGER := 14;
-    CONSTANT op_delay : INTEGER := 5; -- In cycles
+	CONSTANT addr_bits : INTEGER := 32;
+	CONSTANT data_bits : INTEGER := 128;
+	CONSTANT mem_line_bits: INTEGER := 4;
+	CONSTANT op_delay : INTEGER := 5; -- In cycles
 
-    TYPE ram_type IS ARRAY(depth - 1 DOWNTO 0) OF STD_LOGIC_VECTOR(data_bits - 1 DOWNTO 0);
+    TYPE ram_type IS ARRAY(MEMORY_BLOCKS - 1 DOWNTO 0) OF STD_LOGIC_VECTOR(data_bits - 1 DOWNTO 0);
     SIGNAL ram : ram_type;
 
     SIGNAL mem_line : INTEGER := 0;
@@ -62,7 +60,7 @@ ARCHITECTURE structure OF ram IS
 		FILE dumpfile : TEXT OPEN write_mode IS filename;
 		VARIABLE lbuf : LINE;
 	BEGIN
-		FOR n_line IN 0 TO depth - 1 LOOP
+		FOR n_line IN 0 TO MEMORY_BLOCKS - 1 LOOP
 			-- Hex convert
 			hwrite(lbuf, ram(n_line));
 			-- Write to file
@@ -71,7 +69,7 @@ ARCHITECTURE structure OF ram IS
 	END PROCEDURE;
 BEGIN
     p : PROCESS(clk)
-        VARIABLE mem_line_int : INTEGER RANGE 0 TO depth;
+        VARIABLE mem_line_int : INTEGER RANGE 0 TO MEMORY_BLOCKS;
     BEGIN
         IF rising_edge(clk) THEN
             IF debug_dump = '1' THEN
@@ -89,7 +87,7 @@ BEGIN
                     IF cycle = 0 THEN
                         done <= '1';
                         cycle <= op_delay - 1;
-                        mem_line_int := to_integer(unsigned(addr(depth_bits + mem_line_bits DOWNTO mem_line_bits)));
+                        mem_line_int := to_integer(unsigned(addr(MEMORY_BLOCKS_BITS + mem_line_bits DOWNTO mem_line_bits)));
                         mem_line <= mem_line_int;
                         IF we = '1' THEN
                             ram(mem_line_int) <= data_in;

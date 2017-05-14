@@ -7,29 +7,30 @@ USE work.utils.ALL;
 
 ENTITY cache_data IS
 	PORT(
-		clk            : IN  STD_LOGIC;
-		reset          : IN  STD_LOGIC;
-		addr           : IN  STD_LOGIC_VECTOR(31 DOWNTO 0);
-		re             : IN  STD_LOGIC;
-		we             : IN  STD_LOGIC;
-		is_byte        : IN  STD_LOGIC;
-		data_out       : OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
-		hit            : OUT STD_LOGIC;
-		done           : OUT STD_LOGIC;
-		invalid_access : OUT STD_LOGIC;
-		mem_req        : OUT STD_LOGIC;
-		mem_addr       : OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
-		mem_we         : OUT STD_LOGIC;
-		mem_done       : IN  STD_LOGIC;
-		mem_data_in    : IN  STD_LOGIC_VECTOR(127 DOWNTO 0);
-		mem_data_out   : OUT STD_LOGIC_VECTOR(127 DOWNTO 0);
-		repl           : OUT STD_LOGIC;
-		repl_addr      : OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
-		sb_done        : IN  STD_LOGIC;
-		sb_addr        : IN  STD_LOGIC_VECTOR(31 DOWNTO 0);
-		sb_we          : IN  STD_LOGIC;
-		sb_is_byte     : IN  STD_LOGIC;
-		sb_data_in     : IN  STD_LOGIC_VECTOR(31 DOWNTO 0)
+		clk            : IN    STD_LOGIC;
+		reset          : IN    STD_LOGIC;
+		addr           : IN    STD_LOGIC_VECTOR(31 DOWNTO 0);
+		re             : IN    STD_LOGIC;
+		we             : IN    STD_LOGIC;
+		is_byte        : IN    STD_LOGIC;
+		data_out       : OUT   STD_LOGIC_VECTOR(31 DOWNTO 0);
+		hit            : OUT   STD_LOGIC;
+		done           : OUT   STD_LOGIC;
+		invalid_access : OUT   STD_LOGIC;
+		arb_req        : OUT   STD_LOGIC;
+		arb_ack        : IN    STD_LOGIC;
+		mem_req        : OUT   STD_LOGIC;
+		mem_we         : OUT   STD_LOGIC;
+		mem_addr       : OUT   STD_LOGIC_VECTOR(31 DOWNTO 0);
+		mem_done       : IN    STD_LOGIC;
+		mem_data       : INOUT STD_LOGIC_VECTOR(127 DOWNTO 0);
+		repl           : OUT   STD_LOGIC;
+		repl_addr      : OUT   STD_LOGIC_VECTOR(31 DOWNTO 0);
+		sb_done        : IN    STD_LOGIC;
+		sb_addr        : IN    STD_LOGIC_VECTOR(31 DOWNTO 0);
+		sb_we          : IN    STD_LOGIC;
+		sb_is_byte     : IN    STD_LOGIC;
+		sb_data_in     : IN    STD_LOGIC_VECTOR(31 DOWNTO 0)
 	);
 END cache_data;
 
@@ -83,10 +84,10 @@ ARCHITECTURE cache_data_behavior OF cache_data IS
 	SIGNAL sb_line_num_i : INTEGER RANGE 0 TO 3 := 0;
 
 	-- Determine the target word/byte of the SB store
-	SIGNAL sb_word_num : INTEGER RANGE 0 TO 3 := 0;
+	SIGNAL sb_word_num : INTEGER RANGE 0 TO 3   := 0;
 	SIGNAL sb_word_msb : INTEGER RANGE 0 TO 127 := 31;
 	SIGNAL sb_word_lsb : INTEGER RANGE 0 TO 127 := 0;
-	SIGNAL sb_byte_num : INTEGER RANGE 0 TO 15 := 0;
+	SIGNAL sb_byte_num : INTEGER RANGE 0 TO 15  := 0;
 	SIGNAL sb_byte_msb : INTEGER RANGE 0 TO 127 := 7;
 	SIGNAL sb_byte_lsb : INTEGER RANGE 0 TO 127 := 0;
 
@@ -95,7 +96,7 @@ ARCHITECTURE cache_data_behavior OF cache_data IS
 			SIGNAL lru_fields : OUT lru_fields_t;
 			SIGNAL valid_fields : OUT valid_fields_t;
 			SIGNAL dirty_fields : OUT dirty_fields_t;
-			SIGNAL mem_req : OUT STD_LOGIC
+			SIGNAL arb_req : OUT STD_LOGIC
 		) IS
 	BEGIN
 		-- Initialize LRU and valid fields
@@ -105,8 +106,20 @@ ARCHITECTURE cache_data_behavior OF cache_data IS
 			dirty_fields(i) <= '0';
 		END LOOP;
 
-		-- Cancel any memory request
-		mem_req <= '0';
+		arb_req <= '0';
+	END PROCEDURE;
+
+	PROCEDURE clear_bus(
+			SIGNAL mem_req  : OUT STD_LOGIC;
+			SIGNAL mem_we   : OUT STD_LOGIC;
+			SIGNAL mem_addr : OUT STD_LOGIC_VECTOR(31  DOWNTO 0);
+			SIGNAL mem_data : OUT STD_LOGIC_VECTOR(127 DOWNTO 0)
+		) IS
+	BEGIN
+		mem_req  <= 'Z';
+		mem_we   <= 'Z';
+		mem_addr <= (OTHERS => 'Z');
+		mem_data <= (OTHERS => 'Z');
 	END PROCEDURE;
 
 	-- Procedure to execute the Least Recently Used alogrithm
@@ -138,7 +151,7 @@ BEGIN
 END PROCESS internal_register;
 
 -- Process that computes the next state of the cache
-next_state_process : PROCESS(reset, state_i, re, we, mem_done, sb_done, hit_i, repl_dirty_i, invalid_access_i)
+next_state_process : PROCESS(reset, state_i, re, we, mem_done, arb_ack, sb_done, hit_i, repl_dirty_i, invalid_access_i)
 BEGIN
 	IF reset = '1' THEN
 		state_nx_i <= READY;
@@ -151,27 +164,35 @@ BEGIN
 				ELSE
 					IF hit_i = '1' THEN
 						state_nx_i <= READY;
-					ELSIF repl_dirty_i = '1' THEN
+					ELSE
+						state_nx_i <= ARBREQ;
+					END IF;
+				END IF;
+			END IF;
+
+		ELSIF state_i = WAITSB THEN
+			IF sb_done = '1' THEN
+				IF hit_i = '1' THEN
+					state_nx_i <= READY;
+				ELSE
+					state_nx_i <= ARBREQ;
+				END IF;
+			END IF;
+
+		ELSIF state_i = ARBREQ THEN
+			IF arb_ack = '1' THEN
+				IF hit_i = '0' THEN
+					IF repl_dirty_i = '1' THEN
 						state_nx_i <= LINEREPL;
 					ELSE
 						state_nx_i <= LINEREQ;
 					END IF;
 				END IF;
 			END IF;
-		ELSIF state_i = WAITSB THEN
-			IF sb_done = '1' THEN
-				IF hit_i = '1' THEN
-					state_nx_i <= READY;
-				ELSIF repl_dirty_i = '1' THEN
-					state_nx_i <= LINEREPL;
-				ELSE
-					state_nx_i <= LINEREQ;
-				END IF;
-			END IF;
 
 		ELSIF state_i = LINEREPL THEN
 			IF mem_done = '1' THEN
-				state_nx_i <= LINEREQ;
+				state_nx_i <= ARBREQ;
 			END IF;
 
 		ELSIF state_i = LINEREQ THEN
@@ -186,7 +207,8 @@ END PROCESS next_state_process;
 execution_process : PROCESS(clk)
 BEGIN
 	IF rising_edge(clk) AND reset = '1' THEN
-		reset_cache(lru_fields, valid_fields, dirty_fields, mem_req);
+		reset_cache(lru_fields, valid_fields, dirty_fields, arb_req);
+		clear_bus(mem_req, mem_we, mem_addr, mem_data);
 
 	ELSIF falling_edge(clk) AND reset = '0' THEN
 		IF state_i = READY OR state_i = WAITSB THEN
@@ -194,29 +216,35 @@ BEGIN
 				IF re = '1' OR we = '1' THEN
 					LRU_execute(lru_fields, hit_line_num_i);
 				END IF;
-			ELSIF state_nx_i = LINEREPL THEN
+			ELSIF state_nx_i = ARBREQ THEN
+				arb_req <= '1';
+			END IF;
+		ELSIF state_i = ARBREQ THEN
+			IF state_nx_i = LINEREPL THEN
 				mem_req <= '1';
 				mem_we <= '1';
 				mem_addr <= tag_fields(lru_line_num_i) & "0000";
+				mem_data <= data_fields(lru_line_num_i);
 			ELSIF state_nx_i = LINEREQ THEN
 				mem_req <= '1';
 				mem_we <= '0';
 				mem_addr <= addr;
 			END IF;
 		ELSIF state_i = LINEREPL THEN
-			IF state_nx_i = LINEREQ THEN
-				mem_req <= '1';
-				mem_we <= '0';
-				mem_addr <= addr;
+			IF state_nx_i = ARBREQ THEN
+				arb_req <= '1';
+				dirty_fields(lru_line_num_i) <= '0';
+				clear_bus(mem_req, mem_we, mem_addr, mem_data);
 			END IF;
 		ELSIF state_i = LINEREQ THEN
 			IF state_nx_i = READY THEN
-				mem_req <= '0';
+				arb_req <= '0';
 				valid_fields(lru_line_num_i) <= '1';
 				dirty_fields(lru_line_num_i) <= '0';
 				tag_fields(lru_line_num_i) <= addr(31 DOWNTO 4);
-				data_fields(lru_line_num_i) <= mem_data_in;
+				data_fields(lru_line_num_i) <= mem_data;
 				LRU_execute(lru_fields, lru_line_num_i);
+				clear_bus(mem_req, mem_we, mem_addr, mem_data);
 			END IF;
 		END IF;
 
@@ -294,9 +322,6 @@ repl_addr <= tag_fields(lru_line_num_i) & "0000";
 
 -- The cache stalls when there is a cache operation that misses
 done <= hit_i OR NOT(re OR we);
-
--- Send the least recent used line to memory
-mem_data_out <= data_fields(lru_line_num_i);
 
 -- Output Data logic
 ch_word_data <= data_fields(hit_line_num_i)(ch_word_msb DOWNTO ch_word_lsb);
