@@ -1,0 +1,4 @@
+sim_build/inkel_pentwice
+sim_build/results.xml
+sim_build/*.cf
+sim_build/*.o

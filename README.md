@@ -19,3 +19,8 @@ If everything is right, you could now go to the `test` directory and run `make`.
 
 ### Known issues
  - If you get the error `vpi_get: unknown property`, download and compile the latest version of GHDL from sources (https://github.com/tgingold/ghdl.git)
+
+## Voyeur
+To observe transactions that cross the bus, you need the same infrastructure described on "Validation".
+
+To run, go to the `voyeur` directory and run `make`. You will be asked to press `<Enter>` before every transaction.
