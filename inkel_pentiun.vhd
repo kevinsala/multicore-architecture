@@ -122,6 +122,7 @@ ARCHITECTURE structure OF inkel_pentiun IS
 			re              : IN    STD_LOGIC;
 			we              : IN    STD_LOGIC;
 			is_byte         : IN    STD_LOGIC;
+			atomic          : IN    STD_LOGIC;
 			id              : IN    STD_LOGIC_VECTOR(3   DOWNTO 0);
 			done            : OUT   STD_LOGIC;
 			invalid_access  : OUT   STD_LOGIC;
@@ -198,6 +199,7 @@ ARCHITECTURE structure OF inkel_pentiun IS
 			mem_write : OUT STD_LOGIC;
 			byte : OUT STD_LOGIC;
 			mem_read : OUT STD_LOGIC;
+			mem_atomic : OUT STD_LOGIC;
 			reg_we : OUT STD_LOGIC;
 			iret : OUT STD_LOGIC;
 			invalid_inst : OUT STD_LOGIC
@@ -281,6 +283,7 @@ ARCHITECTURE structure OF inkel_pentiun IS
 			mem_we_in : IN STD_LOGIC;
 			byte_in : IN STD_LOGIC;
 			mem_read_in : IN STD_LOGIC;
+			mem_atomic_in : IN STD_LOGIC;
 			reg_we_in : IN STD_LOGIC;
 			branch_in : IN STD_LOGIC;
 			branch_if_eq_in : IN STD_LOGIC;
@@ -300,6 +303,7 @@ ARCHITECTURE structure OF inkel_pentiun IS
 			mem_we_out : OUT STD_LOGIC;
 			byte_out : OUT STD_LOGIC;
 			mem_read_out : OUT STD_LOGIC;
+			mem_atomic_out : OUT STD_LOGIC;
 			reg_we_out : OUT STD_LOGIC;
 			branch_out : OUT STD_LOGIC;
 			branch_if_eq_out : OUT STD_LOGIC;
@@ -403,6 +407,7 @@ ARCHITECTURE structure OF inkel_pentiun IS
 			mem_we_in : IN STD_LOGIC;
 			byte_in : IN STD_LOGIC;
 			mem_read_in : IN STD_LOGIC;
+			mem_atomic_in : IN STD_LOGIC;
 			reg_we_in : IN STD_LOGIC;
 			reg_dest_in : IN STD_LOGIC_VECTOR(4 DOWNTO 0);
 			ALU_out_in : IN STD_LOGIC_VECTOR(31 DOWNTO 0);
@@ -410,6 +415,7 @@ ARCHITECTURE structure OF inkel_pentiun IS
 			mem_we_out : OUT STD_LOGIC;
 			byte_out : OUT STD_LOGIC;
 			mem_read_out : OUT STD_LOGIC;
+			mem_atomic_out : OUT STD_LOGIC;
 			reg_we_out : OUT STD_LOGIC;
 			reg_dest_out : OUT STD_LOGIC_VECTOR(4 DOWNTO 0);
 			ALU_out_out : OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
@@ -518,6 +524,7 @@ ARCHITECTURE structure OF inkel_pentiun IS
 	SIGNAL mem_read_D : STD_LOGIC;
 	SIGNAL byte_D : STD_LOGIC;
 	SIGNAL mem_we_D : STD_LOGIC;
+	SIGNAL mem_atomic_D : STD_LOGIC;
 	SIGNAL reg_src1_v_D : STD_LOGIC;
 	SIGNAL reg_src2_v_D : STD_LOGIC;
 	SIGNAL inm_src2_v_D : STD_LOGIC;
@@ -554,6 +561,7 @@ ARCHITECTURE structure OF inkel_pentiun IS
 	SIGNAL inm_src2_v_A : STD_LOGIC;
 	SIGNAL mem_we_A : STD_LOGIC;
 	SIGNAL byte_A : STD_LOGIC;
+	SIGNAL mem_atomic_A : STD_LOGIC;
 	SIGNAL reg_we_A : STD_LOGIC;
 	SIGNAL priv_status_A : STD_LOGIC;
 	SIGNAL iret_A : STD_LOGIC;
@@ -573,10 +581,12 @@ ARCHITECTURE structure OF inkel_pentiun IS
 	SIGNAL ALU_out_A : STD_LOGIC_VECTOR(31 DOWNTO 0);
 	SIGNAL mem_data_A : STD_LOGIC_VECTOR(31 DOWNTO 0);
 	SIGNAL mem_data_A_BP : STD_LOGIC_VECTOR(31 DOWNTO 0);
+	SIGNAL mem_data_A_atomic : STD_LOGIC_VECTOR(31 DOWNTO 0);
 
 	-- Cache stage signals
 	SIGNAL cache_we_C : STD_LOGIC;
 	SIGNAL cache_re_C : STD_LOGIC;
+	SIGNAL mem_atomic_C : STD_LOGIC;
 	SIGNAL byte_C : STD_LOGIC;
 	SIGNAL reg_we_C : STD_LOGIC;
 	SIGNAL priv_status_C : STD_LOGIC;
@@ -887,7 +897,7 @@ BEGIN
 
 	----------------------------- Decode -------------------------------
 
-	d: decode PORT MAP(
+	d : decode PORT MAP(
 		inst => inst_D,
 		inst_v => inst_v_D,
 		pc => pc_D,
@@ -908,6 +918,7 @@ BEGIN
 		mem_write => mem_we_D,
 		byte => byte_D,
 		mem_read => mem_read_D,
+		mem_atomic => mem_atomic_D,
 		reg_we => reg_we_D,
 		iret => iret_D,
 		invalid_inst => invalid_inst_D
@@ -977,6 +988,7 @@ BEGIN
 		mem_we_in => mem_we_D,
 		byte_in => byte_D,
 		mem_read_in => mem_read_D,
+		mem_atomic_in => mem_atomic_D,
 		reg_we_in => reg_we_D,
 		branch_in => branch_D,
 		branch_if_eq_in => branch_if_eq_D,
@@ -996,6 +1008,7 @@ BEGIN
 		mem_we_out => mem_we_A,
 		byte_out => byte_A,
 		mem_read_out => mem_read_A,
+		mem_atomic_out => mem_atomic_A,
 		reg_we_out => reg_we_A,
 		branch_out => branch_A,
 		branch_if_eq_out => branch_if_eq_A,
@@ -1071,10 +1084,17 @@ BEGIN
 	mux_mem_data_A_BP : mux4_32bits PORT MAP(
 		Din0 => mem_data_A,
 		Din1 => reg_data_C,
-		Din2 => (OTHERS => '0'),
+		Din2 => x"00000001",
 		DIn3 => mul_out_M5,
 		ctrl => mux_mem_data_A_BP_ctrl,
 		Dout => mem_data_A_BP
+	);
+
+	mux_mem_data_A_atomic : mux2_32bits PORT MAP(
+		Din0 => mem_data_A_BP,
+		Din1 => x"00000001",
+		ctrl => mem_atomic_A,
+		Dout => mem_data_A_atomic
 	);
 
 	reg_A_C_reset <= reg_A_C_reset_DU OR exc_A_E;
@@ -1086,13 +1106,15 @@ BEGIN
 		mem_we_in => mem_we_A,
 		byte_in => byte_A,
 		mem_read_in => mem_read_A,
+		mem_atomic_in => mem_atomic_A,
 		reg_we_in => reg_we_A,
 		reg_dest_in => reg_dest_A,
 		ALU_out_in => ALU_out_A,
-		mem_data_in => mem_data_A_BP,
+		mem_data_in => mem_data_A_atomic,
 		mem_we_out => cache_we_C,
 		byte_out => byte_C,
 		mem_read_out => cache_re_C,
+		mem_atomic_out => mem_atomic_C,
 		reg_we_out => reg_we_C,
 		reg_dest_out => reg_dest_C,
 		ALU_out_out => ALU_out_C,
@@ -1260,6 +1282,7 @@ BEGIN
 		re => cache_re_C,
 		we => cache_we_C,
 		is_byte => byte_C,
+		atomic => mem_atomic_C,
 		id => rob_idx_C,
 		done => done_C,
 		invalid_access => invalid_access_C,

@@ -8,6 +8,7 @@ ENTITY reg_DA IS
 		mem_we_in : IN STD_LOGIC;
 		byte_in : IN STD_LOGIC;
 		mem_read_in : IN STD_LOGIC;
+		mem_atomic_in : IN STD_LOGIC;
 		reg_we_in : IN STD_LOGIC;
 		branch_in : IN STD_LOGIC;
 		branch_if_eq_in : IN STD_LOGIC;
@@ -27,6 +28,7 @@ ENTITY reg_DA IS
 		mem_we_out : OUT STD_LOGIC;
 		byte_out : OUT STD_LOGIC;
 		mem_read_out : OUT STD_LOGIC;
+		mem_atomic_out : OUT STD_LOGIC;
 		reg_we_out : OUT STD_LOGIC;
 		branch_out : OUT STD_LOGIC;
 		branch_if_eq_out : OUT STD_LOGIC;
@@ -55,6 +57,7 @@ BEGIN
 				mem_we_out <= '0';
 				byte_out <= '0';
 				mem_read_out <= '0';
+				mem_atomic_out <= '0';
 				reg_we_out <= '0';
 				branch_out <= '0';
 				branch_if_eq_out <= '0';
@@ -76,6 +79,7 @@ BEGIN
 					mem_we_out <= mem_we_in;
 					byte_out <= byte_in;
 					mem_read_out <= mem_read_in;
+					mem_atomic_out <= mem_atomic_in;
 					reg_we_out <= reg_we_in;
 					branch_out <= branch_in;
 					branch_if_eq_out <= branch_if_eq_in;

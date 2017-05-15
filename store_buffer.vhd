@@ -13,6 +13,7 @@ ENTITY store_buffer IS
 		re             : IN  STD_LOGIC;
 		we             : IN  STD_LOGIC;
 		is_byte        : IN  STD_LOGIC;
+		atomic         : IN  STD_LOGIC;
 		invalid_access : IN  STD_LOGIC;
 		id             : IN  STD_LOGIC_VECTOR(3 DOWNTO 0);
 		sleep          : IN  STD_LOGIC;
@@ -52,6 +53,7 @@ ARCHITECTURE store_buffer_behavior OF store_buffer IS
 	SIGNAL size_nx_i : INTEGER RANGE 0 TO SB_ENTRIES;
 	SIGNAL head_i : INTEGER RANGE 0 TO SB_ENTRIES - 1;
 	SIGNAL head_nx_i : INTEGER RANGE 0 TO SB_ENTRIES - 1;
+	SIGNAL last_added_i : INTEGER RANGE 0 TO SB_ENTRIES;
 
 	-- Determine if there is any replacement conflict
 	SIGNAL conflict_i : STD_LOGIC := '0';
@@ -72,7 +74,8 @@ ARCHITECTURE store_buffer_behavior OF store_buffer IS
 			SIGNAL addr_fields : OUT addr_fields_t;
 			SIGNAL byte_fields : OUT byte_fields_t;
 			SIGNAL size_nx_i : OUT INTEGER RANGE 0 TO SB_ENTRIES;
-			SIGNAL head_nx_i : OUT INTEGER RANGE 0 TO SB_ENTRIES - 1
+			SIGNAL head_nx_i : OUT INTEGER RANGE 0 TO SB_ENTRIES - 1;
+			SIGNAL last_added_i : OUT INTEGER RANGE 0 TO SB_ENTRIES
 		) IS
 	BEGIN
 		-- Initialize valid fields
@@ -84,16 +87,18 @@ ARCHITECTURE store_buffer_behavior OF store_buffer IS
 
 		size_nx_i <= 0;
 		head_nx_i <= 0;
+		last_added_i <= SB_ENTRIES;
 	END PROCEDURE;
 
 	PROCEDURE output_data(
-			SIGNAL size : IN INTEGER RANGE 0 TO SB_ENTRIES;
-			SIGNAL head : IN INTEGER RANGE 0 TO SB_ENTRIES - 1;
-			SIGNAL addr : IN STD_LOGIC_VECTOR(31 DOWNTO 0);
+			SIGNAL size        : IN INTEGER RANGE 0 TO SB_ENTRIES;
+			SIGNAL head        : IN INTEGER RANGE 0 TO SB_ENTRIES - 1;
+			SIGNAL addr        : IN STD_LOGIC_VECTOR(31 DOWNTO 0);
+			SIGNAL atomic      : IN STD_LOGIC;
 			SIGNAL addr_fields : IN addr_fields_t;
 			SIGNAL data_fields : IN data_fields_t;
-			SIGNAL hit : OUT STD_LOGIC;
-			SIGNAL data_out : OUT STD_LOGIC_VECTOR(31 DOWNTO 0)
+			SIGNAL hit         : OUT STD_LOGIC;
+			SIGNAL data_out    : OUT STD_LOGIC_VECTOR(31 DOWNTO 0)
 		) IS
 		VARIABLE i : INTEGER RANGE 0 TO SB_ENTRIES - 1;
 	BEGIN
@@ -104,9 +109,13 @@ ARCHITECTURE store_buffer_behavior OF store_buffer IS
 
 			L : LOOP
 				IF addr_fields(i)(31 DOWNTO 2) = addr(31 DOWNTO 2) THEN
-					data_out <= data_fields(i);
-					hit <= '1';
-					EXIT;
+					-- Do not return the last added value in case
+					-- of an atomic operation
+					IF atomic = '0' OR last_added_i /= i THEN
+						data_out <= data_fields(i);
+						hit <= '1';
+						EXIT;
+					END IF;
 				END IF;
 
 				EXIT L WHEN i = head_i;
@@ -136,7 +145,7 @@ execution_process : PROCESS(clk, reset)
 BEGIN
 	IF falling_edge(clk) THEN
 		IF reset = '1' OR squash = '1' THEN
-			reset_entries(valid_fields, addr_fields, byte_fields, size_nx_i, head_nx_i);
+			reset_entries(valid_fields, addr_fields, byte_fields, size_nx_i, head_nx_i, last_added_i);
 		ELSE
 			head := head_i;
 			size := size_i;
@@ -149,6 +158,7 @@ BEGIN
 
 			IF add_entry_i = '1' THEN
 				new_entry := (head + size) MOD SB_ENTRIES;
+				last_added_i <= new_entry;
 				id_fields(new_entry) <= id;
 				valid_fields(new_entry) <= '1';
 				addr_fields(new_entry) <= addr;
@@ -170,7 +180,7 @@ conflict_i <= repl AND repl_hit_i AND NOT sleep;
 add_entry_i <= we AND NOT invalid_access AND NOT sleep;
 
 -- Output the newest store that hits
-output_data(size_i, head_i, addr, addr_fields, data_fields, hit, data_out);
+output_data(size_i, head_i, addr, atomic, addr_fields, data_fields, hit, data_out);
 
 -- Determine if there is any buffered store waiting to modify the replaced line
 repl_generator : FOR i IN 0 TO SB_ENTRIES - 1 GENERATE

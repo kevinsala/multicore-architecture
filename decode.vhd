@@ -25,6 +25,7 @@ ENTITY decode IS
 		mem_write : OUT STD_LOGIC;
 		byte : OUT STD_LOGIC;
 		mem_read : OUT STD_LOGIC;
+		mem_atomic : OUT STD_LOGIC;
 		reg_we : OUT STD_LOGIC;
 		iret : OUT STD_LOGIC;
 		invalid_inst : OUT STD_LOGIC
@@ -39,20 +40,21 @@ ARCHITECTURE structure OF decode IS
 		);
 	END COMPONENT;
 
-	CONSTANT OP_ADD : STD_LOGIC_VECTOR := "0000000";
-	CONSTANT OP_SUB : STD_LOGIC_VECTOR := "0000001";
-	CONSTANT OP_MUL : STD_LOGIC_VECTOR := "0000010";
-	CONSTANT OP_LDB : STD_LOGIC_VECTOR := "0010000";
-	CONSTANT OP_LDW : STD_LOGIC_VECTOR := "0010001";
-	CONSTANT OP_LI  : STD_LOGIC_VECTOR := "0001111";
-	CONSTANT OP_STB : STD_LOGIC_VECTOR := "0010010";
-	CONSTANT OP_STW : STD_LOGIC_VECTOR := "0010011";
-	CONSTANT OP_MOV : STD_LOGIC_VECTOR := "0010100";
-	CONSTANT OP_BEQ : STD_LOGIC_VECTOR := "0110000";
-	CONSTANT OP_BNE : STD_LOGIC_VECTOR := "0110010";
-	CONSTANT OP_JMP : STD_LOGIC_VECTOR := "0110001";
+	CONSTANT OP_ADD  : STD_LOGIC_VECTOR := "0000000";
+	CONSTANT OP_SUB  : STD_LOGIC_VECTOR := "0000001";
+	CONSTANT OP_MUL  : STD_LOGIC_VECTOR := "0000010";
+	CONSTANT OP_LDB  : STD_LOGIC_VECTOR := "0010000";
+	CONSTANT OP_LDW  : STD_LOGIC_VECTOR := "0010001";
+	CONSTANT OP_LI   : STD_LOGIC_VECTOR := "0001111";
+	CONSTANT OP_STB  : STD_LOGIC_VECTOR := "0010010";
+	CONSTANT OP_STW  : STD_LOGIC_VECTOR := "0010011";
+	CONSTANT OP_TSW  : STD_LOGIC_VECTOR := "0010101";
+	CONSTANT OP_MOV  : STD_LOGIC_VECTOR := "0010100";
+	CONSTANT OP_BEQ  : STD_LOGIC_VECTOR := "0110000";
+	CONSTANT OP_BNE  : STD_LOGIC_VECTOR := "0110010";
+	CONSTANT OP_JMP  : STD_LOGIC_VECTOR := "0110001";
 	CONSTANT OP_IRET : STD_LOGIC_VECTOR := "0110101";
-	CONSTANT OP_NOP : STD_LOGIC_VECTOR := "1111111";
+	CONSTANT OP_NOP  : STD_LOGIC_VECTOR := "1111111";
 
 	SIGNAL op_code_int : STD_LOGIC_VECTOR(6 DOWNTO 0);
 	SIGNAL inm_ext_int : STD_LOGIC_VECTOR(31 DOWNTO 0);
@@ -119,8 +121,9 @@ BEGIN
 
 	inm_src2_v <= to_std_logic(op_code_int = OP_LI OR op_code_int = OP_STW OR
 							op_code_int = OP_STB OR op_code_int = OP_LDW OR
-							op_code_int = OP_LDB OR op_code_int = OP_BEQ OR
-							op_code_int = OP_BNE OR op_code_int = OP_JMP);
+							op_code_int = OP_LDB OR op_code_int = OP_TSW OR
+							op_code_int = OP_BEQ OR op_code_int = OP_BNE OR
+							op_code_int = OP_JMP);
 
 	alu_inst <= to_std_logic(op_code_int = OP_ADD OR op_code_int = OP_SUB OR
 								op_code_int = OP_LI OR op_code_int = OP_MOV OR
@@ -128,17 +131,19 @@ BEGIN
 								op_code_int = OP_JMP OR op_code_int = OP_IRET OR
 								op_code_int = OP_NOP);
 	mem_inst <= to_std_logic(op_code_int = OP_LDB OR op_code_int = OP_LDW OR
-								op_code_int = OP_STB OR op_code_int = OP_STW);
+								op_code_int = OP_STB OR op_code_int = OP_STW OR
+								op_code_int = OP_TSW);
 	mul_inst <= to_std_logic(op_code_int = OP_MUL);
 
-	mem_write <= to_std_logic(op_code_int = OP_STW OR op_code_int = OP_STB);
+	mem_write <= to_std_logic(op_code_int = OP_STW OR op_code_int = OP_STB OR op_code_int = OP_TSW);
 	byte <= to_std_logic(op_code_int = OP_LDB OR op_code_int = OP_STB);
-	mem_read <= to_std_logic(op_code_int = OP_LDW OR op_code_int = OP_LDB);
+	mem_read <= to_std_logic(op_code_int = OP_LDW OR op_code_int = OP_LDB OR op_code_int = OP_TSW);
+	mem_atomic <= to_std_logic(op_code_int = OP_TSW);
 
 	reg_we_int <= to_std_logic(op_code_int = OP_ADD OR op_code_int = OP_SUB OR
 							op_code_int = OP_MUL OR op_code_int = OP_LDW OR
 							op_code_int = OP_LDB OR op_code_int = OP_LI OR
-							op_code_int = OP_MOV);
+							op_code_int = OP_MOV OR op_code_int = OP_TSW);
 	reg_we <= reg_we_int;
 
 	iret <= to_std_logic(op_code_int = OP_IRET);

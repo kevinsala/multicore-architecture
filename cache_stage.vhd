@@ -14,6 +14,7 @@ ENTITY cache_stage IS
 		re              : IN    STD_LOGIC;
 		we              : IN    STD_LOGIC;
 		is_byte         : IN    STD_LOGIC;
+		atomic          : IN    STD_LOGIC;
 		id              : IN    STD_LOGIC_VECTOR(3 DOWNTO 0);
 		done            : OUT   STD_LOGIC;
 		invalid_access  : OUT   STD_LOGIC;
@@ -68,6 +69,7 @@ ARCHITECTURE cache_stage_behavior OF cache_stage IS
 			re             : IN  STD_LOGIC;
 			we             : IN  STD_LOGIC;
 			is_byte        : IN  STD_LOGIC;
+			atomic         : IN  STD_LOGIC;
 			invalid_access : IN  STD_LOGIC;
 			id             : IN  STD_LOGIC_VECTOR(3 DOWNTO 0);
 			sleep          : IN  STD_LOGIC;
@@ -141,6 +143,7 @@ BEGIN
 		re => re,
 		we => we,
 		is_byte => is_byte,
+		atomic => atomic,
 		invalid_access => invalid_access_i,
 		id => id,
 		sleep => sb_sleep,
