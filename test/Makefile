@@ -36,7 +36,7 @@ VHDL_SOURCES = $(PWD)/../utils.vhd \
 TOPLEVEL = inkel_pentwice
 MODULE = test_inkel_pentwice
 
-COCOTB = ./cocotb
+COCOTB = ../cocotb
 SIM = ghdl
 
 GHDL_ARGS = --ieee=synopsys -fexplicit

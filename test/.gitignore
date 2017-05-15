@@ -1,5 +1,3 @@
-cocotb
-
 sim_build/inkel_pentwice
 sim_build/results.xml
 sim_build/*.cf

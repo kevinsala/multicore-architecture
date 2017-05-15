@@ -13,3 +13,4 @@ work/
 transcript
 *.pyc
 wlft*
+cocotb/

@@ -1,21 +1,21 @@
 # Inkel Pentiun processor
 "Blocking is for cowards, but it always works" - Development Team, 2017
 
-## Etapas de implementación
-1. Set completo de instrucciones sin caché (directamente memoria)
-2. Caché
- * Instrucciones: Caché directa
- * Datos: Caché totalmente asociativa con política de reemplazo LRU y copy-back
-3. Set completo de bypasses
-4. Excepciones
-5. Reorder Buffer and Store Buffer
-6. Memoria virtual
-7. Branch Predictor
-8. Out of order execution
+## Simulation
+The utility `simulator/run_code.py` simulates the binary code passed as an argument as if it was run on an Inkel Pentiun processor
 
-## Etapas del procesador segmentado
-Fetch - Decode - ALU - Write Back
+## Validation
+It is also possible to validate the VHDL processor against the simulator.
 
-Fetch - Decode - ALU - Cache - Write Back
+The packages necessary to run this validator are:
+ - GHDL
+ - python-devel
 
-Fetch - Decode - M1 - M2 - M3 - M4 - M5 - Write Back
+To finish the installation get the cocotb testbench (on the project root folder):
+
+    git clone https://github.com/potentialventures/cocotb
+
+If everything is right, you could now go to the `test` directory and run `make`. You should be validating the processor!
+
+### Known issues
+ - If you get the error `vpi_get: unknown property`, download and compile the latest version of GHDL from sources (https://github.com/tgingold/ghdl.git)

@@ -1,7 +1,10 @@
-import processor_model
+import sys
 import cocotb
 from cocotb.triggers import Timer, RisingEdge
 from cocotb.result import TestFailure
+
+sys.path.append("../../simulator")
+import processor_model
 
 @cocotb.coroutine
 def clock_gen(signal):
