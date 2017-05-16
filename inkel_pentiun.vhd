@@ -1084,7 +1084,7 @@ BEGIN
 	mux_mem_data_A_BP : mux4_32bits PORT MAP(
 		Din0 => mem_data_A,
 		Din1 => reg_data_C,
-		Din2 => x"00000001",
+		Din2 => (OTHERS => '0'),
 		DIn3 => mul_out_M5,
 		ctrl => mux_mem_data_A_BP_ctrl,
 		Dout => mem_data_A_BP
