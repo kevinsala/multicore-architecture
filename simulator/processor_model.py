@@ -294,6 +294,12 @@ class InkelPentiun:
         elif icode == 20:
             # mov
             self.reg_b[rdest] = self.reg_b[r1]
+        elif icode == 21:
+            # tsl
+            addr = sign_extend(offsetlo, 15) + self.reg_b[r1]
+            data = int(self._read_from_cache_d(addr), 16)
+            self.reg_b[rdest] = sign_extend(data, 32)
+            self._write_to_cache_d(addr, 1, False)
         elif icode == 48:
             # beq
             if self.reg_b[r1] == self.reg_b[r2]:

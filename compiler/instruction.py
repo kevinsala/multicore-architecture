@@ -38,7 +38,7 @@ class Instruction:
             self.dst = self._reg_to_num(args[0])
             self.r1 = self._reg_to_num(args[1])
             self.r2 = self._reg_to_num(args[2])
-        elif self.icode == "ldb" or self.icode == "ldw" or self.icode == "stb" or self.icode == "stw":
+        elif self.icode == "ldb" or self.icode == "ldw" or self.icode == "stb" or self.icode == "stw" or self.icode == "tsl":
             if len(args) != 2:
                 raise InvalidInstruction(self.asm)
 
@@ -125,6 +125,8 @@ class Instruction:
                 eicode = 19
             elif self.icode == "mov":
                 eicode = 20
+            elif self.icode == "tsl":
+                eicode = 21
             else:
                 raise
 
