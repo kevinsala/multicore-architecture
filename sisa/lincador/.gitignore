@@ -1,0 +1,7 @@
+*.tab.cpp
+*.tab.hpp
+*.o
+lexic.cpp
+ld.output
+sisa-ld
+
