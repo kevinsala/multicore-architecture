@@ -22,6 +22,9 @@ mkdir final
 cd build
 ../gcc-3.3.2/configure --target=sisa --enable-languages=c --with-as=~/SISA-C/lincador/sisa-ld --with-ld=~/SISA-C/lincador/sisa-ld  --prefix=~/SISA-C/final
 make
+
+MARC M.: potser es necessari executar l'ultima comanda del 'make' a ma. Intenta usar 'sisa-ar' que no existeix, i la comanda es pot executar igualment amb 'ar'. Es questio de fer 'cd gcc', copiar l'ultima comanda del 'make', substituir 'sisa-ar' per 'ar' i executar. Despres, fer 'cd ../', i 'make' de nou, per a comprovar que tot esta llest.
+
 cp ../gcc-3.3.2/gcc/config/sisa/clz.txt gcc/libgcc/_clz.o
 make
 make install
