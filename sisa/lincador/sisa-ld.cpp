@@ -3,6 +3,7 @@
 #include <iostream>
 #include <sstream>
 #include <unistd.h>
+#include <assert.h>
 #include "sisa-ld.h"
 
 TAULA  simbols;
@@ -401,7 +402,7 @@ void Neteja (void)
     llistaPaths.clear();
 
     NetejaTaula(&simbols);
-   
+
     DEFS::iterator j = dadesLib.begin();
     for (;j != dadesLib.end(); ++j)
     {
@@ -504,7 +505,7 @@ ostringstream * Concat (
     {
         ostringstream * tmp = new ostringstream();
         *tmp << pre << o1 << s1;
-    
+
         if (o2)
         {
             *tmp << o2 << s2;
