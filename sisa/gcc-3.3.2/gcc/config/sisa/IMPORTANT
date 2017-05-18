@@ -1,0 +1,22 @@
+
+El programa assemblador usat actualment (data 28 de Juny de 2004) reserva sempre 2 bytes de dades quan s'usa la directiva .DB per a una sola data.
+
+El programa assemblador actua d'aquesta manera per a mantenir l'alineament a 2 bytes de les dades de 16 bits en memòria.
+
+D'aquesta manera, quan es troba amb el seguent codi:
+
+etiqueta:
+.DB 4
+.DB 8
+.DB 12
+
+en realitat esta reservant 6 bytes de memoria. El GCC crea un fitxer que conte codi semblant a l'anterior pero suposa que l'alineament no s'aplica.
+
+Per aquest motiu, s'ha de copiar el fitxer clz.txt dins en el directori ~/build/gcc/libgcc amb el nom _clz.o (sent "build" el directori usat per a compilar el sisa-gcc).
+
+Aquest fitxer basicament conte les mateixes dades que el fitxer que genera el GCC pero amb la seguent disposicio:
+
+.DB 4, 8, 12
+
+fet que fa que l'assemblador no apliqui l'alineament.
+

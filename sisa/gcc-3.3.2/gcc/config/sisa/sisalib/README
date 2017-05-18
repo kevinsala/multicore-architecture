@@ -1,0 +1,13 @@
+Aquest es el codi de la rutina sisalib
+
+Per a compilar-la sols cal fer un make
+
+El resultat de la compilacio sera el fitxer sisalib.a
+
+Es recomanable copiar el fitxer sisalib.a dins del directori ~/final/sisa/lib/ (sent "final" el directori de la instal.lacio del sisa-gcc.
+Igualment tambe es recomanable copilar el fitxer sisalib.h dins del directori ~/final/include
+
+Aquests dos ultims passos permetran al sisa-gcc accedir a la llibreria sisalib sols afegint la seguent linia en la capcalera del codi font dels programes a compilar:
+
+#include <sisalib.h>
+

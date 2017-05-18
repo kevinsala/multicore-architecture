@@ -1,0 +1,1592 @@
+El estado 0 contiene2 shift/reduce conflicts.
+El estado 3 contiene4 shift/reduce conflicts.
+El estado 4 contiene2 shift/reduce conflicts y 1 reduce/reduce conflict.
+El estado 15 contiene4 shift/reduce conflicts.
+El estado 18 contiene4 shift/reduce conflicts y 1 reduce/reduce conflict.
+El estado 40 contiene1 shift/reduce conflict.
+El estado 46 contiene4 shift/reduce conflicts y 1 reduce/reduce conflict.
+El estado 50 contiene1 shift/reduce conflict.
+El estado 85 contiene21 reduce/reduce conflicts.
+
+
+Gramática
+
+  Número, Línea, Regla
+    1  59 fitxer -> seccions
+    2  60 fitxer -> AR_HEADER AR_HEADER2 seccions_lib
+    3  64 fitxer -> AR_HEADER seccions_lib
+    4  70 seccions -> seccions seccio
+    5  71 seccions -> seccio
+    6  74 seccio -> dades
+    7  75 seccio -> codi
+    8  76 seccio -> /* vacío */
+    9  79 seccions_lib -> seccions_lib seccio_lib
+   10  80 seccions_lib -> seccio_lib
+   11  83 seccio_lib -> dades
+   12  84 seccio_lib -> codi
+   13  85 seccio_lib -> NOM_FITXER BARRA
+   14  86 seccio_lib -> BARRA CONST_INT CONST_INT CONST_INT CONST_INT CONST_INT CONST_INT APOSTROF
+   15  87 seccio_lib -> NOM_FITXER BARRA CONST_INT CONST_INT CONST_INT CONST_INT CONST_INT APOSTROF
+   16  88 seccio_lib -> /* vacío */
+   17  91 dades -> DATA variables
+   18  94 dades_dins_codi -> DATA variables CODE
+   19  97 variables -> variables variable
+   20  98 variables -> variable
+   21 101 variable -> IDENTIFICADOR DOSPUNTS definicio
+   22 107 definicio -> definicio define
+   23 111 definicio -> define
+   24 117 define -> DEFINE CONST_INT DUP PAR_ESQ CONST_INT PAR_DRET
+   25 121 define -> DEFINE CONST_INT DUP PAR_ESQ INTERROGANT PAR_DRET
+   26 125 define -> DEFINE CONST_INT
+   27 129 define -> DEFINE IDENTIFICADOR
+   28 135 define -> DEFINE IDENTIFICADOR SUMA CONST_INT
+   29 141 define -> DEFINE STRING
+   30 145 define -> DEFINE constants
+   31 151 constants -> constants COMA CONST_INT
+   32 155 constants -> CONST_INT
+   33 161 codi -> CODE rutines
+   34 164 rutines -> rutines rutina
+   35 165 rutines -> rutina
+   36 168 rutina -> SUBR IDENTIFICADOR instruccions
+   37 172 rutina -> MAIN instruccions
+   38 178 instruccions -> instruccions instruccio
+   39 182 instruccions -> instruccio
+   40 188 instruccio -> ADDI REG COMA REG COMA CONST_INT
+   41 198 instruccio -> OP3REGS REG COMA REG COMA REG
+   42 202 instruccio -> OP2REGS REG COMA REG
+   43 206 instruccio -> OP1REGS REG
+   44 210 instruccio -> LOAD REG COMA offsetReg
+   45 214 instruccio -> BRANCH REG COMA CONST_INT
+   46 218 instruccio -> BRANCH REG COMA IDENTIFICADOR
+   47 223 instruccio -> BRANCH_IN offsetReg
+   48 227 instruccio -> BRANCH_IN IDENTIFICADOR
+   49 232 instruccio -> MOVE REG COMA expressio
+   50 236 instruccio -> STORE offsetReg COMA REG
+   51 240 instruccio -> etiqueta
+   52 244 instruccio -> variable
+   53 248 instruccio -> dades_dins_codi
+   54 252 instruccio -> HALT
+   55 256 instruccio -> OUT CONST_INT COMA REG
+   56 266 instruccio -> IN REG COMA CONST_INT
+   57 278 etiqueta -> IDENTIFICADOR DOSPUNTS
+   58 285 offsetReg -> CONST_INT PAR_ESQ REG PAR_DRET
+   59 295 offsetReg -> REG
+   60 301 expressio -> PAR_ESQ expressio PAR_DRET
+   61 305 expressio -> IDENTIFICADOR SHIFT CONST_INT
+   62 310 expressio -> IDENTIFICADOR AND CONST_INT
+   63 315 expressio -> CONST_INT AND CONST_INT
+   64 327 expressio -> CONST_INT SHIFT CONST_INT
+   65 340 expressio -> CONST_INT
+
+
+Terminales con las reglas donde aparecen
+
+$ (-1)
+error (256)
+CODE (257) 18 33
+DATA (258) 17 18
+SUBR (259) 36
+MAIN (260) 37
+DEFINE (261) 24 25 26 27 28 29 30
+COMA (262) 31 40 41 42 44 45 46 49 50 55 56
+REG (263) 40 41 42 43 44 45 46 49 50 55 56 58 59
+ADDI (264) 40
+OP3REGS (265) 41
+OP2REGS (266) 42
+STORE (267) 50
+LOAD (268) 44
+BRANCH (269) 45 46
+MOVE (270) 49
+IDENTIFICADOR (271) 21 27 28 36 46 48 57 61 62
+CONST_INT (272) 14 15 24 25 26 28 31 32 40 45 55 56 58 61 62 63 64
+    65
+STRING (273) 29
+DOSPUNTS (274) 21 57
+PAR_ESQ (275) 24 25 58 60
+PAR_DRET (276) 24 25 58 60
+AND (277) 62 63
+SHIFT (278) 61 64
+DUP (279) 24 25
+INTERROGANT (280) 25
+SUMA (281) 28
+BRANCH_IN (282) 47 48
+OP1REGS (283) 43
+HALT (284) 54
+AR_HEADER (285) 2 3
+AR_HEADER2 (286) 2
+BARRA (287) 13 14 15
+APOSTROF (288) 14 15
+NOM_FITXER (289) 13 15
+IN (290) 56
+OUT (291) 55
+
+
+No terminales con las reglas donde aparecen
+
+fitxer (38)
+    en la izquierda: 1 2 3
+seccions (39)
+    en la izquierda: 4 5, en la derecha: 1 4
+seccio (40)
+    en la izquierda: 6 7 8, en la derecha: 4 5
+seccions_lib (41)
+    en la izquierda: 9 10, en la derecha: 2 3 9
+seccio_lib (42)
+    en la izquierda: 11 12 13 14 15 16, en la derecha: 9 10
+dades (43)
+    en la izquierda: 17, en la derecha: 6 11
+dades_dins_codi (44)
+    en la izquierda: 18, en la derecha: 53
+variables (45)
+    en la izquierda: 19 20, en la derecha: 17 18 19
+variable (46)
+    en la izquierda: 21, en la derecha: 19 20 52
+definicio (47)
+    en la izquierda: 22 23, en la derecha: 21 22
+define (48)
+    en la izquierda: 24 25 26 27 28 29 30, en la derecha: 22 23
+constants (49)
+    en la izquierda: 31 32, en la derecha: 30 31
+codi (50)
+    en la izquierda: 33, en la derecha: 7 12
+rutines (51)
+    en la izquierda: 34 35, en la derecha: 33 34
+rutina (52)
+    en la izquierda: 36 37, en la derecha: 34 35
+instruccions (53)
+    en la izquierda: 38 39, en la derecha: 36 37 38
+instruccio (54)
+    en la izquierda: 40 41 42 43 44 45 46 47 48 49 50 51 52 53 54 55
+    56, en la derecha: 38 39
+etiqueta (55)
+    en la izquierda: 57, en la derecha: 51
+offsetReg (56)
+    en la izquierda: 58 59, en la derecha: 44 47 50
+expressio (57)
+    en la izquierda: 60 61 62 63 64 65, en la derecha: 49 60
+
+
+estado 0
+
+    CODE	desplazar e ir al estado 1
+    DATA	desplazar e ir al estado 2
+    AR_HEADER	desplazar e ir al estado 3
+
+    CODE	[reduce usando la regla  8 (seccio)]
+    DATA	[reduce usando la regla  8 (seccio)]
+    $default	reduce usando la regla 8 (seccio)
+
+    fitxer	ir al estado 138
+    seccions	ir al estado 4
+    seccio	ir al estado 5
+    dades	ir al estado 6
+    codi	ir al estado 7
+
+
+
+estado 1
+
+    codi  ->  CODE . rutines   (regla 33)
+
+    SUBR	desplazar e ir al estado 8
+    MAIN	desplazar e ir al estado 9
+
+    rutines	ir al estado 10
+    rutina	ir al estado 11
+
+
+
+estado 2
+
+    dades  ->  DATA . variables   (regla 17)
+
+    IDENTIFICADOR	desplazar e ir al estado 12
+
+    variables	ir al estado 13
+    variable	ir al estado 14
+
+
+
+estado 3
+
+    fitxer  ->  AR_HEADER . AR_HEADER2 seccions_lib   (regla 2)
+    fitxer  ->  AR_HEADER . seccions_lib   (regla 3)
+
+    CODE	desplazar e ir al estado 1
+    DATA	desplazar e ir al estado 2
+    AR_HEADER2	desplazar e ir al estado 15
+    BARRA	desplazar e ir al estado 16
+    NOM_FITXER	desplazar e ir al estado 17
+
+    CODE	[reduce usando la regla  16 (seccio_lib)]
+    DATA	[reduce usando la regla  16 (seccio_lib)]
+    BARRA	[reduce usando la regla  16 (seccio_lib)]
+    NOM_FITXER	[reduce usando la regla  16 (seccio_lib)]
+    $default	reduce usando la regla 16 (seccio_lib)
+
+    seccions_lib	ir al estado 18
+    seccio_lib	ir al estado 19
+    dades	ir al estado 20
+    codi	ir al estado 21
+
+
+
+estado 4
+
+    fitxer  ->  seccions .   (regla 1)
+    seccions  ->  seccions . seccio   (regla 4)
+
+    CODE	desplazar e ir al estado 1
+    DATA	desplazar e ir al estado 2
+
+    $   	reduce usando la regla  1 (fitxer)
+    $   	[reduce usando la regla  8 (seccio)]
+    CODE	[reduce usando la regla  8 (seccio)]
+    DATA	[reduce usando la regla  8 (seccio)]
+    $default	reduce usando la regla 1 (fitxer)
+    seccio	ir al estado 22
+    dades	ir al estado 6
+    codi	ir al estado 7
+
+
+
+estado 5
+
+    seccions  ->  seccio .   (regla 5)
+
+    $default	reduce usando la regla 5 (seccions)
+
+
+
+estado 6
+
+    seccio  ->  dades .   (regla 6)
+
+    $default	reduce usando la regla 6 (seccio)
+
+
+
+estado 7
+
+    seccio  ->  codi .   (regla 7)
+
+    $default	reduce usando la regla 7 (seccio)
+
+
+
+estado 8
+
+    rutina  ->  SUBR . IDENTIFICADOR instruccions   (regla 36)
+
+    IDENTIFICADOR	desplazar e ir al estado 23
+
+
+
+estado 9
+
+    rutina  ->  MAIN . instruccions   (regla 37)
+
+    DATA	desplazar e ir al estado 24
+    ADDI	desplazar e ir al estado 25
+    OP3REGS	desplazar e ir al estado 26
+    OP2REGS	desplazar e ir al estado 27
+    STORE	desplazar e ir al estado 28
+    LOAD	desplazar e ir al estado 29
+    BRANCH	desplazar e ir al estado 30
+    MOVE	desplazar e ir al estado 31
+    IDENTIFICADOR	desplazar e ir al estado 32
+    BRANCH_IN	desplazar e ir al estado 33
+    OP1REGS	desplazar e ir al estado 34
+    HALT	desplazar e ir al estado 35
+    IN  	desplazar e ir al estado 36
+    OUT 	desplazar e ir al estado 37
+
+    dades_dins_codi	ir al estado 38
+    variable	ir al estado 39
+    instruccions	ir al estado 40
+    instruccio	ir al estado 41
+    etiqueta	ir al estado 42
+
+
+
+estado 10
+
+    codi  ->  CODE rutines .   (regla 33)
+    rutines  ->  rutines . rutina   (regla 34)
+
+    SUBR	desplazar e ir al estado 8
+    MAIN	desplazar e ir al estado 9
+
+    $default	reduce usando la regla 33 (codi)
+
+    rutina	ir al estado 43
+
+
+
+estado 11
+
+    rutines  ->  rutina .   (regla 35)
+
+    $default	reduce usando la regla 35 (rutines)
+
+
+
+estado 12
+
+    variable  ->  IDENTIFICADOR . DOSPUNTS definicio   (regla 21)
+
+    DOSPUNTS	desplazar e ir al estado 44
+
+
+
+estado 13
+
+    dades  ->  DATA variables .   (regla 17)
+    variables  ->  variables . variable   (regla 19)
+
+    IDENTIFICADOR	desplazar e ir al estado 12
+
+    $default	reduce usando la regla 17 (dades)
+
+    variable	ir al estado 45
+
+
+
+estado 14
+
+    variables  ->  variable .   (regla 20)
+
+    $default	reduce usando la regla 20 (variables)
+
+
+
+estado 15
+
+    fitxer  ->  AR_HEADER AR_HEADER2 . seccions_lib   (regla 2)
+
+    CODE	desplazar e ir al estado 1
+    DATA	desplazar e ir al estado 2
+    BARRA	desplazar e ir al estado 16
+    NOM_FITXER	desplazar e ir al estado 17
+
+    CODE	[reduce usando la regla  16 (seccio_lib)]
+    DATA	[reduce usando la regla  16 (seccio_lib)]
+    BARRA	[reduce usando la regla  16 (seccio_lib)]
+    NOM_FITXER	[reduce usando la regla  16 (seccio_lib)]
+    $default	reduce usando la regla 16 (seccio_lib)
+
+    seccions_lib	ir al estado 46
+    seccio_lib	ir al estado 19
+    dades	ir al estado 20
+    codi	ir al estado 21
+
+
+
+estado 16
+
+    seccio_lib  ->  BARRA . CONST_INT CONST_INT CONST_INT CONST_INT CONST_INT CONST_INT APOSTROF   (regla 14)
+
+    CONST_INT	desplazar e ir al estado 47
+
+
+
+estado 17
+
+    seccio_lib  ->  NOM_FITXER . BARRA   (regla 13)
+    seccio_lib  ->  NOM_FITXER . BARRA CONST_INT CONST_INT CONST_INT CONST_INT CONST_INT APOSTROF   (regla 15)
+
+    BARRA	desplazar e ir al estado 48
+
+
+
+estado 18
+
+    fitxer  ->  AR_HEADER seccions_lib .   (regla 3)
+    seccions_lib  ->  seccions_lib . seccio_lib   (regla 9)
+
+    CODE	desplazar e ir al estado 1
+    DATA	desplazar e ir al estado 2
+    BARRA	desplazar e ir al estado 16
+    NOM_FITXER	desplazar e ir al estado 17
+
+    $   	reduce usando la regla  3 (fitxer)
+    $   	[reduce usando la regla  16 (seccio_lib)]
+    CODE	[reduce usando la regla  16 (seccio_lib)]
+    DATA	[reduce usando la regla  16 (seccio_lib)]
+    BARRA	[reduce usando la regla  16 (seccio_lib)]
+    NOM_FITXER	[reduce usando la regla  16 (seccio_lib)]
+    $default	reduce usando la regla 3 (fitxer)
+    seccio_lib	ir al estado 49
+    dades	ir al estado 20
+    codi	ir al estado 21
+
+
+
+estado 19
+
+    seccions_lib  ->  seccio_lib .   (regla 10)
+
+    $default	reduce usando la regla 10 (seccions_lib)
+
+
+
+estado 20
+
+    seccio_lib  ->  dades .   (regla 11)
+
+    $default	reduce usando la regla 11 (seccio_lib)
+
+
+
+estado 21
+
+    seccio_lib  ->  codi .   (regla 12)
+
+    $default	reduce usando la regla 12 (seccio_lib)
+
+
+
+estado 22
+
+    seccions  ->  seccions seccio .   (regla 4)
+
+    $default	reduce usando la regla 4 (seccions)
+
+
+
+estado 23
+
+    rutina  ->  SUBR IDENTIFICADOR . instruccions   (regla 36)
+
+    DATA	desplazar e ir al estado 24
+    ADDI	desplazar e ir al estado 25
+    OP3REGS	desplazar e ir al estado 26
+    OP2REGS	desplazar e ir al estado 27
+    STORE	desplazar e ir al estado 28
+    LOAD	desplazar e ir al estado 29
+    BRANCH	desplazar e ir al estado 30
+    MOVE	desplazar e ir al estado 31
+    IDENTIFICADOR	desplazar e ir al estado 32
+    BRANCH_IN	desplazar e ir al estado 33
+    OP1REGS	desplazar e ir al estado 34
+    HALT	desplazar e ir al estado 35
+    IN  	desplazar e ir al estado 36
+    OUT 	desplazar e ir al estado 37
+
+    dades_dins_codi	ir al estado 38
+    variable	ir al estado 39
+    instruccions	ir al estado 50
+    instruccio	ir al estado 41
+    etiqueta	ir al estado 42
+
+
+
+estado 24
+
+    dades_dins_codi  ->  DATA . variables CODE   (regla 18)
+
+    IDENTIFICADOR	desplazar e ir al estado 12
+
+    variables	ir al estado 51
+    variable	ir al estado 14
+
+
+
+estado 25
+
+    instruccio  ->  ADDI . REG COMA REG COMA CONST_INT   (regla 40)
+
+    REG 	desplazar e ir al estado 52
+
+
+
+estado 26
+
+    instruccio  ->  OP3REGS . REG COMA REG COMA REG   (regla 41)
+
+    REG 	desplazar e ir al estado 53
+
+
+
+estado 27
+
+    instruccio  ->  OP2REGS . REG COMA REG   (regla 42)
+
+    REG 	desplazar e ir al estado 54
+
+
+
+estado 28
+
+    instruccio  ->  STORE . offsetReg COMA REG   (regla 50)
+
+    REG 	desplazar e ir al estado 55
+    CONST_INT	desplazar e ir al estado 56
+
+    offsetReg	ir al estado 57
+
+
+
+estado 29
+
+    instruccio  ->  LOAD . REG COMA offsetReg   (regla 44)
+
+    REG 	desplazar e ir al estado 58
+
+
+
+estado 30
+
+    instruccio  ->  BRANCH . REG COMA CONST_INT   (regla 45)
+    instruccio  ->  BRANCH . REG COMA IDENTIFICADOR   (regla 46)
+
+    REG 	desplazar e ir al estado 59
+
+
+
+estado 31
+
+    instruccio  ->  MOVE . REG COMA expressio   (regla 49)
+
+    REG 	desplazar e ir al estado 60
+
+
+
+estado 32
+
+    variable  ->  IDENTIFICADOR . DOSPUNTS definicio   (regla 21)
+    etiqueta  ->  IDENTIFICADOR . DOSPUNTS   (regla 57)
+
+    DOSPUNTS	desplazar e ir al estado 61
+
+
+
+estado 33
+
+    instruccio  ->  BRANCH_IN . offsetReg   (regla 47)
+    instruccio  ->  BRANCH_IN . IDENTIFICADOR   (regla 48)
+
+    REG 	desplazar e ir al estado 55
+    IDENTIFICADOR	desplazar e ir al estado 62
+    CONST_INT	desplazar e ir al estado 56
+
+    offsetReg	ir al estado 63
+
+
+
+estado 34
+
+    instruccio  ->  OP1REGS . REG   (regla 43)
+
+    REG 	desplazar e ir al estado 64
+
+
+
+estado 35
+
+    instruccio  ->  HALT .   (regla 54)
+
+    $default	reduce usando la regla 54 (instruccio)
+
+
+
+estado 36
+
+    instruccio  ->  IN . REG COMA CONST_INT   (regla 56)
+
+    REG 	desplazar e ir al estado 65
+
+
+
+estado 37
+
+    instruccio  ->  OUT . CONST_INT COMA REG   (regla 55)
+
+    CONST_INT	desplazar e ir al estado 66
+
+
+
+estado 38
+
+    instruccio  ->  dades_dins_codi .   (regla 53)
+
+    $default	reduce usando la regla 53 (instruccio)
+
+
+
+estado 39
+
+    instruccio  ->  variable .   (regla 52)
+
+    $default	reduce usando la regla 52 (instruccio)
+
+
+
+estado 40
+
+    rutina  ->  MAIN instruccions .   (regla 37)
+    instruccions  ->  instruccions . instruccio   (regla 38)
+
+    DATA	desplazar e ir al estado 24
+    ADDI	desplazar e ir al estado 25
+    OP3REGS	desplazar e ir al estado 26
+    OP2REGS	desplazar e ir al estado 27
+    STORE	desplazar e ir al estado 28
+    LOAD	desplazar e ir al estado 29
+    BRANCH	desplazar e ir al estado 30
+    MOVE	desplazar e ir al estado 31
+    IDENTIFICADOR	desplazar e ir al estado 32
+    BRANCH_IN	desplazar e ir al estado 33
+    OP1REGS	desplazar e ir al estado 34
+    HALT	desplazar e ir al estado 35
+    IN  	desplazar e ir al estado 36
+    OUT 	desplazar e ir al estado 37
+
+    DATA	[reduce usando la regla  37 (rutina)]
+    $default	reduce usando la regla 37 (rutina)
+
+    dades_dins_codi	ir al estado 38
+    variable	ir al estado 39
+    instruccio	ir al estado 67
+    etiqueta	ir al estado 42
+
+
+
+estado 41
+
+    instruccions  ->  instruccio .   (regla 39)
+
+    $default	reduce usando la regla 39 (instruccions)
+
+
+
+estado 42
+
+    instruccio  ->  etiqueta .   (regla 51)
+
+    $default	reduce usando la regla 51 (instruccio)
+
+
+
+estado 43
+
+    rutines  ->  rutines rutina .   (regla 34)
+
+    $default	reduce usando la regla 34 (rutines)
+
+
+
+estado 44
+
+    variable  ->  IDENTIFICADOR DOSPUNTS . definicio   (regla 21)
+
+    DEFINE	desplazar e ir al estado 68
+
+    definicio	ir al estado 69
+    define	ir al estado 70
+
+
+
+estado 45
+
+    variables  ->  variables variable .   (regla 19)
+
+    $default	reduce usando la regla 19 (variables)
+
+
+
+estado 46
+
+    fitxer  ->  AR_HEADER AR_HEADER2 seccions_lib .   (regla 2)
+    seccions_lib  ->  seccions_lib . seccio_lib   (regla 9)
+
+    CODE	desplazar e ir al estado 1
+    DATA	desplazar e ir al estado 2
+    BARRA	desplazar e ir al estado 16
+    NOM_FITXER	desplazar e ir al estado 17
+
+    $   	reduce usando la regla  2 (fitxer)
+    $   	[reduce usando la regla  16 (seccio_lib)]
+    CODE	[reduce usando la regla  16 (seccio_lib)]
+    DATA	[reduce usando la regla  16 (seccio_lib)]
+    BARRA	[reduce usando la regla  16 (seccio_lib)]
+    NOM_FITXER	[reduce usando la regla  16 (seccio_lib)]
+    $default	reduce usando la regla 2 (fitxer)
+    seccio_lib	ir al estado 49
+    dades	ir al estado 20
+    codi	ir al estado 21
+
+
+
+estado 47
+
+    seccio_lib  ->  BARRA CONST_INT . CONST_INT CONST_INT CONST_INT CONST_INT CONST_INT APOSTROF   (regla 14)
+
+    CONST_INT	desplazar e ir al estado 71
+
+
+
+estado 48
+
+    seccio_lib  ->  NOM_FITXER BARRA .   (regla 13)
+    seccio_lib  ->  NOM_FITXER BARRA . CONST_INT CONST_INT CONST_INT CONST_INT CONST_INT APOSTROF   (regla 15)
+
+    CONST_INT	desplazar e ir al estado 72
+
+    $default	reduce usando la regla 13 (seccio_lib)
+
+
+
+estado 49
+
+    seccions_lib  ->  seccions_lib seccio_lib .   (regla 9)
+
+    $default	reduce usando la regla 9 (seccions_lib)
+
+
+
+estado 50
+
+    rutina  ->  SUBR IDENTIFICADOR instruccions .   (regla 36)
+    instruccions  ->  instruccions . instruccio   (regla 38)
+
+    DATA	desplazar e ir al estado 24
+    ADDI	desplazar e ir al estado 25
+    OP3REGS	desplazar e ir al estado 26
+    OP2REGS	desplazar e ir al estado 27
+    STORE	desplazar e ir al estado 28
+    LOAD	desplazar e ir al estado 29
+    BRANCH	desplazar e ir al estado 30
+    MOVE	desplazar e ir al estado 31
+    IDENTIFICADOR	desplazar e ir al estado 32
+    BRANCH_IN	desplazar e ir al estado 33
+    OP1REGS	desplazar e ir al estado 34
+    HALT	desplazar e ir al estado 35
+    IN  	desplazar e ir al estado 36
+    OUT 	desplazar e ir al estado 37
+
+    DATA	[reduce usando la regla  36 (rutina)]
+    $default	reduce usando la regla 36 (rutina)
+
+    dades_dins_codi	ir al estado 38
+    variable	ir al estado 39
+    instruccio	ir al estado 67
+    etiqueta	ir al estado 42
+
+
+
+estado 51
+
+    dades_dins_codi  ->  DATA variables . CODE   (regla 18)
+    variables  ->  variables . variable   (regla 19)
+
+    CODE	desplazar e ir al estado 73
+    IDENTIFICADOR	desplazar e ir al estado 12
+
+    variable	ir al estado 45
+
+
+
+estado 52
+
+    instruccio  ->  ADDI REG . COMA REG COMA CONST_INT   (regla 40)
+
+    COMA	desplazar e ir al estado 74
+
+
+
+estado 53
+
+    instruccio  ->  OP3REGS REG . COMA REG COMA REG   (regla 41)
+
+    COMA	desplazar e ir al estado 75
+
+
+
+estado 54
+
+    instruccio  ->  OP2REGS REG . COMA REG   (regla 42)
+
+    COMA	desplazar e ir al estado 76
+
+
+
+estado 55
+
+    offsetReg  ->  REG .   (regla 59)
+
+    $default	reduce usando la regla 59 (offsetReg)
+
+
+
+estado 56
+
+    offsetReg  ->  CONST_INT . PAR_ESQ REG PAR_DRET   (regla 58)
+
+    PAR_ESQ	desplazar e ir al estado 77
+
+
+
+estado 57
+
+    instruccio  ->  STORE offsetReg . COMA REG   (regla 50)
+
+    COMA	desplazar e ir al estado 78
+
+
+
+estado 58
+
+    instruccio  ->  LOAD REG . COMA offsetReg   (regla 44)
+
+    COMA	desplazar e ir al estado 79
+
+
+
+estado 59
+
+    instruccio  ->  BRANCH REG . COMA CONST_INT   (regla 45)
+    instruccio  ->  BRANCH REG . COMA IDENTIFICADOR   (regla 46)
+
+    COMA	desplazar e ir al estado 80
+
+
+
+estado 60
+
+    instruccio  ->  MOVE REG . COMA expressio   (regla 49)
+
+    COMA	desplazar e ir al estado 81
+
+
+
+estado 61
+
+    variable  ->  IDENTIFICADOR DOSPUNTS . definicio   (regla 21)
+    etiqueta  ->  IDENTIFICADOR DOSPUNTS .   (regla 57)
+
+    DEFINE	desplazar e ir al estado 68
+
+    $default	reduce usando la regla 57 (etiqueta)
+
+    definicio	ir al estado 69
+    define	ir al estado 70
+
+
+
+estado 62
+
+    instruccio  ->  BRANCH_IN IDENTIFICADOR .   (regla 48)
+
+    $default	reduce usando la regla 48 (instruccio)
+
+
+
+estado 63
+
+    instruccio  ->  BRANCH_IN offsetReg .   (regla 47)
+
+    $default	reduce usando la regla 47 (instruccio)
+
+
+
+estado 64
+
+    instruccio  ->  OP1REGS REG .   (regla 43)
+
+    $default	reduce usando la regla 43 (instruccio)
+
+
+
+estado 65
+
+    instruccio  ->  IN REG . COMA CONST_INT   (regla 56)
+
+    COMA	desplazar e ir al estado 82
+
+
+
+estado 66
+
+    instruccio  ->  OUT CONST_INT . COMA REG   (regla 55)
+
+    COMA	desplazar e ir al estado 83
+
+
+
+estado 67
+
+    instruccions  ->  instruccions instruccio .   (regla 38)
+
+    $default	reduce usando la regla 38 (instruccions)
+
+
+
+estado 68
+
+    define  ->  DEFINE . CONST_INT DUP PAR_ESQ CONST_INT PAR_DRET   (regla 24)
+    define  ->  DEFINE . CONST_INT DUP PAR_ESQ INTERROGANT PAR_DRET   (regla 25)
+    define  ->  DEFINE . CONST_INT   (regla 26)
+    define  ->  DEFINE . IDENTIFICADOR   (regla 27)
+    define  ->  DEFINE . IDENTIFICADOR SUMA CONST_INT   (regla 28)
+    define  ->  DEFINE . STRING   (regla 29)
+    define  ->  DEFINE . constants   (regla 30)
+
+    IDENTIFICADOR	desplazar e ir al estado 84
+    CONST_INT	desplazar e ir al estado 85
+    STRING	desplazar e ir al estado 86
+
+    constants	ir al estado 87
+
+
+
+estado 69
+
+    variable  ->  IDENTIFICADOR DOSPUNTS definicio .   (regla 21)
+    definicio  ->  definicio . define   (regla 22)
+
+    DEFINE	desplazar e ir al estado 68
+
+    $default	reduce usando la regla 21 (variable)
+
+    define	ir al estado 88
+
+
+
+estado 70
+
+    definicio  ->  define .   (regla 23)
+
+    $default	reduce usando la regla 23 (definicio)
+
+
+
+estado 71
+
+    seccio_lib  ->  BARRA CONST_INT CONST_INT . CONST_INT CONST_INT CONST_INT CONST_INT APOSTROF   (regla 14)
+
+    CONST_INT	desplazar e ir al estado 89
+
+
+
+estado 72
+
+    seccio_lib  ->  NOM_FITXER BARRA CONST_INT . CONST_INT CONST_INT CONST_INT CONST_INT APOSTROF   (regla 15)
+
+    CONST_INT	desplazar e ir al estado 90
+
+
+
+estado 73
+
+    dades_dins_codi  ->  DATA variables CODE .   (regla 18)
+
+    $default	reduce usando la regla 18 (dades_dins_codi)
+
+
+
+estado 74
+
+    instruccio  ->  ADDI REG COMA . REG COMA CONST_INT   (regla 40)
+
+    REG 	desplazar e ir al estado 91
+
+
+
+estado 75
+
+    instruccio  ->  OP3REGS REG COMA . REG COMA REG   (regla 41)
+
+    REG 	desplazar e ir al estado 92
+
+
+
+estado 76
+
+    instruccio  ->  OP2REGS REG COMA . REG   (regla 42)
+
+    REG 	desplazar e ir al estado 93
+
+
+
+estado 77
+
+    offsetReg  ->  CONST_INT PAR_ESQ . REG PAR_DRET   (regla 58)
+
+    REG 	desplazar e ir al estado 94
+
+
+
+estado 78
+
+    instruccio  ->  STORE offsetReg COMA . REG   (regla 50)
+
+    REG 	desplazar e ir al estado 95
+
+
+
+estado 79
+
+    instruccio  ->  LOAD REG COMA . offsetReg   (regla 44)
+
+    REG 	desplazar e ir al estado 55
+    CONST_INT	desplazar e ir al estado 56
+
+    offsetReg	ir al estado 96
+
+
+
+estado 80
+
+    instruccio  ->  BRANCH REG COMA . CONST_INT   (regla 45)
+    instruccio  ->  BRANCH REG COMA . IDENTIFICADOR   (regla 46)
+
+    IDENTIFICADOR	desplazar e ir al estado 97
+    CONST_INT	desplazar e ir al estado 98
+
+
+
+estado 81
+
+    instruccio  ->  MOVE REG COMA . expressio   (regla 49)
+
+    IDENTIFICADOR	desplazar e ir al estado 99
+    CONST_INT	desplazar e ir al estado 100
+    PAR_ESQ	desplazar e ir al estado 101
+
+    expressio	ir al estado 102
+
+
+
+estado 82
+
+    instruccio  ->  IN REG COMA . CONST_INT   (regla 56)
+
+    CONST_INT	desplazar e ir al estado 103
+
+
+
+estado 83
+
+    instruccio  ->  OUT CONST_INT COMA . REG   (regla 55)
+
+    REG 	desplazar e ir al estado 104
+
+
+
+estado 84
+
+    define  ->  DEFINE IDENTIFICADOR .   (regla 27)
+    define  ->  DEFINE IDENTIFICADOR . SUMA CONST_INT   (regla 28)
+
+    SUMA	desplazar e ir al estado 105
+
+    $default	reduce usando la regla 27 (define)
+
+
+
+estado 85
+
+    define  ->  DEFINE CONST_INT . DUP PAR_ESQ CONST_INT PAR_DRET   (regla 24)
+    define  ->  DEFINE CONST_INT . DUP PAR_ESQ INTERROGANT PAR_DRET   (regla 25)
+    define  ->  DEFINE CONST_INT .   (regla 26)
+    constants  ->  CONST_INT .   (regla 32)
+
+    DUP 	desplazar e ir al estado 106
+
+    $   	reduce usando la regla  26 (define)
+    $   	[reduce usando la regla  32 (constants)]
+    CODE	reduce usando la regla  26 (define)
+    CODE	[reduce usando la regla  32 (constants)]
+    DATA	reduce usando la regla  26 (define)
+    DATA	[reduce usando la regla  32 (constants)]
+    SUBR	reduce usando la regla  26 (define)
+    SUBR	[reduce usando la regla  32 (constants)]
+    MAIN	reduce usando la regla  26 (define)
+    MAIN	[reduce usando la regla  32 (constants)]
+    DEFINE	reduce usando la regla  26 (define)
+    DEFINE	[reduce usando la regla  32 (constants)]
+    COMA	reduce usando la regla  32 (constants)
+    ADDI	reduce usando la regla  26 (define)
+    ADDI	[reduce usando la regla  32 (constants)]
+    OP3REGS	reduce usando la regla  26 (define)
+    OP3REGS	[reduce usando la regla  32 (constants)]
+    OP2REGS	reduce usando la regla  26 (define)
+    OP2REGS	[reduce usando la regla  32 (constants)]
+    STORE	reduce usando la regla  26 (define)
+    STORE	[reduce usando la regla  32 (constants)]
+    LOAD	reduce usando la regla  26 (define)
+    LOAD	[reduce usando la regla  32 (constants)]
+    BRANCH	reduce usando la regla  26 (define)
+    BRANCH	[reduce usando la regla  32 (constants)]
+    MOVE	reduce usando la regla  26 (define)
+    MOVE	[reduce usando la regla  32 (constants)]
+    IDENTIFICADOR	reduce usando la regla  26 (define)
+    IDENTIFICADOR	[reduce usando la regla  32 (constants)]
+    BRANCH_IN	reduce usando la regla  26 (define)
+    BRANCH_IN	[reduce usando la regla  32 (constants)]
+    OP1REGS	reduce usando la regla  26 (define)
+    OP1REGS	[reduce usando la regla  32 (constants)]
+    HALT	reduce usando la regla  26 (define)
+    HALT	[reduce usando la regla  32 (constants)]
+    BARRA	reduce usando la regla  26 (define)
+    BARRA	[reduce usando la regla  32 (constants)]
+    NOM_FITXER	reduce usando la regla  26 (define)
+    NOM_FITXER	[reduce usando la regla  32 (constants)]
+    IN  	reduce usando la regla  26 (define)
+    IN  	[reduce usando la regla  32 (constants)]
+    OUT 	reduce usando la regla  26 (define)
+    OUT 	[reduce usando la regla  32 (constants)]
+    $default	reduce usando la regla 26 (define)
+
+
+estado 86
+
+    define  ->  DEFINE STRING .   (regla 29)
+
+    $default	reduce usando la regla 29 (define)
+
+
+
+estado 87
+
+    define  ->  DEFINE constants .   (regla 30)
+    constants  ->  constants . COMA CONST_INT   (regla 31)
+
+    COMA	desplazar e ir al estado 107
+
+    $default	reduce usando la regla 30 (define)
+
+
+
+estado 88
+
+    definicio  ->  definicio define .   (regla 22)
+
+    $default	reduce usando la regla 22 (definicio)
+
+
+
+estado 89
+
+    seccio_lib  ->  BARRA CONST_INT CONST_INT CONST_INT . CONST_INT CONST_INT CONST_INT APOSTROF   (regla 14)
+
+    CONST_INT	desplazar e ir al estado 108
+
+
+
+estado 90
+
+    seccio_lib  ->  NOM_FITXER BARRA CONST_INT CONST_INT . CONST_INT CONST_INT CONST_INT APOSTROF   (regla 15)
+
+    CONST_INT	desplazar e ir al estado 109
+
+
+
+estado 91
+
+    instruccio  ->  ADDI REG COMA REG . COMA CONST_INT   (regla 40)
+
+    COMA	desplazar e ir al estado 110
+
+
+
+estado 92
+
+    instruccio  ->  OP3REGS REG COMA REG . COMA REG   (regla 41)
+
+    COMA	desplazar e ir al estado 111
+
+
+
+estado 93
+
+    instruccio  ->  OP2REGS REG COMA REG .   (regla 42)
+
+    $default	reduce usando la regla 42 (instruccio)
+
+
+
+estado 94
+
+    offsetReg  ->  CONST_INT PAR_ESQ REG . PAR_DRET   (regla 58)
+
+    PAR_DRET	desplazar e ir al estado 112
+
+
+
+estado 95
+
+    instruccio  ->  STORE offsetReg COMA REG .   (regla 50)
+
+    $default	reduce usando la regla 50 (instruccio)
+
+
+
+estado 96
+
+    instruccio  ->  LOAD REG COMA offsetReg .   (regla 44)
+
+    $default	reduce usando la regla 44 (instruccio)
+
+
+
+estado 97
+
+    instruccio  ->  BRANCH REG COMA IDENTIFICADOR .   (regla 46)
+
+    $default	reduce usando la regla 46 (instruccio)
+
+
+
+estado 98
+
+    instruccio  ->  BRANCH REG COMA CONST_INT .   (regla 45)
+
+    $default	reduce usando la regla 45 (instruccio)
+
+
+
+estado 99
+
+    expressio  ->  IDENTIFICADOR . SHIFT CONST_INT   (regla 61)
+    expressio  ->  IDENTIFICADOR . AND CONST_INT   (regla 62)
+
+    AND 	desplazar e ir al estado 113
+    SHIFT	desplazar e ir al estado 114
+
+
+
+estado 100
+
+    expressio  ->  CONST_INT . AND CONST_INT   (regla 63)
+    expressio  ->  CONST_INT . SHIFT CONST_INT   (regla 64)
+    expressio  ->  CONST_INT .   (regla 65)
+
+    AND 	desplazar e ir al estado 115
+    SHIFT	desplazar e ir al estado 116
+
+    $default	reduce usando la regla 65 (expressio)
+
+
+
+estado 101
+
+    expressio  ->  PAR_ESQ . expressio PAR_DRET   (regla 60)
+
+    IDENTIFICADOR	desplazar e ir al estado 99
+    CONST_INT	desplazar e ir al estado 100
+    PAR_ESQ	desplazar e ir al estado 101
+
+    expressio	ir al estado 117
+
+
+
+estado 102
+
+    instruccio  ->  MOVE REG COMA expressio .   (regla 49)
+
+    $default	reduce usando la regla 49 (instruccio)
+
+
+
+estado 103
+
+    instruccio  ->  IN REG COMA CONST_INT .   (regla 56)
+
+    $default	reduce usando la regla 56 (instruccio)
+
+
+
+estado 104
+
+    instruccio  ->  OUT CONST_INT COMA REG .   (regla 55)
+
+    $default	reduce usando la regla 55 (instruccio)
+
+
+
+estado 105
+
+    define  ->  DEFINE IDENTIFICADOR SUMA . CONST_INT   (regla 28)
+
+    CONST_INT	desplazar e ir al estado 118
+
+
+
+estado 106
+
+    define  ->  DEFINE CONST_INT DUP . PAR_ESQ CONST_INT PAR_DRET   (regla 24)
+    define  ->  DEFINE CONST_INT DUP . PAR_ESQ INTERROGANT PAR_DRET   (regla 25)
+
+    PAR_ESQ	desplazar e ir al estado 119
+
+
+
+estado 107
+
+    constants  ->  constants COMA . CONST_INT   (regla 31)
+
+    CONST_INT	desplazar e ir al estado 120
+
+
+
+estado 108
+
+    seccio_lib  ->  BARRA CONST_INT CONST_INT CONST_INT CONST_INT . CONST_INT CONST_INT APOSTROF   (regla 14)
+
+    CONST_INT	desplazar e ir al estado 121
+
+
+
+estado 109
+
+    seccio_lib  ->  NOM_FITXER BARRA CONST_INT CONST_INT CONST_INT . CONST_INT CONST_INT APOSTROF   (regla 15)
+
+    CONST_INT	desplazar e ir al estado 122
+
+
+
+estado 110
+
+    instruccio  ->  ADDI REG COMA REG COMA . CONST_INT   (regla 40)
+
+    CONST_INT	desplazar e ir al estado 123
+
+
+
+estado 111
+
+    instruccio  ->  OP3REGS REG COMA REG COMA . REG   (regla 41)
+
+    REG 	desplazar e ir al estado 124
+
+
+
+estado 112
+
+    offsetReg  ->  CONST_INT PAR_ESQ REG PAR_DRET .   (regla 58)
+
+    $default	reduce usando la regla 58 (offsetReg)
+
+
+
+estado 113
+
+    expressio  ->  IDENTIFICADOR AND . CONST_INT   (regla 62)
+
+    CONST_INT	desplazar e ir al estado 125
+
+
+
+estado 114
+
+    expressio  ->  IDENTIFICADOR SHIFT . CONST_INT   (regla 61)
+
+    CONST_INT	desplazar e ir al estado 126
+
+
+
+estado 115
+
+    expressio  ->  CONST_INT AND . CONST_INT   (regla 63)
+
+    CONST_INT	desplazar e ir al estado 127
+
+
+
+estado 116
+
+    expressio  ->  CONST_INT SHIFT . CONST_INT   (regla 64)
+
+    CONST_INT	desplazar e ir al estado 128
+
+
+
+estado 117
+
+    expressio  ->  PAR_ESQ expressio . PAR_DRET   (regla 60)
+
+    PAR_DRET	desplazar e ir al estado 129
+
+
+
+estado 118
+
+    define  ->  DEFINE IDENTIFICADOR SUMA CONST_INT .   (regla 28)
+
+    $default	reduce usando la regla 28 (define)
+
+
+
+estado 119
+
+    define  ->  DEFINE CONST_INT DUP PAR_ESQ . CONST_INT PAR_DRET   (regla 24)
+    define  ->  DEFINE CONST_INT DUP PAR_ESQ . INTERROGANT PAR_DRET   (regla 25)
+
+    CONST_INT	desplazar e ir al estado 130
+    INTERROGANT	desplazar e ir al estado 131
+
+
+
+estado 120
+
+    constants  ->  constants COMA CONST_INT .   (regla 31)
+
+    $default	reduce usando la regla 31 (constants)
+
+
+
+estado 121
+
+    seccio_lib  ->  BARRA CONST_INT CONST_INT CONST_INT CONST_INT CONST_INT . CONST_INT APOSTROF   (regla 14)
+
+    CONST_INT	desplazar e ir al estado 132
+
+
+
+estado 122
+
+    seccio_lib  ->  NOM_FITXER BARRA CONST_INT CONST_INT CONST_INT CONST_INT . CONST_INT APOSTROF   (regla 15)
+
+    CONST_INT	desplazar e ir al estado 133
+
+
+
+estado 123
+
+    instruccio  ->  ADDI REG COMA REG COMA CONST_INT .   (regla 40)
+
+    $default	reduce usando la regla 40 (instruccio)
+
+
+
+estado 124
+
+    instruccio  ->  OP3REGS REG COMA REG COMA REG .   (regla 41)
+
+    $default	reduce usando la regla 41 (instruccio)
+
+
+
+estado 125
+
+    expressio  ->  IDENTIFICADOR AND CONST_INT .   (regla 62)
+
+    $default	reduce usando la regla 62 (expressio)
+
+
+
+estado 126
+
+    expressio  ->  IDENTIFICADOR SHIFT CONST_INT .   (regla 61)
+
+    $default	reduce usando la regla 61 (expressio)
+
+
+
+estado 127
+
+    expressio  ->  CONST_INT AND CONST_INT .   (regla 63)
+
+    $default	reduce usando la regla 63 (expressio)
+
+
+
+estado 128
+
+    expressio  ->  CONST_INT SHIFT CONST_INT .   (regla 64)
+
+    $default	reduce usando la regla 64 (expressio)
+
+
+
+estado 129
+
+    expressio  ->  PAR_ESQ expressio PAR_DRET .   (regla 60)
+
+    $default	reduce usando la regla 60 (expressio)
+
+
+
+estado 130
+
+    define  ->  DEFINE CONST_INT DUP PAR_ESQ CONST_INT . PAR_DRET   (regla 24)
+
+    PAR_DRET	desplazar e ir al estado 134
+
+
+
+estado 131
+
+    define  ->  DEFINE CONST_INT DUP PAR_ESQ INTERROGANT . PAR_DRET   (regla 25)
+
+    PAR_DRET	desplazar e ir al estado 135
+
+
+
+estado 132
+
+    seccio_lib  ->  BARRA CONST_INT CONST_INT CONST_INT CONST_INT CONST_INT CONST_INT . APOSTROF   (regla 14)
+
+    APOSTROF	desplazar e ir al estado 136
+
+
+
+estado 133
+
+    seccio_lib  ->  NOM_FITXER BARRA CONST_INT CONST_INT CONST_INT CONST_INT CONST_INT . APOSTROF   (regla 15)
+
+    APOSTROF	desplazar e ir al estado 137
+
+
+
+estado 134
+
+    define  ->  DEFINE CONST_INT DUP PAR_ESQ CONST_INT PAR_DRET .   (regla 24)
+
+    $default	reduce usando la regla 24 (define)
+
+
+
+estado 135
+
+    define  ->  DEFINE CONST_INT DUP PAR_ESQ INTERROGANT PAR_DRET .   (regla 25)
+
+    $default	reduce usando la regla 25 (define)
+
+
+
+estado 136
+
+    seccio_lib  ->  BARRA CONST_INT CONST_INT CONST_INT CONST_INT CONST_INT CONST_INT APOSTROF .   (regla 14)
+
+    $default	reduce usando la regla 14 (seccio_lib)
+
+
+
+estado 137
+
+    seccio_lib  ->  NOM_FITXER BARRA CONST_INT CONST_INT CONST_INT CONST_INT CONST_INT APOSTROF .   (regla 15)
+
+    $default	reduce usando la regla 15 (seccio_lib)
+
+
+
+estado 138
+
+    $   	ir al estado 139
+
+
+
+estado 139
+
+    $   	ir al estado 140
+
+
+
+estado 140
+
+    $default	aceptar
+
+

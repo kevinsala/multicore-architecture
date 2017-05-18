@@ -1,0 +1,50 @@
+[Hacer]
+
+* Chequear overflow al pasar a punto flotante
+* Comprobar rangos en directivas de datos .d?
+* Comprobacion de parametros de instruccion, patron, prototipo y rangos
+* Implementar definicion de cadenas de caracteres con .db, .dw
+* ArchLoader [Info] [Data Sizes] [Prototipes]
+* Personalizacion de directivas, ej: .subr -> .proc
+* IRTree
+* Errores dentro de macros
+* Documentar mensajes de error
+* Listado dump propio de cada Translator
+
+[Hecho]
+
+* Argumentos del compilador
+* ArchLoader [instructions][registers]
+* Tokenizer
+* Parser
+* directivas .section, .beginprog, .endprog, .begindata, .enddata, .code, .data, 
+    .org, .d?, .r?, .macro, .endm, .include, .signal, .interrupt, .exception
+* Directivas .proc, .subr, .main
+* El parser debe crear patrones con los parametros de la instrucción
+* Terminar implementación de macros
+* El parser debe leer enteros en decimal, hexadecimal y binario
+* Implementar Translator: formatos raw, 6e
+* La tabla de simbolos debe guardar expresiones en lugar de constantes
+* Evaluador de expresiones matemáticas
+* El parser debe leer numeros en coma flotante
+* Interceptar excepciones ( try/catch )
+* ExprNode evalua y resuelve expresiones matematicas con enteros y reales
+* Admite operador dup para directivas .d?
+* Admite datos por defecto ?, (?) en directivas .d? y .r?
+* Cadenas de depuracion mejoradas a partir del codigo fuente original
+* Poner comentarios normalizados en todas las clases
+* Unificar tabla de symbolos de desplazamiento ( etiquetas, subrutinas, senales, secciones )
+* Mejorar deteccion del modo de direccionamiento ?(?) a ?(*)
+* Solventar registro temporal de las macros STL y STBL
+* .include <> ""
+* ExprNode debe poder resolver nombres de secciones
+* Separar clases Info en Table e Info
+* Macro de repeticion (LDS, STS)
+
+[Temp]
+
+* Manejar patrones con java.util.regex
+* Instrucciones multiprototipo
+* Otros modos de direccionamiento
+* Configuracion de arquitectura en XML
+* Crear archivo JAR con todas las clases

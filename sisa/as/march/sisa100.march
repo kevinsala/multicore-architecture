@@ -1,0 +1,67 @@
+; SISA 1-1 Instruction Set Definitions for SISA Assembler
+;
+; 2004 February by Christian Pérez Llamas
+
+[Memories]
+
+;NAME		DATASIZE		ALIGN		TOP			SECTIONS (separed with spaces)
+
+RAM			2				2			65535		DATA NULL
+ROM			2				2			65535		CODE NULL
+
+[Registers]
+
+; NAME 		INDEX	GROUP ( default = 0 )
+
+R0			0
+R1			1
+R2			2
+R3			3
+R4			4
+R5			5
+R6			6
+R7			7
+
+[Prototipes]
+
+; NAME			PARAMS (no spaces)
+; rr			rd:regg(0),ra:regg(0)
+; rrr			rd:regg(0),ra:regg(0),rb:regg(0)
+; ra2			rd:regg(0),src:addr(offs:natb(6),rb:regg(0))
+; a2r			src:addr(offs:natb(6),rb:regg(0)),ra:regg(0)
+; rri			rd:regg(0),ra:regg(0),inm:intb(6)
+
+[Instructions]
+
+; when implemented PATTERN will be PROTOTIPE
+; when implemented CODE parameters will be names instead of indexes
+; NAME			PATTERN			CODE (no spaces)
+
+ADD 			R,R,R 			0000b|$1:3|$2:3|0:3|$3:3
+SUB 			R,R,R			0000b|$1:3|$2:3|1:3|$3:3
+ASR 			R,R				0000b|$1:3|$2:3|2:3|0:3
+LSR 			R,R				0000b|$1:3|$2:3|3:3|0:3
+AND				R,R,R			0000b|$1:3|$2:3|4:3|$3:3
+OR				R,R,R			0000b|$1:3|$2:3|5:3|$3:3
+NOT				R,R				0000b|$1:3|$2:3|6:3|0:3
+
+CMPLT			R,R,R			0001b|$1:3|$2:3|0:3|$3:3
+CMPLE			R,R,R			0001b|$1:3|$2:3|1:3|$3:3
+CMPGT			R,R,R			0001b|$1:3|$2:3|2:3|$3:3
+CMPGE			R,R,R			0001b|$1:3|$2:3|3:3|$3:3
+CMPLTU			R,R,R			0001b|$1:3|$2:3|4:3|$3:3
+CMPLEU			R,R,R			0001b|$1:3|$2:3|5:3|$3:3
+CMPGTU			R,R,R			0001b|$1:3|$2:3|6:3|$3:3
+CMPGEU			R,R,R			0001b|$1:3|$2:3|7:3|$3:3
+
+IN				R,?				0010b|$1:3|0:3|%2:6
+OUT				?,R				0011b|0:3|$2:3|%1:6
+
+LD				R,?(?)			0100b|$1:3|$3:3|@2:6
+ST				?(?),R			0101b|$3:3|$2:3|@1:6
+
+BEQ				R,?				0110b|0:3|$1:3|&2:6
+BNE				R,?				0110b|1:3|$1:3|&2:6
+
+ADDI			R,R,?			0111b|$1:3|$2:3|#3:6
+

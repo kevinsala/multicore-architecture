@@ -1,0 +1,9 @@
+
+Per a compilar el simulador sols cal usar la comanda make
+
+Per a executar-lo s'ha de tenir en compte que es tracta d'una aplicacio java:
+
+Es recomanable usar un script com el seguent:
+
+java -classpath ~/directori_simulador Simulador $1
+

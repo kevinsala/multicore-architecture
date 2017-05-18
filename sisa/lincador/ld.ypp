@@ -1,0 +1,354 @@
+
+%{
+#include <malloc.h>
+#include <string.h>
+#include <stdlib.h>
+#include <stdio.h>
+#include "defi.h"
+
+extern int yylex(void);
+extern void yyerror(char *);
+extern ostringstream * Concat (
+    const char * pre, ostringstream * o1, const char * s1 = "", ostringstream * o2 = NULL, const char * s2 = "",
+    ostringstream * o3 = NULL, const char * s3 = "", ostringstream * o4 = NULL, const char * s4 = "",
+    ostringstream * o5 = NULL, const char * s5 = "", ostringstream * o6 = NULL, const char * s6 = "");
+
+extern ostringstream * Concat (
+    const char * pre, const char * o1, const char * s1 = "", const char * o2 = NULL, const char * s2 = "",
+    const char * o3 = NULL, const char * s3 = "", const char * o4 = NULL, const char * s4 = "",
+    const char * o5 = NULL, const char * s5 = "", const char * o6 = NULL, const char * s6 = "");
+
+extern ostringstream * Concat (
+    const char * pre, const char * o1, const char * s1, const char * o2, const char * s2,
+    const char * o3, const char * s3, ostringstream * o4, const char * s4);
+
+extern ostringstream * Concat (
+    const char * pre, const char * o1, const char * s1, ostringstream * o2, const char * s2,
+    const char * o3 = NULL, const char * s3 = "", const char * o4 = NULL, const char * s4 =NULL);
+
+extern ostringstream * Concat (
+    const char * pre, ostringstream * o1, const char * s1, const char * o2, const char * s2,
+    const char * o3 = NULL, const char * s3 = "", const char * o4 = NULL, const char * s4 =NULL);
+
+
+extern ostringstream * UsIdentificador(const char *);
+extern void NovaVariable(const char *, ostringstream *);
+extern void NovaRutina(const char *, ostringstream *);
+extern ostringstream * NovaEtiqueta(const char *);
+
+extern int modLink;
+
+%}
+
+%union{
+ostringstream * os;
+char text [MAX_STRING_LENGTH];
+}
+
+%token <text> CODE DATA SUBR MAIN DEFINE COMA REG ADDI OP3REGS OP2REGS 
+STORE LOAD BRANCH MOVE IDENTIFICADOR CONST_INT STRING DOSPUNTS PAR_ESQ PAR_DRET
+AND SHIFT DUP INTERROGANT SUMA BRANCH_IN OP1REGS HALT AR_HEADER AR_HEADER2
+BARRA APOSTROF NOM_FITXER IN OUT
+
+%type <os> definicio define instruccions instruccio offsetReg etiqueta expressio constants
+
+%start fitxer
+   
+%%   
+
+fitxer         : seccions
+               | AR_HEADER AR_HEADER2 seccions_lib
+                 {
+                    if (!enLlibreria) yyerror("Intentant lincar/ensamblar una llibreria");
+                 }
+               | AR_HEADER seccions_lib
+                 {
+                    if (!enLlibreria) yyerror("Intentant lincar/ensamblar una llibreria");
+                 }
+               ;
+
+seccions       : seccions seccio
+               | seccio
+               ;
+
+seccio         : dades
+               | codi
+               |
+               ;
+
+seccions_lib   : seccions_lib seccio_lib
+               | seccio_lib
+               ;
+
+seccio_lib     : dades
+               | codi
+               | NOM_FITXER BARRA {}
+               | BARRA CONST_INT CONST_INT CONST_INT CONST_INT CONST_INT CONST_INT APOSTROF {}
+               | NOM_FITXER BARRA CONST_INT CONST_INT CONST_INT CONST_INT CONST_INT APOSTROF {}
+               |
+               ;
+
+dades          : DATA variables {}
+               ;
+
+dades_dins_codi : DATA variables CODE {}
+                ;
+
+variables      : variables variable
+               | variable
+               ;
+
+variable       : IDENTIFICADOR DOSPUNTS definicio
+                 {
+                    NovaVariable($1,$3);
+                 }
+               ;
+
+definicio      : definicio define
+                 {
+                    $$ = Concat("",$1,"\n",$2);
+                 }
+               | define
+                 {
+                    $$ = Concat("",$1,"\n");
+                 }
+               ;
+
+define         : DEFINE CONST_INT DUP PAR_ESQ CONST_INT PAR_DRET
+                 {
+                    $$ = Concat("\t",$1,"\t",$2," ",$3,"",$4,"",$5,"",$6,"\n");
+                 }
+               | DEFINE CONST_INT DUP PAR_ESQ INTERROGANT PAR_DRET
+                 {
+                    $$ = Concat("\t",$1,"\t",$2," ",$3,"",$4,"",$5,"",$6,"\n");
+                 }
+               | DEFINE CONST_INT
+                 {
+                    $$ = Concat("\t",$1,"\t",$2); 
+                 }
+               | DEFINE IDENTIFICADOR
+                 {
+                    ostringstream * tmp;
+                    tmp = UsIdentificador($2);
+                    $$ = Concat("\t",$1,"\t",tmp,""); 
+                 }
+               | DEFINE IDENTIFICADOR SUMA CONST_INT
+                 {
+                    ostringstream * tmp;
+                    tmp = UsIdentificador($2);
+                    $$ = Concat("\t",$1,"\t",tmp,"",$3,"",$4,"\n");
+                 }
+               | DEFINE STRING
+                 {
+                    $$ = Concat("\t",$1,"\t",$2); 
+                 }
+               | DEFINE constants
+                 {
+                    $$ = Concat("\t",$1,"\t",$2,"\n");
+                 }
+               ;
+
+constants      : constants COMA CONST_INT
+                 {
+                    $$ = Concat("",$1,"",$2,"",$3);
+                 }
+               | CONST_INT
+                 {
+                    $$ = Concat("",$1,"");
+                 }
+               ;
+
+codi           : CODE rutines {}
+               ;
+
+rutines        : rutines rutina
+               | rutina
+               ;
+
+rutina         : SUBR IDENTIFICADOR instruccions
+                 {
+                    NovaRutina($2,$3);
+                 }
+               | MAIN instruccions
+                 {
+                    NovaRutina("SisaMain",$2);
+                 }
+               ;
+
+instruccions   : instruccions instruccio
+                 {
+                    $$ = Concat("",$1,"",$2);
+                 }
+               | instruccio
+                 {
+                    $$ = Concat("",$1);
+                 }
+               ;
+
+instruccio     : ADDI REG COMA REG COMA CONST_INT
+                 {
+                    int val=atoi($6);
+                    if (val < -32 || val > 31)
+                    {
+                        fprintf(stderr,"Error en linia %d, immediat fora de rang\n",liniaActual);
+                        exit(-1);
+                    }
+                    $$ = Concat("\t",$1,"\t",$2,"",$3,"",$4,"",$5,"",$6,"\n");
+                 }
+               | OP3REGS REG COMA REG COMA REG
+                 {
+                    $$ = Concat("\t",$1,"\t",$2,"",$3,"",$4,"",$5,"",$6,"\n");
+                 }
+               | OP2REGS REG COMA REG
+                 {
+                    $$ = Concat("\t",$1,"\t",$2,"",$3,"",$4,"\n");
+                 }
+               | OP1REGS REG
+                 {
+                    $$ = Concat("\t",$1,"\t",$2,"\n");
+                 }
+               | LOAD REG COMA offsetReg
+                 {
+                    $$ = Concat("\t",$1,"\t",$2,"",$3,"",$4,"\n");
+                 }
+               | BRANCH REG COMA CONST_INT
+                 {
+                    $$ = Concat("\t",$1,"\t",$2,"",$3,"",$4,"\n");
+                 }
+               | BRANCH REG COMA IDENTIFICADOR
+                 {
+                    ostringstream * tmp = UsIdentificador($4);
+                    $$ = Concat("\t",$1,"\t",$2,"",$3,"",tmp,"\n");
+                 }
+               | BRANCH_IN offsetReg
+                 {
+                    $$ = Concat("\t",$1,"\t",$2,"\n");
+                 }
+               | BRANCH_IN IDENTIFICADOR
+                 {
+                    ostringstream * tmp = UsIdentificador($2);
+                    $$ = Concat("\t",$1,"\t",tmp,"\n");
+                 }
+               | MOVE REG COMA expressio
+                 {
+                    $$ = Concat("\t",$1,"\t",$2,"",$3,"",$4,"\n");
+                 }
+               | STORE offsetReg COMA REG
+                 {
+                    $$ = Concat("\t",$1,"\t",$2,"",$3,"",$4,"\n");
+                 }
+               | etiqueta
+                 {
+                    $$ = Concat("",$1,"\n");
+                 }
+               | variable
+                 {
+                    $$ = NULL;
+                 }
+               | dades_dins_codi
+                 {
+                    $$ = NULL;
+                 }
+               | HALT
+                 {
+                    $$ = Concat("\t",$1,"\n");
+                 }
+               | OUT CONST_INT COMA REG
+                 {
+                    int val=atoi($2);
+                    if (val < 0 || val > 64)
+                    {
+                        fprintf(stderr,"Error en linia %d, immediat fora de rang\n",liniaActual);
+                        exit(-1);
+                    }
+                    $$ = Concat("\t",$1,"\t",$2,"",$3,"",$4,"\n");
+                 }
+               | IN REG COMA CONST_INT
+                 {
+                    int val=atoi($4);
+                    if (val < 0 || val > 64)
+                    {
+                        fprintf(stderr,"Error en linia %d, immediat fora de rang\n",liniaActual);
+                        exit(-1);
+                    }
+                    $$ = Concat("\t",$1,"\t",$2,"",$3,"",$4,"\n");
+                 }
+               ;
+
+etiqueta       : IDENTIFICADOR DOSPUNTS
+                 {
+                    ostringstream * tmp = NovaEtiqueta($1);
+                    $$ = Concat("",tmp,"",$2,"");
+                 }
+               ;
+
+offsetReg      : CONST_INT PAR_ESQ REG PAR_DRET
+                 {
+                    int val=atoi($1);
+                    if (val < -32 || val > 31)
+                    {
+                        fprintf(stderr,"Error en linia %d, offset fora de rang\n",liniaActual);
+                        exit(-1);
+                    }
+                    $$ = Concat("",$1,"",$2,"",$3,"",$4);
+                 }
+               | REG
+                 {
+                    $$ = Concat("",$1);
+                 }
+               ;
+
+expressio      : PAR_ESQ expressio PAR_DRET
+                 {
+                    $$ = Concat("",$1,"",$2,"",$3);
+                 }
+               | IDENTIFICADOR SHIFT CONST_INT
+                 {
+                    ostringstream * tmp = UsIdentificador($1);
+                    $$ = Concat("",tmp,"",$2,"",$3);
+                 }
+               | IDENTIFICADOR AND CONST_INT
+                 {
+                    ostringstream * tmp = UsIdentificador($1);
+                    $$ = Concat("",tmp,"",$2,"",$3,"");
+                 }
+               | CONST_INT AND CONST_INT
+                 {
+                    unsigned int val1, val2;
+                    val1=atoi($1);
+                    val2=atoi($3);
+                    if ((val1&val2) >= 256)
+                    {
+                        fprintf(stderr,"Error en linia %d, immediat fora de rang\n",liniaActual);
+                        exit(-1);
+                    }
+                    $$ = Concat("",$1,"",$2,"",$3);
+                 }
+               | CONST_INT SHIFT CONST_INT
+                 {
+                    int val1, val2, res;
+                    val1=atoi($1);
+                    val2=atoi($3);
+                    res=val1>>val2;
+                    if (res < -128 || res >= 256)
+                    {
+                        fprintf(stderr,"Error en linia %d, immediat fora de rang\n",liniaActual);
+                        exit(-1);
+                    }
+                    $$ = Concat("",$1,"",$2,"",$3);
+                 }
+               | CONST_INT
+                 {
+                    int val=atoi($1);
+                    if (val < -128 || val > 255)
+                    {
+                        fprintf(stderr,"Error en linia %d, immediat fora de rang\n",liniaActual);
+                        exit(-1);
+                    }
+                    $$ = Concat("",$1);
+                 }
+               ;
+
+%%   
+   
+

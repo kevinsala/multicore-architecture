@@ -1,0 +1,16 @@
+[Breakpoint 0]
+Enabled=true
+File=sisa-ld.cpp
+Line=105
+Temporary=false
+
+[General]
+DebuggerCmdStr=
+FileVersion=1
+ProgramArgs=-sisa-ld -L/mnt/projecte/home/sumoi/proj/reus_bin/lib/gcc-lib/sisa/3.3.2 -L/mnt/projecte/home/sumoi/proj/reus_bin/lib/gcc-lib/sisa/3.3.2/../../../../sisa/lib prova.o -lgcc -lgcc
+TTYLevel=7
+WorkingDirectory=
+
+[Memory]
+ColumnWidths=80,0
+NumExprs=0

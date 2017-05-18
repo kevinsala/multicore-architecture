@@ -1,0 +1,31 @@
+; ============== 6a initialization ==================
+
+.include <macros.6a>
+
+		; --- codigo base de inicializacion ---
+
+.code
+		.dw interrupt_entry		; aqui va una referencia a la rutina de interrupciones
+		.dw exception_entry		; aqui va una referencia a la rutina de excepciones
+
+		; --- punto de entrada de ejecucion ---
+		
+		; inicializa la pila
+		ADD			R7, R0, R0
+		
+		; llama a la subrutina principal (main)
+		MOV 		R1, main
+		JMP			(R1)
+
+		; --- rutinas para el tratamiento de interrupciones/excepciones por defecto ---
+		
+.interrupt interrupt_entry
+		; aqui va la rutina de interrupciones
+		
+		JAR
+		
+.exception exception_entry
+		; aqui va la rutina de excepciones
+
+		JAR
+.ends

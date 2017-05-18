@@ -1,0 +1,68 @@
+* Version 0.07 ( 21-abr-2004 )
+
+- Nuevo tipo de macros: .expand
+
+* Version 0.06 ( 18-abr-2004 )
+
+- Implementada la tabla de registros de arquitectura
+- Implementada la tabla de memorias de arquitectura
+- Totalmente remodelados:
+	- Objetos de representacion intermedia
+	- Calculo de desplazamientos y actualizacion de la tabla de simbolos
+	- Generacion de informacion de depuracion del codigo fuente
+	- Generación de binarios
+- Cambios en defs.6a y 6a.march
+	- las rutinas de interrupciones y excepciones estan ahora en la seccion signals
+	- la secciones se lincaran en memoria en el siguiente orden: code, signals, data, *
+	- se usan prototipos de instruccion y macros diferentes para manejar registros temporales en los macros ST*
+- Solucionado bug: no imprimia correctamente en consola numeros hexadecimales de mas de 2 cifras
+- El listado objdump imprime las instrucciones como una sola palabra, tambien imprime las macros (de momento)
+
+* Version 0.05c ( 07-abr-2004 )
+
+- Ya no trata los archivos no encontrados como excepciones, sino q muestra un bonito mensaje de file not found :-)
+- Semiimplementado el reconocimiento de patrones de parametros para las instrucciones ( solo reconoce entre registro y no registro )
+- Solucionado bug, no reconocia numeros enteros en binario
+- Creado el operador unario $, transforma un numero real a entero, asi se podra operar con operadores de numeros enteros ( logicos, desplazamiento )
+- Nuevo formato de salida por pantalla para los errores ( 2 lineas por error )
+- Solucionado bug, el Translator provocaba una excepcion si no habia seccion data
+- cadenas de depuracion del ejecutable, ahora muestra .interrupt y .exception
+- Se ha mejorado el tratamiento de las prioridades de operadores en ExprNode
+- Se añade a Expr la deteccion de registro ( isReg() )
+
+* Version 0.05b ( 05-abr-2004 )
+
+- no da la lata con el copyright cada vez q lo ejecutas, salvo q se lo especifiques con lo opcion -v
+
+* Version 0.05 ( 30-mar-2004 )
+
+- Implementado .include <file> para q busque en la carpeta de includes por defecto y .include "path" para la carpeta especificada en "path"
+- Solucionado un bug en StreamTokenizer que no asignaba la posicion correcta ni a los tokens ni a los errores
+- las macros de la arquitectura 6e utilizan un registro temporal valido diferente del q le es pasado como argumento
+
+* Version 0.04 ( 29-mar-2004 )
+
+- Pasa a llamarse MAS (Multi Architecture aSsembler) para evitar confusiones con el nombre de la arquitectura 6a y porque describe mejor su funcionalidad
+- Se adapta definitivamente a la licencia GPL
+- Resuelto el bug de los numeros hexadecimales, solo admitia letras mayusculas
+- Resuelto el problema con el StreamTokenizer cuando no detectaba correctamente el fin del token cuando leia numeros
+- Ahora todos los offsets y los valores enteros de las expresiones son manejados como long
+- Resuelto un pequeo bug en ExprNode que no retornaba false cuando se producia un error resolviendo operandos
+- Resuelto un bug que provocaba una excepcion cuando se encontraba con una directiva de datos fuera de un segmento
+- Ya no es case sensitive para etiquetas y simbolos
+- Ya no aparecen las directivas de inicio y fin de seccion en las cadenas de depuracion de 6e
+- Tabla de etiquetas, subrutinas y senyales unificada totalmente
+
+* Version 0.03 ( 22-mar-2004 )
+
+- Solucionado un pequeo bug en el StreamTokenizer con respecto a los operadores << >>
+- Nuevo aspecto de los listados de symbolos y secciones, al estilo objdump
+
+* Version 0.02
+
+- Nuevo comando de linea: --list ( -l ), --ext <default extension> ( -e )
+- Extensión por defecto: 6a
+- Solucionado el problema de alineación de los binarios !!!
+- Nuevo operador >>>
+- Cuando el número de parametros de la instrucciónn no es el adecuado emite un error.
+- Ahora los macros PUSH y POP usan el registro temporal R6: solucion cutre temporal, por lo menos R6 se utiliza menos q R1

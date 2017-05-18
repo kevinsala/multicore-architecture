@@ -1,0 +1,94 @@
+; 6a Instruction Set Definitions for MAS Assembler
+;
+;[Info]
+; 6a Architecture
+; Copyright (C) 2004
+; Departament d'Arquitectura de Computadors
+; Universitat Politecnica de Catalunya
+
+[Memories]
+
+;NAME		DATASIZE		ALIGN		TOP			SECTIONS (separed with spaces)
+
+RAM			1				2			65535		CODE DATA *
+
+;[Data Sizes]
+; char 1
+; short 2
+; int 2
+; long 4
+
+[Registers]
+
+; NAME		INDEX		GROUP ( default = 0 )
+
+R0			0
+R1			1
+R2			2
+R3			3
+R4			4
+R5			5
+R6			6
+R7			7
+
+AR			0			1
+CR			1			1
+SR			2			1
+
+[Prototipes]
+
+; NAME			PARAMS (no spaces)
+; rr			rd:regg(0),ra:regg(0)
+; rrr			rd:regg(0),ra:regg(0),rb:regg(0)
+; ra2			rd:regg(0),src:addr(offs:natb(6),rb:regg(0),"$offs($rb)")
+; a2r			src:addr(offs:natb(6),rb:regg(0),"$offs($rb)"),ra:regg(0)
+; rri			rd:regg(0),ra:regg(0),inm:intb(6)
+
+[Instructions]
+; when implemented PATTERN will be PROTOTIPE
+; when implemented CODE parameters will be names instead of indexes
+; NAME			PATTERN			CODE (no spaces)
+
+ADD 			R,R,R 			0000b|$1:3|$2:3|0:3|$3:3
+SUB 			R,R,R			0000b|$1:3|$2:3|1:3|$3:3
+SRA 			R,R				0000b|$1:3|$2:3|2:3|0:3
+SRL 			R,R				0000b|$1:3|$2:3|3:3|0:3
+AND				R,R,R			0000b|$1:3|$2:3|4:3|$3:3
+OR				R,R,R			0000b|$1:3|$2:3|5:3|$3:3
+NOT				R,R				0000b|$1:3|$2:3|6:3|0:3
+XOR             R,R,R			0000b|$1:3|$2:3|7:3|$3:3
+
+CMPLT			R,R,R			0001b|$1:3|$2:3|0:3|$3:3
+CMPLE			R,R,R			0001b|$1:3|$2:3|1:3|$3:3
+CMPGT			R,R,R			0001b|$1:3|$2:3|2:3|$3:3
+CMPGE			R,R,R			0001b|$1:3|$2:3|3:3|$3:3
+CMPLTU			R,R,R			0001b|$1:3|$2:3|4:3|$3:3
+CMPLEU			R,R,R			0001b|$1:3|$2:3|5:3|$3:3
+CMPGTU			R,R,R			0001b|$1:3|$2:3|6:3|$3:3
+CMPGEU			R,R,R			0001b|$1:3|$2:3|7:3|$3:3
+
+IN				R,?				0010b|$1:3|0:3|%2:6
+OUT				?,R				0011b|0:3|$2:3|%1:6
+
+LDW				R,?(?)			0100b|$1:3|$3:3|#2:6
+STW				?(?),R			0101b|$3:3|$2:3|#1:6
+
+BEQ				R,?				0110b|$1:3|0:3|&2:6
+BNE				R,?				0110b|$1:3|1:3|&2:6
+BR				?				0110b|0:3|2:3|&1:6
+JMP				R				0110b|0:3|3:3|0:3|$1:3
+JALR			R,R				0110b|$2:3|4:3|0:3|$1:3
+JEQ				R,R				0110b|$1:3|6:3|0:3|$2:3
+JNE				R,R				0110b|$1:3|7:3|0:3|$2:3
+
+ADDI			R,R,?			0111b|$1:3|$2:3|#3:6
+
+MLI				R,?				1000b|$1:3|0b|%2:8
+MHI				R,?				1001b|$1:3|0b|%2:8
+
+LDB				R,?(?)			1100b|$1:3|$3:3|#2:6
+STB				?(?),R			1101b|$3:3|$2:3|#1:6
+
+HALT							1111000000000000b
+
+

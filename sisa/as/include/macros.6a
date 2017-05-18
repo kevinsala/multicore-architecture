@@ -1,0 +1,86 @@
+; --- aqui se definen las macros ---
+
+; aqui se definen todas las macros estandard ...
+
+; macros especiales para admitir expresiones en lugar de registros
+
+.macro MOV_ rd, inm
+		MHI_		(\rd), ( ( $\inm ) >> 8 ) & 0FFh
+		MLO_		(\rd), ( $\inm ) & 0FFh
+.endm
+
+.macro PUSH_ rn
+		ADDI		R7, R7, 0FEh	; -2
+		ST_			0, (R7), (\rn)
+.endm
+
+.macro POP_ rn
+		LD_			(\rn), 0, (R7)
+		ADDI		R7, R7, 2
+.endm
+
+; ------------------------------------------------------------------
+
+.macro MOV rd, inm
+		MHI			\rd, ( ( $\inm ) >> 8 ) & 0FFh
+		MLO			\rd, ( $\inm ) & 0FFh
+.endm
+
+.macro PUSH rn
+		ADDI		R7, R7, 0FEh	; -2
+		ST			0(R7), \rn
+.endm
+
+.macro POP rn
+		LD			\rn, 0(R7)
+		ADDI		R7, R7, 2
+.endm
+
+.macro BT ra, addr
+		BNE		\ra, \addr
+.endm
+
+.macro BF ra, addr
+		BEQ		\ra, \addr
+.endm
+
+.macro LDL rd, addr
+		MOV		\rd, \addr
+		LD		\rd, 0(\rd)
+.endm
+
+.macro STL addr, rb
+		PUSH_	( ( \rb % 6 ) + 1 )
+		MOV_	( ( \rb % 6 ) + 1 ), \addr
+		ST_		0, ( ( ( \rb % 6 ) + 1 ) ), (\rb)
+		POP_	( ( \rb % 6 ) + 1 )
+.endm
+
+.macro LDBL rd, addr
+		MOV		\rd, \addr
+		LDB		\rd, 0(\rd)
+.endm
+
+.macro STBL addr, rb
+		PUSH_	( ( \rb % 6 ) + 1 )
+		MOV_ 	( ( \rb % 6 ) + 1 ), \addr
+		STB_	0, ( ( ( \rb % 6 ) + 1 ) ), (\rb)
+		POP_	( ( \rb % 6 ) + 1 )
+.endm
+
+.macro JMP rn
+		JAL			R0, \rn
+.endm
+
+.macro CALL rn, addr
+		MOV		\rn, \addr
+		JAL		\rn, \rn
+.endm
+
+.expand LDS param
+	LD_			( \param ), ( \? * 2 ), ( R7 )
+.endm
+
+.expand STS param
+	ST_			( \? * 2 ), ( R7 ), ( \param )
+.endm

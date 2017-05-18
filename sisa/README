@@ -1,0 +1,60 @@
+
+Contingut d'aquest CD:
+
+as  -> MAS Assembler v0.07b, Copyright (C) 2003 Christian Pérez Llamas
+lincador -> lincador i fals assemblador. Veure el fitxer lincador/README
+simualdor -> simulador del sisa-C. Veure el fitxer simulador/README
+gcc-3.3.2/gcc/config/sisa -> fitxers de configuracio del backend del GCC per a SISA-C. Veure el fitxer gcc-3.3.2/gcc/config/sisa/IMPORTANT
+gcc-3.3.2/gcc/config/sisa/sisalib -> fitxers de la sisalib. Veure gcc-3.3.2/gcc/config/sisa/sisalib/README
+
+
+Guia rapida per a instal.lar el sisa-gcc en un sistema Linux/UNIX:
+
+Crear el directori ~/SISA-C i copiar-hi el contingut d'aquest CD.
+Seguidament realitzar els seguents passos:
+
+cd ~/SISA-C
+cd lincador
+make
+cd ..
+mkdir build
+mkdir final
+cd build
+../gcc-3.3.2/configure --target=sisa --enable-languages=c --with-as=~/SISA-C/lincador/sisa-ld --with-ld=~/SISA-C/lincador/sisa-ld  --prefix=~/SISA-C/final
+make
+cp ../gcc-3.3.2/gcc/config/sisa/clz.txt gcc/libgcc/_clz.o
+make
+make install
+cd ../gcc-3.3.2/gcc/config/sisa/sisalib
+make
+cp sisalib.h ~/SISA-C/final/include
+cp sisalib.a ~/SISA-C/final/sisa/lib
+cd -
+
+Tambe caldra crear un script anomenat asm que ha d'estar dins del path. El seu contingut aproximadament ha de ser el seguent:
+
+SISA_PATH=~/SISA-C/as
+java -cp $SISA_PATH/bin Sisa -I $SISA_PATH/include -M $SISA_PATH/march -m sisaC $@
+
+Arribats en aquest punt, ja tenim el compilador de per a sisaC funcionant.
+
+El compilador en si es el fitxer ~/SISA-C/final/bin/sisa-gcc
+Es recomanable situar aquest arxiu en el path
+
+Per a compilar el simulador caldra realitzar els seguents passos:
+
+cd ~/SISA-C/simulador
+make
+
+Es recomanable crear el seguent script i ubicar-lo en el path per tal d'usar el simulador:
+
+java -classpath ~/SISA-C/simulador Simulador $1
+
+Aquest script accepta un parametre que es el fitxer executable a simular
+
+
+
+Per a qualsevol consulta envieu un mail a pau.cabre@wanadoo.es
+
+Pau Cabre
+
