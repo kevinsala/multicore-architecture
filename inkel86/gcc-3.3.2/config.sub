@@ -234,6 +234,7 @@ case $basic_machine in
 	| fr30 | frv \
 	| h8300 | h8500 | hppa | hppa1.[01] | hppa2.0 | hppa2.0[nw] | hppa64 \
 	| i370 | i860 | i960 | ia64 \
+    | inkel86 \
 	| ip2k \
 	| m32r | m68000 | m68k | m88k | mcore \
 	| mips | mipsbe | mipseb | mipsel | mipsle \
@@ -259,7 +260,6 @@ case $basic_machine in
 	| pyramid \
 	| sh | sh[1234] | sh[23]e | sh[34]eb | shbe | shle | sh[1234]le | sh3ele \
 	| sh64 | sh64le \
-    | sisa \
 	| sparc | sparc64 | sparc86x | sparclet | sparclite | sparcv9 | sparcv9b \
 	| strongarm \
 	| tahoe | thumb | tic80 | tron \

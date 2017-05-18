@@ -307,6 +307,9 @@ x86_64-*-*)
 ia64-*-*)
 	extra_headers=ia64intrin.h
 	;;
+inkel86-*-*)
+    cpu_type=inkel86
+    ;;
 hppa*-*-* | parisc*-*-*)
 	cpu_type=pa
 	;;
@@ -331,9 +334,6 @@ sparc*-*-*)
 sh[123456789l]*-*-*)
 	cpu_type=sh
 	;;
-sisa-*-*)
-    cpu_type=sisa
-    ;;
 tic4x-*-*)
         cpu_type=c4x
         ;;
@@ -966,7 +966,7 @@ hppa*64*-*-hpux11*)
 	fi
 	case x${enable_threads} in
 	xyes | xposix )
-		thread_file=posix 
+		thread_file=posix
 		;;
 	esac
 	install_headers_dir=install-headers-cpio
@@ -979,7 +979,7 @@ hppa1.1-*-hpux11* | hppa2*-*-hpux11*)
 	xmake_file="pa/x-ada"
 	case x${enable_threads} in
 	xyes | xposix )
-		thread_file=posix 
+		thread_file=posix
 		;;
 	esac
 	install_headers_dir=install-headers-cpio
@@ -992,7 +992,7 @@ hppa1.0-*-hpux11*)
 	xmake_file="pa/x-ada"
 	case x${enable_threads} in
 	xyes | xposix )
-		thread_file=posix 
+		thread_file=posix
 		;;
 	esac
 	install_headers_dir=install-headers-cpio
@@ -1497,6 +1497,9 @@ ia64*-*-hpux*)
 	use_collect2=no
 	c_target_objs="ia64-c.o"
 	cxx_target_objs="ia64-c.o"
+	;;
+inkel86-*-*)
+	tmake_file="inkel86/t-inkel86"
 	;;
 ip2k-*-elf)
 	;;
@@ -2370,9 +2373,6 @@ sh-*-netbsdelf* | shl*-*-netbsdelf* | sh5-*-netbsd* | sh5l*-*-netbsd* | \
 	;;
 sh-*-*)
 	tm_file="${tm_file} sh/coff.h"
-	;;
-sisa-*-*)
-	tmake_file="sisa/t-sisa"
 	;;
 sparc-tti-*)
 	tm_file="${tm_file} sparc/pbd.h"

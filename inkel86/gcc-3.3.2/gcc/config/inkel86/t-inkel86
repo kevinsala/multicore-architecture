@@ -1,4 +1,4 @@
-LIB2FUNCS_EXTRA=$(srcdir)/config/sisa/mates.c
+LIB2FUNCS_EXTRA=$(srcdir)/config/inkel86/mates.c
 
 FPBIT = fp-bit.c
 
