@@ -12,7 +12,6 @@ ENTITY cache_data IS
 		addr           : IN    STD_LOGIC_VECTOR(31 DOWNTO 0);
 		re             : IN    STD_LOGIC;
 		we             : IN    STD_LOGIC;
-		is_byte        : IN    STD_LOGIC;
 		data_out       : OUT   STD_LOGIC_VECTOR(31 DOWNTO 0);
 		hit            : OUT   STD_LOGIC;
 		done           : OUT   STD_LOGIC;
@@ -28,7 +27,6 @@ ENTITY cache_data IS
 		sb_done        : IN    STD_LOGIC;
 		sb_addr        : IN    STD_LOGIC_VECTOR(31 DOWNTO 0);
 		sb_we          : IN    STD_LOGIC;
-		sb_is_byte     : IN    STD_LOGIC;
 		sb_data_in     : IN    STD_LOGIC_VECTOR(31 DOWNTO 0)
 	);
 END cache_data;
@@ -63,32 +61,25 @@ ARCHITECTURE cache_data_behavior OF cache_data IS
 	SIGNAL hit_line_i : hit_t;
 	SIGNAL hit_line_num_i : INTEGER RANGE 0 TO 3 := 0;
 
+	-- Determine the line number to output
+	SIGNAL data_out_line_num_i : INTEGER RANGE 0 TO 3 := 0;
+
 	-- Replacement signals
 	SIGNAL repl_i : STD_LOGIC := '0';
 	SIGNAL repl_dirty_i : STD_LOGIC := '0';
 	SIGNAL lru_line_num_i : INTEGER RANGE 0 TO 3 := 0;
 
-	-- Determine the target word/byte of the access
-	SIGNAL ch_word_num : INTEGER RANGE 0 TO 3 := 0;
+	-- Determine the target word of the access
 	SIGNAL ch_word_msb : INTEGER RANGE 0 TO 127 := 31;
 	SIGNAL ch_word_lsb : INTEGER RANGE 0 TO 127 := 0;
-	SIGNAL ch_word_data : STD_LOGIC_VECTOR(WORD_BITS-1 DOWNTO 0);
-	SIGNAL ch_byte_num : INTEGER RANGE 0 TO 15 := 0;
-	SIGNAL ch_byte_msb : INTEGER RANGE 0 TO 127 := 7;
-	SIGNAL ch_byte_lsb : INTEGER RANGE 0 TO 127 := 0;
-	SIGNAL ch_byte_data : STD_LOGIC_VECTOR(WORD_BITS-1 DOWNTO 0);
 
 	-- Store buffer signals
 	SIGNAL sb_line_i : hit_t;
 	SIGNAL sb_line_num_i : INTEGER RANGE 0 TO 3 := 0;
 
-	-- Determine the target word/byte of the SB store
-	SIGNAL sb_word_num : INTEGER RANGE 0 TO 3   := 0;
+	-- Determine the target word of the SB store
 	SIGNAL sb_word_msb : INTEGER RANGE 0 TO 127 := 31;
 	SIGNAL sb_word_lsb : INTEGER RANGE 0 TO 127 := 0;
-	SIGNAL sb_byte_num : INTEGER RANGE 0 TO 15  := 0;
-	SIGNAL sb_byte_msb : INTEGER RANGE 0 TO 127 := 7;
-	SIGNAL sb_byte_lsb : INTEGER RANGE 0 TO 127 := 0;
 
 	-- Procedure to reset and initialize the cache
 	PROCEDURE reset_cache(
@@ -202,7 +193,9 @@ END PROCESS next_state_process;
 
 -- Process that sets the output signals of the cache
 execution_process : PROCESS(clk)
+	VARIABLE line_num : INTEGER RANGE 0 TO 3;
 BEGIN
+	line_num := 0;
 	IF rising_edge(clk) AND reset = '1' THEN
 		reset_cache(lru_fields, valid_fields, dirty_fields, arb_req);
 		clear_bus(mem_cmd, mem_addr, mem_data);
@@ -212,6 +205,7 @@ BEGIN
 			IF state_nx_i = READY THEN
 				IF re = '1' OR we = '1' THEN
 					LRU_execute(lru_fields, hit_line_num_i);
+					line_num := hit_line_num_i;
 				END IF;
 			ELSIF state_nx_i = ARBREQ THEN
 				arb_req <= '1';
@@ -240,39 +234,22 @@ BEGIN
 				data_fields(lru_line_num_i) <= mem_data;
 				LRU_execute(lru_fields, lru_line_num_i);
 				clear_bus(mem_cmd, mem_addr, mem_data);
+				line_num := lru_line_num_i;
 			END IF;
 		END IF;
 
 		IF sb_we = '1' THEN
 			dirty_fields(sb_line_num_i) <= '1';
-
-			IF sb_is_byte = '1' THEN
-                data_fields(sb_line_num_i)(sb_byte_msb DOWNTO sb_byte_lsb) <= sb_data_in(7 DOWNTO 0);
-            ELSE
-                data_fields(sb_line_num_i)(sb_word_msb DOWNTO sb_word_lsb) <= sb_data_in;
-            END IF;
+			data_fields(sb_line_num_i)(sb_word_msb DOWNTO sb_word_lsb) <= sb_data_in;
 		END IF;
+
+		data_out_line_num_i <= line_num;
 	END IF;
 END PROCESS execution_process;
 
--- Logic to compute most and least significant bits
-ch_byte_num <= to_integer(unsigned(addr(3 DOWNTO 0)));
-ch_word_num <= ch_byte_num / 4;
-ch_word_msb <= (ch_word_num + 1) * WORD_BITS - 1;
-ch_word_lsb <= ch_word_num * WORD_BITS;
-ch_byte_msb <= (ch_byte_num + 1) * BYTE_BITS - 1;
-ch_byte_lsb <= ch_byte_num * BYTE_BITS;
-
-sb_byte_num <= to_integer(unsigned(sb_addr(3 DOWNTO 0)));
-sb_word_num <= sb_byte_num / 4;
-sb_word_msb <= (sb_word_num + 1) * WORD_BITS - 1;
-sb_word_lsb <= sb_word_num * WORD_BITS;
-sb_byte_msb <= (sb_byte_num + 1) * BYTE_BITS - 1;
-sb_byte_lsb <= sb_byte_num * BYTE_BITS;
-
 -- Check if the access is invalid
 invalid_access <= invalid_access_i;
-invalid_access_i <= '1' WHEN (re = '1' OR we = '1') AND is_byte = '0' AND addr(1 DOWNTO 0) /= "00" ELSE '0';
+invalid_access_i <= '1' WHEN (re = '1' OR we = '1') AND addr(1 DOWNTO 0) /= "00" ELSE '0';
 
 -- For each line, determine if the access has hit
 hit_line_i(0) <= valid_fields(0) AND to_std_logic(tag_fields(0) = addr(31 DOWNTO 4));
@@ -318,12 +295,13 @@ repl_addr <= tag_fields(lru_line_num_i) & "0000";
 -- The cache stalls when there is a cache operation that misses
 done <= hit_i OR NOT(re OR we);
 
+-- Store buffer logic
+sb_word_msb <= (to_integer(unsigned(sb_addr(3 DOWNTO 2))) + 1) * WORD_BITS - 1;
+sb_word_lsb <= to_integer(unsigned(sb_addr(3 DOWNTO 2))) * WORD_BITS;
+
 -- Output Data logic
-ch_word_data <= data_fields(hit_line_num_i)(ch_word_msb DOWNTO ch_word_lsb);
-ch_byte_data(7 DOWNTO 0) <= data_fields(hit_line_num_i)(ch_byte_msb DOWNTO ch_byte_lsb);
-ch_byte_data(31 DOWNTO 8) <= x"FFFFFF" WHEN ch_byte_data(7) = '1' ELSE x"000000";
-WITH is_byte SELECT data_out <=
-		ch_byte_data WHEN '1',
-		ch_word_data WHEN OTHERS;
+ch_word_msb <= (to_integer(unsigned(addr(3 DOWNTO 2))) + 1) * WORD_BITS - 1;
+ch_word_lsb <= to_integer(unsigned(addr(3 DOWNTO 2))) * WORD_BITS;
+data_out <= data_fields(data_out_line_num_i)(ch_word_msb DOWNTO ch_word_lsb);
 
 END cache_data_behavior;

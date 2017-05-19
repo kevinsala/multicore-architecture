@@ -121,7 +121,6 @@ ARCHITECTURE structure OF inkel_pentiun IS
 			data_out        : OUT   STD_LOGIC_VECTOR(31  DOWNTO 0);
 			re              : IN    STD_LOGIC;
 			we              : IN    STD_LOGIC;
-			is_byte         : IN    STD_LOGIC;
 			atomic          : IN    STD_LOGIC;
 			id              : IN    STD_LOGIC_VECTOR(3   DOWNTO 0);
 			done            : OUT   STD_LOGIC;
@@ -197,7 +196,6 @@ ARCHITECTURE structure OF inkel_pentiun IS
 			reg_src2_v : OUT STD_LOGIC;
 			inm_src2_v : OUT STD_LOGIC;
 			mem_write : OUT STD_LOGIC;
-			byte : OUT STD_LOGIC;
 			mem_read : OUT STD_LOGIC;
 			mem_atomic : OUT STD_LOGIC;
 			reg_we : OUT STD_LOGIC;
@@ -281,7 +279,6 @@ ARCHITECTURE structure OF inkel_pentiun IS
 			reset : IN STD_LOGIC;
 			we : IN STD_LOGIC;
 			mem_we_in : IN STD_LOGIC;
-			byte_in : IN STD_LOGIC;
 			mem_read_in : IN STD_LOGIC;
 			mem_atomic_in : IN STD_LOGIC;
 			reg_we_in : IN STD_LOGIC;
@@ -301,7 +298,6 @@ ARCHITECTURE structure OF inkel_pentiun IS
 			mem_data_in : IN STD_LOGIC_VECTOR(31 DOWNTO 0);
 			iret_in : IN STD_LOGIC;
 			mem_we_out : OUT STD_LOGIC;
-			byte_out : OUT STD_LOGIC;
 			mem_read_out : OUT STD_LOGIC;
 			mem_atomic_out : OUT STD_LOGIC;
 			reg_we_out : OUT STD_LOGIC;
@@ -405,7 +401,6 @@ ARCHITECTURE structure OF inkel_pentiun IS
 			reset : IN STD_LOGIC;
 			we : IN STD_LOGIC;
 			mem_we_in : IN STD_LOGIC;
-			byte_in : IN STD_LOGIC;
 			mem_read_in : IN STD_LOGIC;
 			mem_atomic_in : IN STD_LOGIC;
 			reg_we_in : IN STD_LOGIC;
@@ -413,7 +408,6 @@ ARCHITECTURE structure OF inkel_pentiun IS
 			ALU_out_in : IN STD_LOGIC_VECTOR(31 DOWNTO 0);
 			mem_data_in : IN STD_LOGIC_VECTOR(31 DOWNTO 0);
 			mem_we_out : OUT STD_LOGIC;
-			byte_out : OUT STD_LOGIC;
 			mem_read_out : OUT STD_LOGIC;
 			mem_atomic_out : OUT STD_LOGIC;
 			reg_we_out : OUT STD_LOGIC;
@@ -522,7 +516,6 @@ ARCHITECTURE structure OF inkel_pentiun IS
 	SIGNAL branch_if_eq_D : STD_LOGIC;
 	SIGNAL reg_we_D : STD_LOGIC;
 	SIGNAL mem_read_D : STD_LOGIC;
-	SIGNAL byte_D : STD_LOGIC;
 	SIGNAL mem_we_D : STD_LOGIC;
 	SIGNAL mem_atomic_D : STD_LOGIC;
 	SIGNAL reg_src1_v_D : STD_LOGIC;
@@ -560,7 +553,6 @@ ARCHITECTURE structure OF inkel_pentiun IS
 	SIGNAL reg_src2_v_A : STD_LOGIC;
 	SIGNAL inm_src2_v_A : STD_LOGIC;
 	SIGNAL mem_we_A : STD_LOGIC;
-	SIGNAL byte_A : STD_LOGIC;
 	SIGNAL mem_atomic_A : STD_LOGIC;
 	SIGNAL reg_we_A : STD_LOGIC;
 	SIGNAL priv_status_A : STD_LOGIC;
@@ -587,7 +579,6 @@ ARCHITECTURE structure OF inkel_pentiun IS
 	SIGNAL cache_we_C : STD_LOGIC;
 	SIGNAL cache_re_C : STD_LOGIC;
 	SIGNAL mem_atomic_C : STD_LOGIC;
-	SIGNAL byte_C : STD_LOGIC;
 	SIGNAL reg_we_C : STD_LOGIC;
 	SIGNAL priv_status_C : STD_LOGIC;
 	SIGNAL invalid_access_C : STD_LOGIC;
@@ -916,7 +907,6 @@ BEGIN
 		reg_src2_v => reg_src2_v_D,
 		inm_src2_v => inm_src2_v_D,
 		mem_write => mem_we_D,
-		byte => byte_D,
 		mem_read => mem_read_D,
 		mem_atomic => mem_atomic_D,
 		reg_we => reg_we_D,
@@ -986,7 +976,6 @@ BEGIN
 		reset => reg_D_A_reset,
 		we => reg_D_A_we,
 		mem_we_in => mem_we_D,
-		byte_in => byte_D,
 		mem_read_in => mem_read_D,
 		mem_atomic_in => mem_atomic_D,
 		reg_we_in => reg_we_D,
@@ -1006,7 +995,6 @@ BEGIN
 		mem_data_in => mem_data_D_BP,
 		iret_in => iret_D,
 		mem_we_out => mem_we_A,
-		byte_out => byte_A,
 		mem_read_out => mem_read_A,
 		mem_atomic_out => mem_atomic_A,
 		reg_we_out => reg_we_A,
@@ -1104,7 +1092,6 @@ BEGIN
 		reset => reg_A_C_reset,
 		we => reg_A_C_we,
 		mem_we_in => mem_we_A,
-		byte_in => byte_A,
 		mem_read_in => mem_read_A,
 		mem_atomic_in => mem_atomic_A,
 		reg_we_in => reg_we_A,
@@ -1112,7 +1099,6 @@ BEGIN
 		ALU_out_in => ALU_out_A,
 		mem_data_in => mem_data_A_atomic,
 		mem_we_out => cache_we_C,
-		byte_out => byte_C,
 		mem_read_out => cache_re_C,
 		mem_atomic_out => mem_atomic_C,
 		reg_we_out => reg_we_C,
@@ -1281,7 +1267,6 @@ BEGIN
 		data_out => reg_data_C,
 		re => cache_re_C,
 		we => cache_we_C,
-		is_byte => byte_C,
 		atomic => mem_atomic_C,
 		id => rob_idx_C,
 		done => done_C,

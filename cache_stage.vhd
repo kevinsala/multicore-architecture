@@ -13,7 +13,6 @@ ENTITY cache_stage IS
 		data_out        : OUT   STD_LOGIC_VECTOR(31 DOWNTO 0);
 		re              : IN    STD_LOGIC;
 		we              : IN    STD_LOGIC;
-		is_byte         : IN    STD_LOGIC;
 		atomic          : IN    STD_LOGIC;
 		id              : IN    STD_LOGIC_VECTOR(3 DOWNTO 0);
 		done            : OUT   STD_LOGIC;
@@ -38,7 +37,6 @@ ARCHITECTURE cache_stage_behavior OF cache_stage IS
 			addr           : IN    STD_LOGIC_VECTOR(31 DOWNTO 0);
 			re             : IN    STD_LOGIC;
 			we             : IN    STD_LOGIC;
-			is_byte        : IN    STD_LOGIC;
 			data_out       : OUT   STD_LOGIC_VECTOR(31 DOWNTO 0);
 			hit            : OUT   STD_LOGIC;
 			done           : OUT   STD_LOGIC;
@@ -54,7 +52,6 @@ ARCHITECTURE cache_stage_behavior OF cache_stage IS
 			sb_done        : IN    STD_LOGIC;
 			sb_addr        : IN    STD_LOGIC_VECTOR(31 DOWNTO 0);
 			sb_we          : IN    STD_LOGIC;
-			sb_is_byte     : IN    STD_LOGIC;
 			sb_data_in     : IN    STD_LOGIC_VECTOR(31 DOWNTO 0)
 		);
 	END COMPONENT;
@@ -68,7 +65,6 @@ ARCHITECTURE cache_stage_behavior OF cache_stage IS
 			data_out       : OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
 			re             : IN  STD_LOGIC;
 			we             : IN  STD_LOGIC;
-			is_byte        : IN  STD_LOGIC;
 			atomic         : IN  STD_LOGIC;
 			invalid_access : IN  STD_LOGIC;
 			id             : IN  STD_LOGIC_VECTOR(3 DOWNTO 0);
@@ -79,7 +75,6 @@ ARCHITECTURE cache_stage_behavior OF cache_stage IS
 			hit            : OUT STD_LOGIC;
 			cache_addr     : OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
 			cache_we       : OUT STD_LOGIC;
-			cache_is_byte  : OUT STD_LOGIC;
 			cache_data     : OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
 			store_id       : IN  STD_LOGIC_VECTOR(3 DOWNTO 0);
 			store_commit   : IN  STD_LOGIC;
@@ -105,7 +100,6 @@ ARCHITECTURE cache_stage_behavior OF cache_stage IS
 	SIGNAL cache_sb_repl_addr : STD_LOGIC_VECTOR(31 DOWNTO 0);
 	SIGNAL sb_cache_addr : STD_LOGIC_VECTOR(31 DOWNTO 0);
 	SIGNAL sb_cache_we   : STD_LOGIC;
-	SIGNAL sb_cache_is_byte : STD_LOGIC;
 	SIGNAL sb_cache_data : STD_LOGIC_VECTOR(31 DOWNTO 0);
 BEGIN
 	cache : cache_data PORT MAP(
@@ -114,7 +108,6 @@ BEGIN
 		addr => addr,
 		re => re,
 		we => we,
-		is_byte => is_byte,
 		data_out => cache_data_out,
 		hit => cache_hit,
 		done => cache_done,
@@ -130,7 +123,6 @@ BEGIN
 		sb_done => sb_done,
 		sb_addr => sb_cache_addr,
 		sb_we => sb_cache_we,
-		sb_is_byte => sb_cache_is_byte,
 		sb_data_in => sb_cache_data
 	);
 
@@ -142,7 +134,6 @@ BEGIN
 		data_out => sb_data_out,
 		re => re,
 		we => we,
-		is_byte => is_byte,
 		atomic => atomic,
 		invalid_access => invalid_access_i,
 		id => id,
@@ -153,7 +144,6 @@ BEGIN
 		hit => sb_hit,
 		cache_addr => sb_cache_addr,
 		cache_we => sb_cache_we,
-		cache_is_byte => sb_cache_is_byte,
 		cache_data => sb_cache_data,
 		store_id => sb_store_id,
 		store_commit => sb_store_commit,

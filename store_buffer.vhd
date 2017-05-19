@@ -12,7 +12,6 @@ ENTITY store_buffer IS
 		data_out       : OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
 		re             : IN  STD_LOGIC;
 		we             : IN  STD_LOGIC;
-		is_byte        : IN  STD_LOGIC;
 		atomic         : IN  STD_LOGIC;
 		invalid_access : IN  STD_LOGIC;
 		id             : IN  STD_LOGIC_VECTOR(3 DOWNTO 0);
@@ -23,7 +22,6 @@ ENTITY store_buffer IS
 		hit            : OUT STD_LOGIC;
 		cache_addr     : OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
 		cache_we       : OUT STD_LOGIC;
-		cache_is_byte  : OUT STD_LOGIC;
 		cache_data     : OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
 		store_id       : IN  STD_LOGIC_VECTOR(3 DOWNTO 0);
 		store_commit   : IN  STD_LOGIC;
@@ -37,7 +35,6 @@ ARCHITECTURE store_buffer_behavior OF store_buffer IS
 	TYPE id_fields_t IS ARRAY(SB_ENTRIES - 1 DOWNTO 0) OF STD_LOGIC_VECTOR(3 DOWNTO 0);
 	TYPE valid_fields_t IS ARRAY(SB_ENTRIES - 1 DOWNTO 0) OF STD_LOGIC;
 	TYPE addr_fields_t IS ARRAY(SB_ENTRIES - 1 DOWNTO 0) OF STD_LOGIC_VECTOR(31 DOWNTO 0);
-	TYPE byte_fields_t IS ARRAY(SB_ENTRIES - 1 DOWNTO 0) OF STD_LOGIC;
 	TYPE data_fields_t IS ARRAY(SB_ENTRIES - 1 DOWNTO 0) OF STD_LOGIC_VECTOR(31 DOWNTO 0);
 	TYPE hit_t IS ARRAY(SB_ENTRIES - 1 DOWNTO 0) OF STD_LOGIC;
 
@@ -45,7 +42,6 @@ ARCHITECTURE store_buffer_behavior OF store_buffer IS
 	SIGNAL id_fields : id_fields_t;
 	SIGNAL valid_fields : valid_fields_t;
 	SIGNAL addr_fields : addr_fields_t;
-	SIGNAL byte_fields : byte_fields_t;
 	SIGNAL data_fields : data_fields_t;
 
 	-- State, size and first buffer entry
@@ -72,7 +68,6 @@ ARCHITECTURE store_buffer_behavior OF store_buffer IS
 	PROCEDURE reset_entries(
 			SIGNAL valid_fields : OUT valid_fields_t;
 			SIGNAL addr_fields : OUT addr_fields_t;
-			SIGNAL byte_fields : OUT byte_fields_t;
 			SIGNAL size_nx_i : OUT INTEGER RANGE 0 TO SB_ENTRIES;
 			SIGNAL head_nx_i : OUT INTEGER RANGE 0 TO SB_ENTRIES - 1;
 			SIGNAL last_added_i : OUT INTEGER RANGE 0 TO SB_ENTRIES
@@ -82,7 +77,6 @@ ARCHITECTURE store_buffer_behavior OF store_buffer IS
 		FOR i IN 0 TO SB_ENTRIES - 1 LOOP
 			valid_fields(i) <= '0';
 			addr_fields(i) <= x"FFFFFFFF";
-			byte_fields(i) <= '0';
 		END LOOP;
 
 		size_nx_i <= 0;
@@ -145,7 +139,7 @@ execution_process : PROCESS(clk, reset)
 BEGIN
 	IF falling_edge(clk) THEN
 		IF reset = '1' OR squash = '1' THEN
-			reset_entries(valid_fields, addr_fields, byte_fields, size_nx_i, head_nx_i, last_added_i);
+			reset_entries(valid_fields, addr_fields, size_nx_i, head_nx_i, last_added_i);
 		ELSE
 			head := head_i;
 			size := size_i;
@@ -162,7 +156,6 @@ BEGIN
 				id_fields(new_entry) <= id;
 				valid_fields(new_entry) <= '1';
 				addr_fields(new_entry) <= addr;
-				byte_fields(new_entry) <= is_byte;
 				data_fields(new_entry) <= data_in;
 				size := size + 1;
 			END IF;
@@ -209,7 +202,6 @@ commit_entry_num_i <= 0 WHEN id_fields(0) = store_id AND valid_fields(0) = '1'
 -- Logic to commit a buffered store
 cache_we <= store_commit;
 cache_addr <= addr_fields(head_i);
-cache_is_byte <= byte_fields(head_i);
 cache_data <= data_fields(head_i);
 
 -- Determine if the store buffer has finished
