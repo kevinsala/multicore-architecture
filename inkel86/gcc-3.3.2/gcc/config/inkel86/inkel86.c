@@ -1,4 +1,4 @@
-#include "config.h"  /* inclou sisa.h */
+#include "config.h"  /* inclou inkel86.h */
 #include "system.h"  /* defineix coses com bool, que s'usen en target.h */
 #include "machmode.h" /* defineix enum machine_mode */
 #include "output.h" /* defineix parts del TARGET_INITIALIZER corresponents a la sortida en assemblador */
@@ -6,7 +6,7 @@
 #include "regs.h" /* defineix regs_ever_live */
 #include "tree.h" /* defineix merge_decl_attributes */
 #include "expr.h" /* defineix default_init_builtins */
-#include "tm_p.h" /* inclou sisa-protos.h */
+#include "tm_p.h" /* inclou inkel86-protos.h */
 #include "target-def.h" /* defineix TARGET_INITIALIZER */
 #include "target.h"
 #include "real.h" /* defineix real_format_for_mode */
@@ -27,7 +27,7 @@ int const_ok_for_letter_p (int value, char c)
     }
     else if (c == 'N')
     {
-        return (value >= -32768  && value <= 65535);  /* totes les constants que podem tenir en SISA */
+        return (value >= -32768  && value <= 65535);  /* totes les constants que podem tenir en Inkel86 */
     }
     else
     {
@@ -84,13 +84,13 @@ int extra_constraint (rtx value, char c)
     }
 }
 
-void sisa_function_prologue (FILE *file, HOST_WIDE_INT size)
+void inkel86_function_prologue (FILE *file, HOST_WIDE_INT size)
 {
     int i;
     int num_reg_salvar = 0;
     int offset;
     int espai;
-    
+
     for (i=0; i< FIRST_PSEUDO_REGISTER; i++)
     {
         if (regs_ever_live[i] && !call_used_regs[i])
@@ -139,13 +139,13 @@ void sisa_function_prologue (FILE *file, HOST_WIDE_INT size)
     }
 }
 
-void sisa_function_epilogue (FILE *file, HOST_WIDE_INT size)
+void inkel86_function_epilogue (FILE *file, HOST_WIDE_INT size)
 {
     int i;
     int num_reg_restaurar = 0;
     int offset;
     int espai;
-    
+
     for (i=0; i< FIRST_PSEUDO_REGISTER; i++)
     {
         if (regs_ever_live[i] && !call_used_regs[i])
@@ -170,7 +170,7 @@ void sisa_function_epilogue (FILE *file, HOST_WIDE_INT size)
             }
             else
             {
-                
+
                 fprintf(file,"\tldw\t%s,%d(r7)\n",reg_names[i],espai-offset);
             }
             offset+=UNITS_PER_WORD;
@@ -295,32 +295,32 @@ void print_operand_address (FILE * stream, rtx x)
 }
 
 
-rtx sisa_compare_op0;
-rtx sisa_compare_op1;
+rtx inkel86_compare_op0;
+rtx inkel86_compare_op1;
 void generar_salt (enum rtx_code tipus, rtx operand)
 {
     int canvi_condicio = 0;
     /* registre temporal on guardem el resultat de la comparacio */
     rtx tmp_reg = gen_reg_rtx(HImode);
 
-    rtx tst_insn, sisa_cmp_insn;
+    rtx tst_insn, inkel86_cmp_insn;
     switch (tipus)
     {
       case EQ:
-        /* cridem a sisa_ne, pero despres canviem la condicio de salt */
-        sisa_cmp_insn = gen_sisa_ne(tmp_reg,sisa_compare_op0,sisa_compare_op1);
+        /* cridem a inkel86_ne, pero despres canviem la condicio de salt */
+        inkel86_cmp_insn = gen_inkel86_ne(tmp_reg,inkel86_compare_op0,inkel86_compare_op1);
         canvi_condicio = 1;
         break;
       case NE:
-        sisa_cmp_insn = gen_sisa_ne(tmp_reg,sisa_compare_op0,sisa_compare_op1);
+        inkel86_cmp_insn = gen_inkel86_ne(tmp_reg,inkel86_compare_op0,inkel86_compare_op1);
         break;
       default:
-        tst_insn = gen_rtx(tipus,HImode,sisa_compare_op0,sisa_compare_op1);
-        sisa_cmp_insn = gen_rtx(SET,HImode,tmp_reg,tst_insn);
+        tst_insn = gen_rtx(tipus,HImode,inkel86_compare_op0,inkel86_compare_op1);
+        inkel86_cmp_insn = gen_rtx(SET,HImode,tmp_reg,tst_insn);
         break;
     }
 
-    emit_insn(sisa_cmp_insn);
+    emit_insn(inkel86_cmp_insn);
 
     /* Ara ens queda fer el salt */
     /* ATENCIO!!! usant emit_insn no funciona, ja que no te en compte
@@ -328,11 +328,11 @@ void generar_salt (enum rtx_code tipus, rtx operand)
      */
      if (canvi_condicio)
      {
-        emit_jump_insn(gen_sisa_bzero(tmp_reg,operand));
+        emit_jump_insn(gen_inkel86_bzero(tmp_reg,operand));
      }
      else
      {
-        emit_jump_insn(gen_sisa_bnozero(tmp_reg,operand));
+        emit_jump_insn(gen_inkel86_bnozero(tmp_reg,operand));
      }
 }
 
@@ -346,25 +346,25 @@ void generar_salt (enum rtx_code tipus, rtx operand)
 
 /* codi assemblador del proleg i epilog */
 #undef TARGET_ASM_FUNCTION_PROLOGUE
-#define TARGET_ASM_FUNCTION_PROLOGUE sisa_function_prologue
+#define TARGET_ASM_FUNCTION_PROLOGUE inkel86_function_prologue
 #undef TARGET_ASM_FUNCTION_EPILOGUE
-#define TARGET_ASM_FUNCTION_EPILOGUE sisa_function_epilogue
+#define TARGET_ASM_FUNCTION_EPILOGUE inkel86_function_epilogue
 
 #undef TARGET_ASM_INTEGER
-#define TARGET_ASM_INTEGER sisa_target_asm_integer
+#define TARGET_ASM_INTEGER inkel86_target_asm_integer
 
 
 /* Aqui hi aniran les variables que son del tipus Target Hook */
 struct gcc_target targetm = TARGET_INITIALIZER;
 
-void sisa_override_options (void)
+void inkel86_override_options (void)
 {
   memset (real_format_for_mode, 0, sizeof(real_format_for_mode));
   real_format_for_mode[SFmode - QFmode] = &ieee_single_format;
   real_format_for_mode[DFmode - QFmode] = &ieee_double_format;
 }
 
-rtx sisa_function_value (tree type, tree func)
+rtx inkel86_function_value (tree type, tree func)
 {
     if (int_size_in_bytes(type) <= UNITS_PER_WORD)
     {
@@ -377,7 +377,7 @@ rtx sisa_function_value (tree type, tree func)
     }
 }
 
-rtx sisa_lib_value (enum machine_mode mode)
+rtx inkel86_lib_value (enum machine_mode mode)
 {
     if (GET_MODE_SIZE(mode) <= UNITS_PER_WORD)
     {
@@ -390,12 +390,12 @@ rtx sisa_lib_value (enum machine_mode mode)
 }
 
 
-/* Target Hook per a fer una variable global. No aplicable en SISA */
-void sisa_globalize_label (FILE * stream, const char * name)
+/* Target Hook per a fer una variable global. No aplicable en Inkel86 */
+void inkel86_globalize_label (FILE * stream, const char * name)
 {
 }
 
-bool sisa_target_asm_integer (rtx x, unsigned int size, int aligned_p)
+bool inkel86_target_asm_integer (rtx x, unsigned int size, int aligned_p)
 {
     switch (size)
     {
@@ -416,7 +416,7 @@ bool sisa_target_asm_integer (rtx x, unsigned int size, int aligned_p)
     return true;
 }
 
-void emit_sisa_ashrhi3(rtx desti, rtx font, rtx quant)
+void emit_inkel86_ashrhi3(rtx desti, rtx font, rtx quant)
 {
     rtx inici, fi, tmp;
 
@@ -426,12 +426,12 @@ void emit_sisa_ashrhi3(rtx desti, rtx font, rtx quant)
 
     emit_move_insn(tmp,font);
     emit_move_insn(desti,quant);
-    sisa_compare_op0 = desti;
-    sisa_compare_op1 = gen_reg_rtx(HImode);
-    emit_insn(gen_xorhi3(sisa_compare_op1,sisa_compare_op1,sisa_compare_op1));
+    inkel86_compare_op0 = desti;
+    inkel86_compare_op1 = gen_reg_rtx(HImode);
+    emit_insn(gen_xorhi3(inkel86_compare_op1,inkel86_compare_op1,inkel86_compare_op1));
     emit_label(inici);
     generar_salt(EQ,fi);
-    emit_insn(gen_sisa_ashrhi1(tmp,tmp));
+    emit_insn(gen_inkel86_ashrhi1(tmp,tmp));
     emit_insn(gen_addhi3(desti,desti,gen_rtx_CONST_INT(HImode,-1)));
     emit_jump_insn(gen_jump(inici));
     emit_label(fi);
@@ -439,7 +439,7 @@ void emit_sisa_ashrhi3(rtx desti, rtx font, rtx quant)
     emit_move_insn(desti,tmp);
 }
 
-void emit_sisa_lshrhi3(rtx desti, rtx font, rtx quant)
+void emit_inkel86_lshrhi3(rtx desti, rtx font, rtx quant)
 {
     rtx inici, fi, tmp;
 
@@ -449,12 +449,12 @@ void emit_sisa_lshrhi3(rtx desti, rtx font, rtx quant)
 
     emit_move_insn(tmp,font);
     emit_move_insn(desti,quant);
-    sisa_compare_op0 = desti;
-    sisa_compare_op1 = gen_reg_rtx(HImode);
-    emit_insn(gen_xorhi3(sisa_compare_op1,sisa_compare_op1,sisa_compare_op1));
+    inkel86_compare_op0 = desti;
+    inkel86_compare_op1 = gen_reg_rtx(HImode);
+    emit_insn(gen_xorhi3(inkel86_compare_op1,inkel86_compare_op1,inkel86_compare_op1));
     emit_label(inici);
     generar_salt(EQ,fi);
-    emit_insn(gen_sisa_lshrhi1(tmp,tmp));
+    emit_insn(gen_inkel86_lshrhi1(tmp,tmp));
     emit_insn(gen_addhi3(desti,desti,gen_rtx_CONST_INT(HImode,-1)));
     emit_jump_insn(gen_jump(inici));
     emit_label(fi);
@@ -463,7 +463,7 @@ void emit_sisa_lshrhi3(rtx desti, rtx font, rtx quant)
 }
 
 
-void emit_sisa_ashlhi3(rtx desti, rtx font, rtx quant)
+void emit_inkel86_ashlhi3(rtx desti, rtx font, rtx quant)
 {
     rtx inici, fi, tmp;
 
@@ -473,12 +473,12 @@ void emit_sisa_ashlhi3(rtx desti, rtx font, rtx quant)
 
     emit_move_insn(tmp,font);
     emit_move_insn(desti,quant);
-    sisa_compare_op0 = desti;
-    sisa_compare_op1 = gen_reg_rtx(HImode);
-    emit_insn(gen_xorhi3(sisa_compare_op1,sisa_compare_op1,sisa_compare_op1));
+    inkel86_compare_op0 = desti;
+    inkel86_compare_op1 = gen_reg_rtx(HImode);
+    emit_insn(gen_xorhi3(inkel86_compare_op1,inkel86_compare_op1,inkel86_compare_op1));
     emit_label(inici);
     generar_salt(EQ,fi);
-    emit_insn(gen_sisa_ashlhi1(tmp,tmp));
+    emit_insn(gen_inkel86_ashlhi1(tmp,tmp));
     emit_insn(gen_addhi3(desti,desti,gen_rtx_CONST_INT(HImode,-1)));
     emit_jump_insn(gen_jump(inici));
     emit_label(fi);

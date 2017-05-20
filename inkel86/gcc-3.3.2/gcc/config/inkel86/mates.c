@@ -1,32 +1,32 @@
 
-int __sisa_sdivhi3(int, int);
-int __sisa_smodhi3(int, int);
-unsigned int __sisa_udivhi3(unsigned int, unsigned int);
-unsigned int __sisa_umodhi3(unsigned int, unsigned int);
-int __sisa_mulhi3(int, int);
-void SisaExit (int);
+int __inkel86_sdivhi3(int, int);
+int __inkel86_smodhi3(int, int);
+unsigned int __inkel86_udivhi3(unsigned int, unsigned int);
+unsigned int __inkel86_umodhi3(unsigned int, unsigned int);
+int __inkel86_mulhi3(int, int);
+void Inkel86Exit (int);
 
 /* Funcio temporal per al calcul de la divisio de dues
  * dades enteres de 16 bits. Aquesta implementacio es lenta i
  * s'ha de substituir
  */
-int __sisa_sdivhi3 (int a, int b)
+int __inkel86_sdivhi3 (int a, int b)
 {
     if (a < 0 && b > 0)
     {
-        return - __sisa_udivhi3(-a,b);
+        return - __inkel86_udivhi3(-a,b);
     }
     else if (a > 0 && b < 0)
     {
-        return - __sisa_udivhi3(a,-b);
+        return - __inkel86_udivhi3(a,-b);
     }
     else if (a < 0 && b < 0)
     {
-        return __sisa_udivhi3(-a,-b);
+        return __inkel86_udivhi3(-a,-b);
     }
     else
     {
-        return __sisa_udivhi3(a,b);
+        return __inkel86_udivhi3(a,b);
     }
 }
 
@@ -34,7 +34,7 @@ int __sisa_sdivhi3 (int a, int b)
  * dades enteres de 16 bits. Aquesta implementacio es lenta i
  * s'ha de substituir
  */
-int __sisa_smodhi3 (int a, int b)
+int __inkel86_smodhi3 (int a, int b)
 {
     int c=0;
     int result;
@@ -47,7 +47,7 @@ int __sisa_smodhi3 (int a, int b)
     {
         b=-b;
     }
-    result = __sisa_umodhi3(a,b);
+    result = __inkel86_umodhi3(a,b);
     return (c?-result:result);
 }
 
@@ -55,14 +55,14 @@ int __sisa_smodhi3 (int a, int b)
  * dades naturals de 16 bits. Aquesta implementacio es lenta i
  * s'ha de substituir
  */
-unsigned int __sisa_udivhi3 (unsigned int a, unsigned int b)
+unsigned int __inkel86_udivhi3 (unsigned int a, unsigned int b)
 {
     unsigned int q = 0;
     unsigned int c = b;
 
     if (b == 0)
     {
-        SisaExit(-6);
+        Inkel86Exit(-6);
     }
 
     while (b<=a) q++,b+=c;
@@ -74,13 +74,13 @@ unsigned int __sisa_udivhi3 (unsigned int a, unsigned int b)
  * dades naturals de 16 bits. Aquesta implementacio es lenta i
  * s'ha de substituir
  */
-unsigned int __sisa_umodhi3 (unsigned int a, unsigned int b)
+unsigned int __inkel86_umodhi3 (unsigned int a, unsigned int b)
 {
     unsigned int c = b;
 
     if (b == 0)
     {
-        SisaExit(-6);
+        Inkel86Exit(-6);
     }
 
     while (b<=a) b+=c;
@@ -92,12 +92,12 @@ unsigned int __sisa_umodhi3 (unsigned int a, unsigned int b)
  * dades de 16 bits. Aquesta implementacio es lenta i
  * s'ha de substituir
  */
-int __sisa_mulhi3 (int f1, int f2)
+int __inkel86_mulhi3 (int f1, int f2)
 {
     int tmp = f1;
 
     if (f1==0 || f2==0) return 0;
-    
+
     while(f2-- != 1) f1+=tmp;
 
     return f1;

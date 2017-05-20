@@ -42,7 +42,7 @@
     "and\\t%0,%1,%2"
 )
 
-(define_insn "sisa_ashrhi1"
+(define_insn "inkel86_ashrhi1"
     [(set (match_operand:HI 0 "register_operand" "=r")
           (ashiftrt:HI (match_operand:HI 1 "register_operand" "r")
                         (const_int 1)
@@ -53,7 +53,7 @@
     "sra\\t%0,%1"
 )
 
-(define_insn "sisa_lshrhi1"
+(define_insn "inkel86_lshrhi1"
     [(set (match_operand:HI 0 "register_operand" "=r")
           (lshiftrt:HI (match_operand:HI 1 "register_operand" "r")
                         (const_int 1)
@@ -64,7 +64,7 @@
     "srl\\t%0,%1"
 )
 
-(define_insn "sisa_ashlhi1"
+(define_insn "inkel86_ashlhi1"
     [(set (match_operand:HI 0 "register_operand" "=r")
           (ashift:HI (match_operand:HI 1 "register_operand" "r")
                         (const_int 1)
@@ -84,7 +84,7 @@
     ]
     ""
     {
-        emit_sisa_ashrhi3(operands[0],operands[1],operands[2]);
+        emit_inkel86_ashrhi3(operands[0],operands[1],operands[2]);
         DONE;
     }
 )
@@ -98,7 +98,7 @@
     ]
     ""
     {
-        emit_sisa_lshrhi3(operands[0],operands[1],operands[2]);
+        emit_inkel86_lshrhi3(operands[0],operands[1],operands[2]);
         DONE;
     }
 )
@@ -112,7 +112,7 @@
     ]
     ""
     {
-        emit_sisa_ashlhi3(operands[0],operands[1],operands[2]);
+        emit_inkel86_ashlhi3(operands[0],operands[1],operands[2]);
         DONE;
     }
 )
@@ -160,8 +160,8 @@
    (match_operand:HI 1 "register_operand" "")]
   ""
   {
-      sisa_compare_op0 = operands[0];
-      sisa_compare_op1 = operands[1];
+      inkel86_compare_op0 = operands[0];
+      inkel86_compare_op1 = operands[1];
       DONE;
   }
 )
@@ -175,8 +175,8 @@
     ]
     ""
     {
-        operands[1]=sisa_compare_op0;
-        operands[2]=sisa_compare_op1;
+        operands[1]=inkel86_compare_op0;
+        operands[2]=inkel86_compare_op1;
     }
 )
 
@@ -189,8 +189,8 @@
     ]
     ""
     {
-        operands[1]=sisa_compare_op0;
-        operands[2]=sisa_compare_op1;
+        operands[1]=inkel86_compare_op0;
+        operands[2]=inkel86_compare_op1;
     }
 )
 
@@ -203,8 +203,8 @@
     ]
     ""
     {
-        operands[1]=sisa_compare_op0;
-        operands[2]=sisa_compare_op1;
+        operands[1]=inkel86_compare_op0;
+        operands[2]=inkel86_compare_op1;
     }
 )
 
@@ -217,8 +217,8 @@
     ]
     ""
     {
-        operands[1]=sisa_compare_op0;
-        operands[2]=sisa_compare_op1;
+        operands[1]=inkel86_compare_op0;
+        operands[2]=inkel86_compare_op1;
     }
 )
 
@@ -231,8 +231,8 @@
     ]
     ""
     {
-        operands[1]=sisa_compare_op0;
-        operands[2]=sisa_compare_op1;
+        operands[1]=inkel86_compare_op0;
+        operands[2]=inkel86_compare_op1;
     }
 )
 
@@ -245,8 +245,8 @@
     ]
     ""
     {
-        operands[1]=sisa_compare_op0;
-        operands[2]=sisa_compare_op1;
+        operands[1]=inkel86_compare_op0;
+        operands[2]=inkel86_compare_op1;
     }
 )
 
@@ -259,8 +259,8 @@
     ]
     ""
     {
-        operands[1]=sisa_compare_op0;
-        operands[2]=sisa_compare_op1;
+        operands[1]=inkel86_compare_op0;
+        operands[2]=inkel86_compare_op1;
     }
 )
 
@@ -273,8 +273,8 @@
     ]
     ""
     {
-        operands[1]=sisa_compare_op0;
-        operands[2]=sisa_compare_op1;
+        operands[1]=inkel86_compare_op0;
+        operands[2]=inkel86_compare_op1;
     }
 )
 
@@ -287,8 +287,8 @@
     ]
     ""
     {
-        operands[1]=sisa_compare_op0;
-        operands[2]=sisa_compare_op1;
+        operands[1]=inkel86_compare_op0;
+        operands[2]=inkel86_compare_op1;
     }
 )
 
@@ -392,7 +392,7 @@
     }
 )
 
-(define_insn "sisa_bnozero"
+(define_insn "inkel86_bnozero"
   [(set (pc) (if_then_else
                            (ne (match_operand:HI 0 "register_operand" "r")
                                (const_int 0)
@@ -407,13 +407,13 @@
     if (get_attr_length(insn) == 2)
     {
         /* saltem a -32..31(PC) */
-        return "bne\t%0,%l1"; 
+        return "bne\t%0,%l1";
     }
     else
     {
         /* salt llarg */
         return "mhi\tr5,(%l1>>8)\n\tmli\tr5,%l1&255\n\tjne\t%0,r5";
-        
+
     }
   }
   [(set (attr "length") (if_then_else
@@ -428,7 +428,7 @@
   ]
 )
 
-(define_insn "sisa_bzero"
+(define_insn "inkel86_bzero"
   [(set (pc) (if_then_else
                           (eq (match_operand:HI 0 "register_operand" "r")
                               (const_int 0)
@@ -443,13 +443,13 @@
     if (get_attr_length(insn) == 2)
     {
         /* saltem a -32..31(PC) */
-        return "beq\t%0,%l1"; 
+        return "beq\t%0,%l1";
     }
     else
     {
         /* salt llarg */
         return "mhi\tr5,(%l1>>8)\n\tmli\tr5,%l1&255\n\tjeq\t%0,r5";
-        
+
     }
   }
   [(set (attr "length") (if_then_else
@@ -472,7 +472,7 @@
     if (get_attr_length(insn) == 2)
     {
         /* saltem a -32..31(PC) */
-        return "br\t%l0"; 
+        return "br\t%l0";
     }
     else
     {
@@ -509,13 +509,13 @@
      {
         rtx reg, mem;
         reg = force_reg(HImode,XEXP(operands[0],0));
-        emit_call_insn(gen_sisa_call(reg,operands[1]));
+        emit_call_insn(gen_inkel86_call(reg,operands[1]));
         DONE;
      }
   }
 )
 
-(define_insn "sisa_call"
+(define_insn "inkel86_call"
   [(call
     (mem:HI (match_operand:HI 0 "register_operand" "r"))   ;; si el registre no es HI no va
     (match_operand:HI 1 "" "i")
@@ -524,7 +524,7 @@
   ""
   "jalr\\t%0,r5"
 )
-  
+
 
 (define_expand "call_value"
   [(set (match_operand:HI 0 "register_operand" "=r")
@@ -540,14 +540,14 @@
      {
         rtx reg, mem;
         reg = force_reg(HImode,XEXP(operands[1],0));
-        emit_call_insn(gen_sisa_call_value(operands[0],reg,operands[2]));
+        emit_call_insn(gen_inkel86_call_value(operands[0],reg,operands[2]));
         DONE;
      }
   }
 )
 
 
-(define_insn "sisa_call_value"
+(define_insn "inkel86_call_value"
   [(set (match_operand:HI 0 "register_operand" "=r")
         (call
           (mem:HI (match_operand:HI 1 "register_operand" "r"))
@@ -617,7 +617,7 @@
   [(set (match_operand:HI 0 "register_operand" "=r,r,r,r,r,r,r")
         (match_operand:HI 1 "general_operand"   "r,I,K,S,Q,i,R"))]
   ""
-  { 
+  {
    switch(which_alternative)
    {
      case 0:
@@ -648,7 +648,7 @@
   [(set (match_operand:QI 0 "register_operand" "=r,r,r,r,r,r,r")
         (match_operand:QI 1 "general_operand"   "r,I,K,S,Q,i,R"))]
   ""
-  { 
+  {
    switch(which_alternative)
    {
      case 0:
@@ -721,17 +721,17 @@
         if (GET_MODE(operands[0]) == GET_MODE(reg) &&
             REGNO(operands[0]) == REGNO(reg))
         {
-            emit_insn(gen_sisa_zero_extendqihi1(operands[0]));
+            emit_insn(gen_inkel86_zero_extendqihi1(operands[0]));
         }
         else
         {
             if (GET_MODE(reg) == QImode)
             {
-                emit_insn(gen_sisa_zero_extendqihi2_reg(operands[0],reg));
+                emit_insn(gen_inkel86_zero_extendqihi2_reg(operands[0],reg));
             }
             else if (GET_MODE(reg) == HImode)
             {
-                emit_insn(gen_sisa_zero_extendqihi2_subreg(operands[0],reg));
+                emit_insn(gen_inkel86_zero_extendqihi2_subreg(operands[0],reg));
             }
             else
             {
@@ -742,32 +742,32 @@
    }
 )
 
-(define_insn "sisa_zero_extendqihi1"
+(define_insn "inkel86_zero_extendqihi1"
     [(set (subreg:QI (match_operand:HI 0 "register_operand" "=r") 2)
           (const_int 0)
      )
     ]
    ""
-   "mhi\\t%0,0\\t\\t;sisa_zero_extendqihi1"
+   "mhi\\t%0,0\\t\\t;inkel86_zero_extendqihi1"
 )
 
-(define_insn "sisa_zero_extendqihi2_subreg"
+(define_insn "inkel86_zero_extendqihi2_subreg"
     [(set (match_operand:HI 0 "register_operand" "=r")
           (zero_extend:HI (subreg:QI (match_operand:HI 1 "register_operand" "r") 0))
      )
     ]
    ""
-   "addi\\t%0,%1,0\\n\\tmhi\\t%0,0\\t\\t;sisa_zero_extendqihi2_subreg"
+   "addi\\t%0,%1,0\\n\\tmhi\\t%0,0\\t\\t;inkel86_zero_extendqihi2_subreg"
   [(set_attr "length" "4")]
 )
 
-(define_insn "sisa_zero_extendqihi2_reg"
+(define_insn "inkel86_zero_extendqihi2_reg"
     [(set (match_operand:HI 0 "register_operand" "=r")
           (zero_extend:HI (match_operand:QI 1 "register_operand" "r"))
      )
     ]
    ""
-   "addi\\t%0,%1,0\\n\\tmhi\\t%0,0\\t\\t;sisa_zero_extendqihi2_reg"
+   "addi\\t%0,%1,0\\n\\tmhi\\t%0,0\\t\\t;inkel86_zero_extendqihi2_reg"
   [(set_attr "length" "4")]
 )
 
@@ -793,17 +793,17 @@
         if (GET_MODE(operands[0]) == GET_MODE(reg) &&
             REGNO(operands[0]) == REGNO(reg))
         {
-            emit_insn(gen_sisa_extendqihi1(operands[0]));
+            emit_insn(gen_inkel86_extendqihi1(operands[0]));
         }
         else
         {
             if (GET_MODE(reg) == QImode)
             {
-                emit_insn(gen_sisa_extendqihi2_reg(operands[0],reg));
+                emit_insn(gen_inkel86_extendqihi2_reg(operands[0],reg));
             }
             else if (GET_MODE(reg) == HImode)
             {
-                emit_insn(gen_sisa_extendqihi2_subreg(operands[0],reg));
+                emit_insn(gen_inkel86_extendqihi2_subreg(operands[0],reg));
             }
             else
             {
@@ -815,7 +815,7 @@
 )
 
 ;;No fa res, es el comportament natural
-(define_insn "sisa_extendqihi1"
+(define_insn "inkel86_extendqihi1"
     [(set (match_operand:HI 0 "register_operand" "=r")
           (zero_extend:HI (subreg:QI (match_dup 0) 0))
      )
@@ -825,7 +825,7 @@
    [(set_attr "length" "0")]
 )
 
-(define_insn "sisa_extendqihi2_subreg"
+(define_insn "inkel86_extendqihi2_subreg"
     [(set (match_operand:HI 0 "register_operand" "=r")
           (zero_extend:HI (subreg:QI (match_operand:HI 1 "register_operand" "r") 0))
      )
@@ -834,7 +834,7 @@
    "addi\\t%0,%1,0"
 )
 
-(define_insn "sisa_extendqihi2_reg"
+(define_insn "inkel86_extendqihi2_reg"
     [(set (match_operand:HI 0 "register_operand" "=r")
           (zero_extend:HI (match_operand:QI 1 "register_operand" "r"))
      )
@@ -861,7 +861,7 @@
 )
 
 
-(define_insn "sisa_ne"
+(define_insn "inkel86_ne"
     [(set (match_operand:HI 0 "register_operand" "=r")
           (ne:HI (match_operand:HI 1 "register_operand" "%r")
                  (match_operand:HI 2 "register_operand" "r")

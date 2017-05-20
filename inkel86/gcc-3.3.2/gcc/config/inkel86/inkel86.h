@@ -1,6 +1,6 @@
 
-extern rtx sisa_compare_op0;
-extern rtx sisa_compare_op1;
+extern rtx inkel86_compare_op0;
+extern rtx inkel86_compare_op1;
 
 
 /* 10.2 Controlling the Compilation Driver, 'gcc' */
@@ -17,15 +17,15 @@ extern rtx sisa_compare_op1;
 #define LIB_SPEC ""
 
 /* 10.3 Run-time Target Specification */
-#define CPP_PREDEFINES "-Dsisa -DSISA"
-#define TARGET_VERSION fprintf(stderr, " SISA 1.0");
+#define CPP_PREDEFINES "-Dinkel86 -DINKEL86"
+#define TARGET_VERSION fprintf(stderr, " Inkel86v0");
 
 /* 0 en aquest cas es el target_flags per defecte
  * Si no es defineix aixo, cc1 fa un segfault en l'inicialitzacio
  */
 #define TARGET_SWITCHES {{"",0}}
 
-#define OVERRIDE_OPTIONS sisa_override_options()
+#define OVERRIDE_OPTIONS inkel86_override_options()
 
 /* 10.4 Definng data structures for pre-function information */
 
@@ -50,7 +50,7 @@ extern rtx sisa_compare_op1;
 #define PARM_BOUNDARY BITS_PER_UNIT
 
 /* Mida en bits del mode mes gran que pot usar la maquina per a integers
- */ 
+ */
 #define MAX_FIXED_MODE_SIZE 16
 
 /* Nou mode que te una variable quan la volem guardar en un registre */
@@ -176,7 +176,7 @@ enum reg_class
 /* Offset entre el frame pointer i la primera variable local */
 #define STARTING_FRAME_OFFSET 0
 
-/* Offset entre el argument pointer (frame pointer en SISA) i el primer argument */
+/* Offset entre el argument pointer (frame pointer en Inkel86) i el primer argument */
 #define FIRST_PARM_OFFSET(FNDECL) UNITS_PER_WORD
 
 #define RETURN_ADDR_RTX(COUNT,FRAMEADDR)  \
@@ -233,12 +233,12 @@ enum reg_class
 /* 10.10.8 How ScalarFunction Values Are Returned */
 
 /* per on es retornen els resultats de les funcions (r1) */
-#define FUNCTION_VALUE(valtype,func) sisa_function_value(valtype,func)
+#define FUNCTION_VALUE(valtype,func) inkel86_function_value(valtype,func)
 
 /* per on es retornen els resultats de les funcions
  * de llibreries de compilacio (r1)
  */
-#define LIBCALL_VALUE(mode) sisa_lib_value(mode)
+#define LIBCALL_VALUE(mode) inkel86_lib_value(mode)
 
 /* indica els registres que retornen valors d'una funcio */
 #define FUNCTION_VALUE_REGNO_P(regno) ((regno) == 1)
@@ -289,11 +289,11 @@ enum reg_class
 
 /* 10.13 Library Calls */
 
-#define MULHI3_LIBCALL  "__sisa_mulhi3"
-#define UDIVHI3_LIBCALL "__sisa_udivhi3"
-#define SDIVHI3_LIBCALL "__sisa_sdivhi3"
-#define SMODHI3_LIBCALL "__sisa_smodhi3"
-#define UMODHI3_LIBCALL "__sisa_umodhi3"
+#define MULHI3_LIBCALL  "__inkel86_mulhi3"
+#define UDIVHI3_LIBCALL "__inkel86_udivhi3"
+#define SDIVHI3_LIBCALL "__inkel86_sdivhi3"
+#define SMODHI3_LIBCALL "__inkel86_smodhi3"
+#define UMODHI3_LIBCALL "__inkel86_umodhi3"
 
 #define INIT_TARGET_OPTABS \
     smul_optab->handlers[(int) HImode].libfunc = init_one_libfunc (MULHI3_LIBCALL);  \
@@ -334,7 +334,7 @@ enum reg_class
 #define LEGITIMATE_REG_ADDRESS_P(MODE,X) 		        \
              (GET_CODE(X) == REG && REG_OK_FOR_BASE_P(X))
 /*
- * SISA sols te un mode d'adrecament:
+ * Inkel86 sols te un mode d'adrecament:
  * registre + 6 bit offset.
  */
 #define GO_IF_LEGITIMATE_ADDRESS(MODE,X,ADDR)           \
@@ -363,7 +363,7 @@ enum reg_class
  * Per a operar amb aquestes constants necessitem
  * dues operacions per a carregar la constant mes
  * l'operacio en si.
- * 
+ *
  */
 #define CONST_COSTS(X, CODE, OUTER_CODE)        \
   case CONST_INT:                               \
@@ -427,12 +427,12 @@ enum reg_class
 
 #define ASM_DECLARE_FUNCTION_NAME(stream,name,decl)      \
 {                                                        \
-    if (!(strcmp(name,"SisaMain"))) fputs(".main\n",stream); \
+    if (!(strcmp(name,"Inkel86Main"))) fputs(".main\n",stream); \
     else fprintf(stream,".subr %s\n",name);              \
 }
 
-/* Target Hook per a fer una variable global. No aplicable en SISA */
-#define TARGET_ASM_GLOBALIZE_LABEL sisa_globalize_label
+/* Target Hook per a fer una variable global. No aplicable en Inkel86 */
+#define TARGET_ASM_GLOBALIZE_LABEL inkel86_globalize_label
 
 /* Com mostrar un symbol_ref */
 #define ASM_OUTPUT_SYMBOL_REF(stream, sym) fprintf(stream,"%s",sym)
@@ -477,7 +477,7 @@ enum reg_class
 /* Com saltar un n bytes per a tenir una dada alineada */
 #define ASM_OUTPUT_SKIP(stream,nbytes) \
   fprintf(stream,"\t.DB %d DUP (0)\n",nbytes)
-  
+
 /* Com mostrar alineament de dades: no usem alineamnet */
 #define ASM_OUTPUT_ALIGN(stream,power)
 
@@ -507,7 +507,7 @@ enum reg_class
 
 /* Tipus usat en les taules de salts */
 #define CASE_VECTOR_MODE HImode
-  
+
 /* numero maxim de bytes que es poden moure rapidament amb una sola instruccio */
 #define MOVE_MAX 2
 
@@ -517,7 +517,7 @@ enum reg_class
 /* mode de les adreces de funcions */
 #define FUNCTION_MODE HImode
 
-/* Indica quan un int de inprec bits es pot convertir de forma segura a un 
+/* Indica quan un int de inprec bits es pot convertir de forma segura a un
    int de outprec bits
  */
 #define TRULY_NOOP_TRUNCATION(outprec, inprec) 1
