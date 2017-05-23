@@ -34,8 +34,8 @@ extern rtx inkel86_compare_op1;
 #define BITS_BIG_ENDIAN 0
 #define BYTES_BIG_ENDIAN 0
 #define WORDS_BIG_ENDIAN 0
-#define BITS_PER_WORD 16
-#define UNITS_PER_WORD 2
+#define BITS_PER_WORD 32
+#define UNITS_PER_WORD 4
 #define POINTER_SIZE BITS_PER_WORD
 
 /* Indica que els alineaments son forsosos, i.e. q no es que fan
@@ -51,12 +51,12 @@ extern rtx inkel86_compare_op1;
 
 /* Mida en bits del mode mes gran que pot usar la maquina per a integers
  */
-#define MAX_FIXED_MODE_SIZE 16
+#define MAX_FIXED_MODE_SIZE 32
 
 /* Nou mode que te una variable quan la volem guardar en un registre */
 #define PROMOTE_MODE(MODE, UNSIGNEDP, TYPE) \
- if (GET_MODE_CLASS (MODE) == MODE_INT && GET_MODE_SIZE (MODE) < 2)\
- (MODE) = HImode, (UNSIGNEDP) = 0
+ if (GET_MODE_CLASS (MODE) == MODE_INT && GET_MODE_SIZE (MODE) < 4)\
+ (MODE) = SImode, (UNSIGNEDP) = 0
 
 /* Indica que la regla anterior de promocio tambe s'aplica al retorn
  * de resultats d'una funcio
@@ -66,14 +66,14 @@ extern rtx inkel86_compare_op1;
 /* 10.6 Layout of source Language Data Types */
 #define SHORT_TYPE_SIZE BITS_PER_WORD
 #define INT_TYPE_SIZE BITS_PER_WORD
-#define LONG_TYPE_SIZE (BITS_PER_WORD*2)
+#define LONG_TYPE_SIZE BITS_PER_WORD
 #define LONG_LONG_TYPE_SIZE (BITS_PER_WORD*2)
 #define CHAR_TYPE_SIZE BITS_PER_UNIT
 
 /* definicio de flotants, de 32 i 64 (el 64 es per a que vagi libgcc) */
-#define FLOAT_TYPE_SIZE (BITS_PER_WORD*2)
+#define FLOAT_TYPE_SIZE BITS_PER_WORD
 #define DOUBLE_TYPE_SIZE (BITS_PER_WORD*2)
-#define LONG_DOUBLE_TYPE_SIZE (BITS_PER_WORD*4)
+#define LONG_DOUBLE_TYPE_SIZE (BITS_PER_WORD*2)
 
 /* Especifica si per defecte char es signed o unsigned
  */
@@ -105,7 +105,7 @@ extern rtx inkel86_compare_op1;
 
 /* 1 si es pot accedir a mode1 com a mode2 sense haver de copiar la dada */
 #define MODES_TIEABLE_P(MODE1, MODE2) \
-    (((MODE1) == (MODE2)) || (GET_MODE_SIZE(MODE1) <= 2 && GET_MODE_SIZE(MODE2) <=2))
+    (((MODE1) == (MODE2)) || (GET_MODE_SIZE(MODE1) <= 4 && GET_MODE_SIZE(MODE2) <=4))
 
 /* 10.8.4 Handling Leaf Functions */
 
@@ -212,7 +212,7 @@ enum reg_class
 /* Passem per referencia els tipus que no sabem passar per valor per la pila */
 /* Passar sols variables de 16 bits per valor
    La resta les passarem per referencia */
-#define FUNCTION_ARG_PASS_BY_REFERENCE(CUM,MODE,TYPE,NAMED) (GET_MODE_SIZE(MODE) > GET_MODE_SIZE(HImode))
+#define FUNCTION_ARG_PASS_BY_REFERENCE(CUM,MODE,TYPE,NAMED) (GET_MODE_SIZE(MODE) > GET_MODE_SIZE(SImode))
 
 #define CUMULATIVE_ARGS int
 
@@ -289,18 +289,18 @@ enum reg_class
 
 /* 10.13 Library Calls */
 
-#define MULHI3_LIBCALL  "__inkel86_mulhi3"
-#define UDIVHI3_LIBCALL "__inkel86_udivhi3"
-#define SDIVHI3_LIBCALL "__inkel86_sdivhi3"
-#define SMODHI3_LIBCALL "__inkel86_smodhi3"
-#define UMODHI3_LIBCALL "__inkel86_umodhi3"
+#define MULSI3_LIBCALL  "__inkel86_mulsi3"
+#define UDIVSI3_LIBCALL "__inkel86_udivsi3"
+#define SDIVSI3_LIBCALL "__inkel86_sdivsi3"
+#define SMODSI3_LIBCALL "__inkel86_smodsi3"
+#define UMODSI3_LIBCALL "__inkel86_umodsi3"
 
 #define INIT_TARGET_OPTABS \
-    smul_optab->handlers[(int) HImode].libfunc = init_one_libfunc (MULHI3_LIBCALL);  \
-    umod_optab->handlers[(int) HImode].libfunc = init_one_libfunc (UMODHI3_LIBCALL); \
-    smod_optab->handlers[(int) HImode].libfunc = init_one_libfunc (SMODHI3_LIBCALL); \
-    udiv_optab->handlers[(int) HImode].libfunc = init_one_libfunc (UDIVHI3_LIBCALL); \
-    sdiv_optab->handlers[(int) HImode].libfunc = init_one_libfunc (SDIVHI3_LIBCALL);
+    smul_optab->handlers[(int) SImode].libfunc = init_one_libfunc (MULSI3_LIBCALL);  \
+    umod_optab->handlers[(int) SImode].libfunc = init_one_libfunc (UMODSI3_LIBCALL); \
+    smod_optab->handlers[(int) SImode].libfunc = init_one_libfunc (SMODSI3_LIBCALL); \
+    udiv_optab->handlers[(int) SImode].libfunc = init_one_libfunc (UDIVSI3_LIBCALL); \
+    sdiv_optab->handlers[(int) SImode].libfunc = init_one_libfunc (SDIVSI3_LIBCALL);
 
 /* 10.14 Addressing Modes */
 
@@ -506,16 +506,16 @@ enum reg_class
 /* 10.26 Miscellaneous Parameters */
 
 /* Tipus usat en les taules de salts */
-#define CASE_VECTOR_MODE HImode
+#define CASE_VECTOR_MODE SImode
 
 /* numero maxim de bytes que es poden moure rapidament amb una sola instruccio */
-#define MOVE_MAX 2
+#define MOVE_MAX 4
 
 /* mode dels punters */
-#define Pmode HImode
+#define Pmode SImode
 
 /* mode de les adreces de funcions */
-#define FUNCTION_MODE HImode
+#define FUNCTION_MODE SImode
 
 /* Indica quan un int de inprec bits es pot convertir de forma segura a un
    int de outprec bits

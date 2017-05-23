@@ -45,7 +45,7 @@ ostringstream * os;
 char text [MAX_STRING_LENGTH];
 }
 
-%token <text> CODE DATA SUBR MAIN DEFINE COMA REG ADDI OP3REGS OP2REGS 
+%token <text> CODE DATA SUBR MAIN DEFINE COMA REG ADDI OP3REGS OP2REGS
 STORE LOAD BRANCH MOVE IDENTIFICADOR CONST_INT STRING DOSPUNTS PAR_ESQ PAR_DRET
 AND SHIFT DUP INTERROGANT SUMA BRANCH_IN OP1REGS HALT AR_HEADER AR_HEADER2
 BARRA APOSTROF NOM_FITXER IN OUT
@@ -53,8 +53,8 @@ BARRA APOSTROF NOM_FITXER IN OUT
 %type <os> definicio define instruccions instruccio offsetReg etiqueta expressio constants
 
 %start fitxer
-   
-%%   
+
+%%
 
 fitxer         : seccions
                | AR_HEADER AR_HEADER2 seccions_lib
@@ -124,13 +124,13 @@ define         : DEFINE CONST_INT DUP PAR_ESQ CONST_INT PAR_DRET
                  }
                | DEFINE CONST_INT
                  {
-                    $$ = Concat("\t",$1,"\t",$2); 
+                    $$ = Concat("\t",$1,"\t",$2);
                  }
                | DEFINE IDENTIFICADOR
                  {
                     ostringstream * tmp;
                     tmp = UsIdentificador($2);
-                    $$ = Concat("\t",$1,"\t",tmp,""); 
+                    $$ = Concat("\t",$1,"\t",tmp,"");
                  }
                | DEFINE IDENTIFICADOR SUMA CONST_INT
                  {
@@ -140,7 +140,7 @@ define         : DEFINE CONST_INT DUP PAR_ESQ CONST_INT PAR_DRET
                  }
                | DEFINE STRING
                  {
-                    $$ = Concat("\t",$1,"\t",$2); 
+                    $$ = Concat("\t",$1,"\t",$2);
                  }
                | DEFINE constants
                  {
@@ -317,7 +317,7 @@ expressio      : PAR_ESQ expressio PAR_DRET
                     unsigned int val1, val2;
                     val1=atoi($1);
                     val2=atoi($3);
-                    if ((val1&val2) >= 256)
+                    if ((val1&val2) >= 65536)
                     {
                         fprintf(stderr,"Error en linia %d, immediat fora de rang\n",liniaActual);
                         exit(-1);
@@ -330,7 +330,7 @@ expressio      : PAR_ESQ expressio PAR_DRET
                     val1=atoi($1);
                     val2=atoi($3);
                     res=val1>>val2;
-                    if (res < -128 || res >= 256)
+                    if (res < -32768 || res >= 65536)
                     {
                         fprintf(stderr,"Error en linia %d, immediat fora de rang\n",liniaActual);
                         exit(-1);
@@ -340,7 +340,7 @@ expressio      : PAR_ESQ expressio PAR_DRET
                | CONST_INT
                  {
                     int val=atoi($1);
-                    if (val < -128 || val > 255)
+                    if (val < -32768 || val > 32768)
                     {
                         fprintf(stderr,"Error en linia %d, immediat fora de rang\n",liniaActual);
                         exit(-1);
@@ -349,6 +349,6 @@ expressio      : PAR_ESQ expressio PAR_DRET
                  }
                ;
 
-%%   
-   
+%%
+
 

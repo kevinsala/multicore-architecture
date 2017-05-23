@@ -116,7 +116,7 @@ void inkel86_function_prologue (FILE *file, HOST_WIDE_INT size)
         }
         else
         {
-            fprintf(file,"\tmhi\tr7,-%d>>8\n\tmli\tr7,-%d&255\n\tadd\tr7,r7,r6\n",espai,espai);
+            fprintf(file,"\tmhi\tr7,-%d>>16\n\tmli\tr7,-%d&65535\n\tadd\tr7,r7,r6\n",espai,espai);
         }
     }
 
@@ -301,7 +301,7 @@ void generar_salt (enum rtx_code tipus, rtx operand)
 {
     int canvi_condicio = 0;
     /* registre temporal on guardem el resultat de la comparacio */
-    rtx tmp_reg = gen_reg_rtx(HImode);
+    rtx tmp_reg = gen_reg_rtx(SImode);
 
     rtx tst_insn, inkel86_cmp_insn;
     switch (tipus)
@@ -315,8 +315,8 @@ void generar_salt (enum rtx_code tipus, rtx operand)
         inkel86_cmp_insn = gen_inkel86_ne(tmp_reg,inkel86_compare_op0,inkel86_compare_op1);
         break;
       default:
-        tst_insn = gen_rtx(tipus,HImode,inkel86_compare_op0,inkel86_compare_op1);
-        inkel86_cmp_insn = gen_rtx(SET,HImode,tmp_reg,tst_insn);
+        tst_insn = gen_rtx(tipus,SImode,inkel86_compare_op0,inkel86_compare_op1);
+        inkel86_cmp_insn = gen_rtx(SET,SImode,tmp_reg,tst_insn);
         break;
     }
 
@@ -359,9 +359,9 @@ struct gcc_target targetm = TARGET_INITIALIZER;
 
 void inkel86_override_options (void)
 {
-  memset (real_format_for_mode, 0, sizeof(real_format_for_mode));
+  /*memset (real_format_for_mode, 0, sizeof(real_format_for_mode));
   real_format_for_mode[SFmode - QFmode] = &ieee_single_format;
-  real_format_for_mode[DFmode - QFmode] = &ieee_double_format;
+  real_format_for_mode[DFmode - QFmode] = &ieee_double_format;*/
 }
 
 rtx inkel86_function_value (tree type, tree func)
@@ -369,7 +369,7 @@ rtx inkel86_function_value (tree type, tree func)
     if (int_size_in_bytes(type) <= UNITS_PER_WORD)
     {
         /* promocionem els possibles retorns de char a int */
-        return gen_rtx_REG(HImode,1);
+        return gen_rtx_REG(TYPE_MODE(type),1);
     }
     else
     {
@@ -416,46 +416,46 @@ bool inkel86_target_asm_integer (rtx x, unsigned int size, int aligned_p)
     return true;
 }
 
-void emit_inkel86_ashrhi3(rtx desti, rtx font, rtx quant)
+void emit_inkel86_ashrsi3(rtx desti, rtx font, rtx quant)
 {
     rtx inici, fi, tmp;
 
     inici = gen_label_rtx();
     fi = gen_label_rtx();
-    tmp = gen_reg_rtx(HImode);
+    tmp = gen_reg_rtx(SImode);
 
     emit_move_insn(tmp,font);
     emit_move_insn(desti,quant);
     inkel86_compare_op0 = desti;
-    inkel86_compare_op1 = gen_reg_rtx(HImode);
-    emit_insn(gen_xorhi3(inkel86_compare_op1,inkel86_compare_op1,inkel86_compare_op1));
+    inkel86_compare_op1 = gen_reg_rtx(SImode);
+    emit_insn(gen_xorsi3(inkel86_compare_op1,inkel86_compare_op1,inkel86_compare_op1));
     emit_label(inici);
     generar_salt(EQ,fi);
-    emit_insn(gen_inkel86_ashrhi1(tmp,tmp));
-    emit_insn(gen_addhi3(desti,desti,gen_rtx_CONST_INT(HImode,-1)));
+    emit_insn(gen_inkel86_ashrsi1(tmp,tmp));
+    emit_insn(gen_addsi3(desti,desti,gen_rtx_CONST_INT(SImode,-1)));
     emit_jump_insn(gen_jump(inici));
     emit_label(fi);
     /* Ha d'acabar amb un SET per a poder assignar el REG_EQUAL */
     emit_move_insn(desti,tmp);
 }
 
-void emit_inkel86_lshrhi3(rtx desti, rtx font, rtx quant)
+void emit_inkel86_lshrsi3(rtx desti, rtx font, rtx quant)
 {
     rtx inici, fi, tmp;
 
     inici = gen_label_rtx();
     fi = gen_label_rtx();
-    tmp = gen_reg_rtx(HImode);
+    tmp = gen_reg_rtx(SImode);
 
     emit_move_insn(tmp,font);
     emit_move_insn(desti,quant);
     inkel86_compare_op0 = desti;
-    inkel86_compare_op1 = gen_reg_rtx(HImode);
-    emit_insn(gen_xorhi3(inkel86_compare_op1,inkel86_compare_op1,inkel86_compare_op1));
+    inkel86_compare_op1 = gen_reg_rtx(SImode);
+    emit_insn(gen_xorsi3(inkel86_compare_op1,inkel86_compare_op1,inkel86_compare_op1));
     emit_label(inici);
     generar_salt(EQ,fi);
-    emit_insn(gen_inkel86_lshrhi1(tmp,tmp));
-    emit_insn(gen_addhi3(desti,desti,gen_rtx_CONST_INT(HImode,-1)));
+    emit_insn(gen_inkel86_lshrsi1(tmp,tmp));
+    emit_insn(gen_addsi3(desti,desti,gen_rtx_CONST_INT(SImode,-1)));
     emit_jump_insn(gen_jump(inici));
     emit_label(fi);
     /* Ha d'acabar amb un SET per a poder assignar el REG_EQUAL */
@@ -463,23 +463,23 @@ void emit_inkel86_lshrhi3(rtx desti, rtx font, rtx quant)
 }
 
 
-void emit_inkel86_ashlhi3(rtx desti, rtx font, rtx quant)
+void emit_inkel86_ashlsi3(rtx desti, rtx font, rtx quant)
 {
     rtx inici, fi, tmp;
 
     inici = gen_label_rtx();
     fi = gen_label_rtx();
-    tmp = gen_reg_rtx(HImode);
+    tmp = gen_reg_rtx(SImode);
 
     emit_move_insn(tmp,font);
     emit_move_insn(desti,quant);
     inkel86_compare_op0 = desti;
-    inkel86_compare_op1 = gen_reg_rtx(HImode);
-    emit_insn(gen_xorhi3(inkel86_compare_op1,inkel86_compare_op1,inkel86_compare_op1));
+    inkel86_compare_op1 = gen_reg_rtx(SImode);
+    emit_insn(gen_xorsi3(inkel86_compare_op1,inkel86_compare_op1,inkel86_compare_op1));
     emit_label(inici);
     generar_salt(EQ,fi);
-    emit_insn(gen_inkel86_ashlhi1(tmp,tmp));
-    emit_insn(gen_addhi3(desti,desti,gen_rtx_CONST_INT(HImode,-1)));
+    emit_insn(gen_inkel86_ashlsi1(tmp,tmp));
+    emit_insn(gen_addsi3(desti,desti,gen_rtx_CONST_INT(SImode,-1)));
     emit_jump_insn(gen_jump(inici));
     emit_label(fi);
     /* Ha d'acabar amb un SET per a poder assignar el REG_EQUAL */

@@ -387,7 +387,7 @@ INSTALL_LIBGCC = install-libgcc
 # Options to use when compiling libgcc2.a.
 #
 LIBGCC2_DEBUG_CFLAGS = -g
-LIBGCC2_CFLAGS = -O2 $(LIBGCC2_INCLUDES) $(GCC_CFLAGS) $(TARGET_LIBGCC2_CFLAGS) $(LIBGCC2_DEBUG_CFLAGS) $(GTHREAD_FLAGS) -DIN_LIBGCC2 -D__GCC_FLOAT_NOT_NEEDED @inhibit_libc@
+LIBGCC2_CFLAGS = $(LIBGCC2_INCLUDES) $(GCC_CFLAGS) $(TARGET_LIBGCC2_CFLAGS) $(LIBGCC2_DEBUG_CFLAGS) $(GTHREAD_FLAGS) -DIN_LIBGCC2 -D__GCC_FLOAT_NOT_NEEDED @inhibit_libc@
 
 # Additional options to use when compiling libgcc2.a.
 # Some targets override this to -isystem include
@@ -1915,7 +1915,7 @@ gtyp-gen.h: Makefile
 	for l in $$gf; do \
 	echo "\"$$l\", "; done >> tmp-gtyp.h
 	echo "NULL};" >> tmp-gtyp.h
-	$(SHELL) $(srcdir)/move-if-change tmp-gtyp.h gtyp-gen.h 
+	$(SHELL) $(srcdir)/move-if-change tmp-gtyp.h gtyp-gen.h
 
 s-gtype: gengtype$(build_exeext) $(GTFILES)
 	$(RUN_GEN) ./gengtype
@@ -2838,7 +2838,7 @@ install-common: native $(EXTRA_PARTS) lang.install-common
 	fi
 	$(INSTALL_SCRIPT) gccbug $(DESTDIR)$(bindir)/$(GCCBUG_INSTALL_NAME)
 
-# Install the driver program as $(target_alias)-gcc, 
+# Install the driver program as $(target_alias)-gcc,
 # $(target-alias)-gcc-$(version)
 # and also as either gcc (if native) or $(gcc_tooldir)/bin/gcc.
 install-driver: installdirs xgcc$(exeext)
