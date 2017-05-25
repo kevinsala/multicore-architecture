@@ -27,7 +27,6 @@ class InkelPentiun:
         self.old_cache_i_tag = list(self.cache_i_tag)
         self.old_cache_i_data = list(self.cache_i_data)
         self.old_cache_d_v = list(self.cache_d_v)
-        self.old_cache_d_d = list(self.cache_d_d)
         self.old_cache_d_tag = list(self.cache_d_tag)
         self.old_cache_d_data = list(self.cache_d_data)
         self.old_reg_b = list(self.reg_b)
@@ -120,7 +119,7 @@ class InkelPentiun:
 
         if index == -1:
             index = self.cache_d_lru.index(3)
-            if self.cache_d_d[index]:
+            if self.cache_d_v[index]:
                 self._write_to_mem(self.cache_d_data[index], self.cache_d_tag[index] << 4)
 
                 # A dirty eviction is seen already at the end of the execution of the instruction
@@ -128,7 +127,6 @@ class InkelPentiun:
                 self._update_old_mem(self.cache_d_data[index], self.cache_d_tag[index] << 4)
 
             self.cache_d_v[index] = True
-            self.cache_d_d[index] = False
             self.cache_d_tag[index] = tag
             self.cache_d_data[index] = self._read_from_mem(addr)
 
@@ -171,7 +169,6 @@ class InkelPentiun:
 
         cache_line = cache_line[0:(lsb * 2)] + data_s + cache_line[(msb * 2):len(cache_line)]
         self.cache_d_data[index] = cache_line
-        self.cache_d_d[index] = True
 
 
     def __init__(self, mem_boot, mem_sys = ""):
@@ -182,7 +179,6 @@ class InkelPentiun:
         self.cache_i_data = ["", "", "", ""]
 
         self.cache_d_v = [False, False, False, False]
-        self.cache_d_d = [False, False, False, False]
         self.cache_d_tag = [0, 0, 0, 0]
         self.cache_d_lru = [0, 1, 2, 3]
         self.cache_d_data = ["", "", "", ""]
@@ -326,7 +322,6 @@ class InkelPentiun:
             print self.cache_i_data
             print "------------------------------"
             print self.cache_d_v
-            print self.cache_d_d
             print self.cache_d_tag
             print self.cache_d_data
             print "------------------------------"
