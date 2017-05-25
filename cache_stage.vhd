@@ -19,9 +19,9 @@ ENTITY cache_stage IS
 		invalid_access  : OUT   STD_LOGIC;
 		arb_req         : OUT   STD_LOGIC;
 		arb_ack         : IN    STD_LOGIC;
-		mem_cmd         : OUT   STD_LOGIC_VECTOR(2 DOWNTO 0);
-		mem_addr        : OUT   STD_LOGIC_VECTOR(31 DOWNTO 0);
-		mem_done        : IN    STD_LOGIC;
+		mem_cmd         : INOUT STD_LOGIC_VECTOR(2 DOWNTO 0);
+		mem_addr        : INOUT STD_LOGIC_VECTOR(31 DOWNTO 0);
+		mem_done        : INOUT STD_LOGIC;
 		mem_data        : INOUT STD_LOGIC_VECTOR(127 DOWNTO 0);
 		sb_store_id     : IN    STD_LOGIC_VECTOR(3 DOWNTO 0);
 		sb_store_commit : IN    STD_LOGIC;
@@ -43,9 +43,9 @@ ARCHITECTURE cache_stage_behavior OF cache_stage IS
 			invalid_access : OUT   STD_LOGIC;
 			arb_req        : OUT   STD_LOGIC;
 			arb_ack        : IN    STD_LOGIC;
-			mem_cmd        : OUT   STD_LOGIC_VECTOR(2 DOWNTO 0);
-			mem_addr       : OUT   STD_LOGIC_VECTOR(31 DOWNTO 0);
-			mem_done       : IN    STD_LOGIC;
+			mem_cmd        : INOUT STD_LOGIC_VECTOR(2 DOWNTO 0);
+			mem_addr       : INOUT STD_LOGIC_VECTOR(31 DOWNTO 0);
+			mem_done       : INOUT STD_LOGIC;
 			mem_data       : INOUT STD_LOGIC_VECTOR(127 DOWNTO 0);
 			repl           : OUT   STD_LOGIC;
 			repl_addr      : OUT   STD_LOGIC_VECTOR(31 DOWNTO 0);
@@ -156,5 +156,5 @@ BEGIN
 	arb_req <= arb_req_i;
 	mem_cmd <= mem_cmd_i;
 
-	sb_sleep <= '1' WHEN arb_req_i = '1' OR mem_cmd_i = CMD_GET OR mem_cmd_i = CMD_PUT ELSE '0';
+	sb_sleep <= arb_req_i;
 END cache_stage_behavior;

@@ -19,9 +19,9 @@ ARCHITECTURE structure OF inkel_pentwice IS
 			d_arb_req  : OUT   STD_LOGIC;
 			i_arb_ack  : IN    STD_LOGIC;
 			d_arb_ack  : IN    STD_LOGIC;
-			mem_cmd    : OUT   STD_LOGIC_VECTOR(2 DOWNTO 0);
-			mem_addr   : OUT   STD_LOGIC_VECTOR(31  DOWNTO 0);
-			mem_done   : IN    STD_LOGIC;
+			mem_cmd    : INOUT STD_LOGIC_VECTOR(2 DOWNTO 0);
+			mem_addr   : INOUT STD_LOGIC_VECTOR(31  DOWNTO 0);
+			mem_done   : INOUT STD_LOGIC;
 			mem_data   : INOUT STD_LOGIC_VECTOR(127 DOWNTO 0);
 			pc_out     : OUT   STD_LOGIC_VECTOR(31  DOWNTO 0)
 		);

@@ -11,9 +11,9 @@ ENTITY inkel_pentiun IS
 		d_arb_req  : OUT   STD_LOGIC;
 		i_arb_ack  : IN    STD_LOGIC;
 		d_arb_ack  : IN    STD_LOGIC;
-		mem_cmd    : OUT   STD_LOGIC_VECTOR(2 DOWNTO 0);
-		mem_addr   : OUT   STD_LOGIC_VECTOR(31 DOWNTO 0);
-		mem_done   : IN    STD_LOGIC;
+		mem_cmd    : INOUT STD_LOGIC_VECTOR(2 DOWNTO 0);
+		mem_addr   : INOUT STD_LOGIC_VECTOR(31 DOWNTO 0);
+		mem_done   : INOUT STD_LOGIC;
 		mem_data   : INOUT STD_LOGIC_VECTOR(127 DOWNTO 0);
 		pc_out     : OUT   STD_LOGIC_VECTOR(31  DOWNTO 0)
 	);
@@ -127,9 +127,9 @@ ARCHITECTURE structure OF inkel_pentiun IS
 			invalid_access  : OUT   STD_LOGIC;
 			arb_req         : OUT   STD_LOGIC;
 			arb_ack         : IN    STD_LOGIC;
-			mem_cmd         : OUT   STD_LOGIC_VECTOR(2 DOWNTO 0);
-			mem_addr        : OUT   STD_LOGIC_VECTOR(31  DOWNTO 0);
-			mem_done        : IN    STD_LOGIC;
+			mem_cmd         : INOUT STD_LOGIC_VECTOR(2 DOWNTO 0);
+			mem_addr        : INOUT STD_LOGIC_VECTOR(31  DOWNTO 0);
+			mem_done        : INOUT STD_LOGIC;
 			mem_data        : INOUT STD_LOGIC_VECTOR(127 DOWNTO 0);
 			sb_store_id     : IN    STD_LOGIC_VECTOR(3   DOWNTO 0);
 			sb_store_commit : IN    STD_LOGIC;

@@ -18,9 +18,9 @@ ENTITY cache_data IS
 		invalid_access : OUT   STD_LOGIC;
 		arb_req        : OUT   STD_LOGIC;
 		arb_ack        : IN    STD_LOGIC;
-		mem_cmd        : OUT   STD_LOGIC_VECTOR(2 DOWNTO 0);
-		mem_addr       : OUT   STD_LOGIC_VECTOR(31 DOWNTO 0);
-		mem_done       : IN    STD_LOGIC;
+		mem_cmd        : INOUT STD_LOGIC_VECTOR(2 DOWNTO 0);
+		mem_addr       : INOUT STD_LOGIC_VECTOR(31 DOWNTO 0);
+		mem_done       : INOUT STD_LOGIC;
 		mem_data       : INOUT STD_LOGIC_VECTOR(127 DOWNTO 0);
 		repl           : OUT   STD_LOGIC;
 		repl_addr      : OUT   STD_LOGIC_VECTOR(31 DOWNTO 0);
@@ -102,12 +102,14 @@ ARCHITECTURE cache_data_behavior OF cache_data IS
 	PROCEDURE clear_bus(
 			SIGNAL mem_cmd  : OUT STD_LOGIC_VECTOR(2   DOWNTO 0);
 			SIGNAL mem_addr : OUT STD_LOGIC_VECTOR(31  DOWNTO 0);
-			SIGNAL mem_data : OUT STD_LOGIC_VECTOR(127 DOWNTO 0)
+			SIGNAL mem_data : OUT STD_LOGIC_VECTOR(127 DOWNTO 0);
+			SIGNAL mem_done : OUT STD_LOGIC
 		) IS
 	BEGIN
 		mem_cmd  <= (OTHERS => 'Z');
 		mem_addr <= (OTHERS => 'Z');
 		mem_data <= (OTHERS => 'Z');
+		mem_done <= 'Z';
 	END PROCEDURE;
 
 	-- Procedure to execute the Least Recently Used alogrithm
@@ -198,7 +200,7 @@ BEGIN
 	line_num := 0;
 	IF rising_edge(clk) AND reset = '1' THEN
 		reset_cache(lru_fields, valid_fields, dirty_fields, arb_req);
-		clear_bus(mem_cmd, mem_addr, mem_data);
+		clear_bus(mem_cmd, mem_addr, mem_data, mem_done);
 
 	ELSIF falling_edge(clk) AND reset = '0' THEN
 		IF state_i = READY OR state_i = WAITSB THEN
@@ -223,7 +225,7 @@ BEGIN
 			IF state_nx_i = ARBREQ THEN
 				arb_req <= '1';
 				dirty_fields(lru_line_num_i) <= '0';
-				clear_bus(mem_cmd, mem_addr, mem_data);
+				clear_bus(mem_cmd, mem_addr, mem_data, mem_done);
 			END IF;
 		ELSIF state_i = LINEREQ THEN
 			IF state_nx_i = READY THEN
@@ -233,7 +235,7 @@ BEGIN
 				tag_fields(lru_line_num_i) <= addr(31 DOWNTO 4);
 				data_fields(lru_line_num_i) <= mem_data;
 				LRU_execute(lru_fields, lru_line_num_i);
-				clear_bus(mem_cmd, mem_addr, mem_data);
+				clear_bus(mem_cmd, mem_addr, mem_data, mem_done);
 				line_num := lru_line_num_i;
 			END IF;
 		END IF;
