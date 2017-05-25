@@ -219,6 +219,7 @@ BEGIN
 		ELSIF state_i = LINEREPL THEN
 			IF state_nx_i = ARBREQ THEN
 				arb_req <= '1';
+				valid_fields(lru_line_num_i) <= '0';
 				clear_bus(mem_cmd, mem_addr, mem_data, mem_done);
 			END IF;
 		ELSIF state_i = LINEREQ THEN
@@ -263,7 +264,11 @@ hit <= hit_i;
 hit_i <= hit_line_i(0) OR hit_line_i(1) OR hit_line_i(2) OR hit_line_i(3);
 
 -- Determine the least recently used line
-lru_line_num_i <= 0 WHEN lru_fields(0) = 3
+lru_line_num_i <= 0 WHEN valid_fields(0) = '0'
+		ELSE 1 WHEN valid_fields(1) = '0'
+		ELSE 2 WHEN valid_fields(2) = '0'
+		ELSE 3 WHEN valid_fields(3) = '0'
+		ELSE 0 WHEN lru_fields(0) = 3
 		ELSE 1 WHEN lru_fields(1) = 3
 		ELSE 2 WHEN lru_fields(2) = 3
 		ELSE 3 WHEN lru_fields(3) = 3
@@ -282,7 +287,7 @@ sb_line_num_i <= 0 WHEN sb_line_i(0) = '1'
 
 -- Determine if a replacement is needed
 repl <= repl_i;
-repl_i <= NOT hit_i AND valid_fields(0) AND valid_fields(1) AND valid_fields(2) AND valid_fields(3);
+repl_i <= (re OR we) AND NOT hit_i AND valid_fields(lru_line_num_i);
 repl_addr <= tag_fields(lru_line_num_i) & "0000";
 
 -- The cache stalls when there is a cache operation that misses
