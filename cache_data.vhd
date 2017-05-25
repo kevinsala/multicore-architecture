@@ -40,14 +40,12 @@ ARCHITECTURE cache_data_behavior OF cache_data IS
 	TYPE tag_fields_t   IS ARRAY(3 DOWNTO 0) OF STD_LOGIC_VECTOR(27 DOWNTO 0);
 	TYPE data_fields_t  IS ARRAY(3 DOWNTO 0) OF STD_LOGIC_VECTOR(127 DOWNTO 0);
 	TYPE valid_fields_t IS ARRAY(3 DOWNTO 0) OF STD_LOGIC;
-	TYPE dirty_fields_t IS ARRAY(3 DOWNTO 0) OF STD_LOGIC;
 
 	-- Fields of the cache
 	SIGNAL lru_fields   : lru_fields_t;
 	SIGNAL tag_fields   : tag_fields_t;
 	SIGNAL data_fields  : data_fields_t;
 	SIGNAL valid_fields : valid_fields_t;
-	SIGNAL dirty_fields : dirty_fields_t;
 
 	-- Invalid address
 	SIGNAL invalid_access_i : STD_LOGIC;
@@ -66,7 +64,6 @@ ARCHITECTURE cache_data_behavior OF cache_data IS
 
 	-- Replacement signals
 	SIGNAL repl_i : STD_LOGIC := '0';
-	SIGNAL repl_dirty_i : STD_LOGIC := '0';
 	SIGNAL lru_line_num_i : INTEGER RANGE 0 TO 3 := 0;
 
 	-- Determine the target word of the access
@@ -85,7 +82,6 @@ ARCHITECTURE cache_data_behavior OF cache_data IS
 	PROCEDURE reset_cache(
 			SIGNAL lru_fields : OUT lru_fields_t;
 			SIGNAL valid_fields : OUT valid_fields_t;
-			SIGNAL dirty_fields : OUT dirty_fields_t;
 			SIGNAL arb_req : OUT STD_LOGIC
 		) IS
 	BEGIN
@@ -93,7 +89,6 @@ ARCHITECTURE cache_data_behavior OF cache_data IS
 		FOR i IN 0 TO 3 LOOP
 			lru_fields(i) <= i;
 			valid_fields(i) <= '0';
-			dirty_fields(i) <= '0';
 		END LOOP;
 
 		arb_req <= '0';
@@ -141,7 +136,7 @@ BEGIN
 END PROCESS internal_register;
 
 -- Process that computes the next state of the cache
-next_state_process : PROCESS(reset, state_i, re, we, mem_done, arb_ack, sb_done, hit_i, repl_dirty_i, invalid_access_i)
+next_state_process : PROCESS(reset, state_i, re, we, mem_done, arb_ack, sb_done, hit_i, repl_i, invalid_access_i)
 BEGIN
 	IF reset = '1' THEN
 		state_nx_i <= READY;
@@ -172,7 +167,7 @@ BEGIN
 		ELSIF state_i = ARBREQ THEN
 			IF arb_ack = '1' THEN
 				IF hit_i = '0' THEN
-					IF repl_dirty_i = '1' THEN
+					IF repl_i = '1' THEN
 						state_nx_i <= LINEREPL;
 					ELSE
 						state_nx_i <= LINEREQ;
@@ -199,7 +194,7 @@ execution_process : PROCESS(clk)
 BEGIN
 	line_num := 0;
 	IF rising_edge(clk) AND reset = '1' THEN
-		reset_cache(lru_fields, valid_fields, dirty_fields, arb_req);
+		reset_cache(lru_fields, valid_fields, arb_req);
 		clear_bus(mem_cmd, mem_addr, mem_data, mem_done);
 
 	ELSIF falling_edge(clk) AND reset = '0' THEN
@@ -224,14 +219,12 @@ BEGIN
 		ELSIF state_i = LINEREPL THEN
 			IF state_nx_i = ARBREQ THEN
 				arb_req <= '1';
-				dirty_fields(lru_line_num_i) <= '0';
 				clear_bus(mem_cmd, mem_addr, mem_data, mem_done);
 			END IF;
 		ELSIF state_i = LINEREQ THEN
 			IF state_nx_i = READY THEN
 				arb_req <= '0';
 				valid_fields(lru_line_num_i) <= '1';
-				dirty_fields(lru_line_num_i) <= '0';
 				tag_fields(lru_line_num_i) <= addr(31 DOWNTO 4);
 				data_fields(lru_line_num_i) <= mem_data;
 				LRU_execute(lru_fields, lru_line_num_i);
@@ -241,7 +234,6 @@ BEGIN
 		END IF;
 
 		IF sb_we = '1' THEN
-			dirty_fields(sb_line_num_i) <= '1';
 			data_fields(sb_line_num_i)(sb_word_msb DOWNTO sb_word_lsb) <= sb_data_in;
 		END IF;
 
@@ -291,7 +283,6 @@ sb_line_num_i <= 0 WHEN sb_line_i(0) = '1'
 -- Determine if a replacement is needed
 repl <= repl_i;
 repl_i <= NOT hit_i AND valid_fields(0) AND valid_fields(1) AND valid_fields(2) AND valid_fields(3);
-repl_dirty_i <= repl_i AND dirty_fields(lru_line_num_i);
 repl_addr <= tag_fields(lru_line_num_i) & "0000";
 
 -- The cache stalls when there is a cache operation that misses
