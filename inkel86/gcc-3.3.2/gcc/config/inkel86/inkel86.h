@@ -64,7 +64,7 @@ extern rtx inkel86_compare_op1;
 #define PROMOTE_FUNCTION_RETURN
 
 /* 10.6 Layout of source Language Data Types */
-#define SHORT_TYPE_SIZE BITS_PER_WORD
+#define SHORT_TYPE_SIZE (BITS_PER_UNIT*2)
 #define INT_TYPE_SIZE BITS_PER_WORD
 #define LONG_TYPE_SIZE BITS_PER_WORD
 #define LONG_LONG_TYPE_SIZE (BITS_PER_WORD*2)
