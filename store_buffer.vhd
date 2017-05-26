@@ -16,9 +16,12 @@ ENTITY store_buffer IS
 		invalid_access : IN  STD_LOGIC;
 		id             : IN  STD_LOGIC_VECTOR(3 DOWNTO 0);
 		sleep          : IN  STD_LOGIC;
-		repl           : IN  STD_LOGIC;
-		repl_addr      : IN  STD_LOGIC_VECTOR(31 DOWNTO 0);
-		done           : OUT STD_LOGIC;
+		proc_inv       : IN  STD_LOGIC;
+		proc_inv_addr  : IN  STD_LOGIC_VECTOR(31 DOWNTO 0);
+		proc_inv_stop  : OUT STD_LOGIC;
+		obs_inv        : IN  STD_LOGIC;
+		obs_inv_addr   : IN  STD_LOGIC_VECTOR(31 DOWNTO 0);
+		obs_inv_stop   : OUT STD_LOGIC;
 		hit            : OUT STD_LOGIC;
 		cache_addr     : OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
 		cache_we       : OUT STD_LOGIC;
@@ -51,12 +54,13 @@ ARCHITECTURE store_buffer_behavior OF store_buffer IS
 	SIGNAL head_nx_i : INTEGER RANGE 0 TO SB_ENTRIES - 1;
 	SIGNAL last_added_i : INTEGER RANGE 0 TO SB_ENTRIES;
 
-	-- Determine if there is any replacement conflict
-	SIGNAL conflict_i : STD_LOGIC := '0';
+	-- Determine the entry of the buffer that has hit with the replaced cache line
+	SIGNAL proc_inv_hit_i : STD_LOGIC := '0';
+	SIGNAL proc_inv_hit_entry_i : hit_t;
 
 	-- Determine the entry of the buffer that has hit with the replaced cache line
-	SIGNAL repl_hit_i : STD_LOGIC := '0';
-	SIGNAL repl_hit_entry_i : hit_t;
+	SIGNAL obs_inv_hit_i : STD_LOGIC := '0';
+	SIGNAL obs_inv_hit_entry_i : hit_t;
 
 	-- Determine the entry to be commited (used only with OoO)
 	SIGNAL commit_entry_num_i : INTEGER RANGE 0 TO SB_ENTRIES - 1 := 0;
@@ -167,7 +171,8 @@ BEGIN
 END PROCESS execution_process;
 
 -- Determine if there is any replacement conflict
-conflict_i <= repl AND repl_hit_i AND NOT sleep;
+proc_inv_stop <= proc_inv AND proc_inv_hit_i AND NOT sleep;
+obs_inv_stop <= obs_inv AND obs_inv_hit_i;
 
 -- Logic to determine if a new entry has to be added
 add_entry_i <= we AND NOT invalid_access AND NOT sleep;
@@ -176,13 +181,22 @@ add_entry_i <= we AND NOT invalid_access AND NOT sleep;
 output_data(size_i, head_i, addr, atomic, addr_fields, data_fields, hit, data_out);
 
 -- Determine if there is any buffered store waiting to modify the replaced line
-repl_generator : FOR i IN 0 TO SB_ENTRIES - 1 GENERATE
-	repl_hit_entry_i(i) <= valid_fields(i) AND to_std_logic(addr_fields(i)(31 DOWNTO 4) = repl_addr(31 DOWNTO 4));
-END GENERATE repl_generator;
+proc_inv_generator : FOR i IN 0 TO SB_ENTRIES - 1 GENERATE
+	proc_inv_hit_entry_i(i) <= valid_fields(i) AND to_std_logic(addr_fields(i)(31 DOWNTO 4) = proc_inv_addr(31 DOWNTO 4));
+END GENERATE proc_inv_generator;
 
-repl_hit_i <= repl_hit_entry_i(0) OR repl_hit_entry_i(1) OR repl_hit_entry_i(2) OR repl_hit_entry_i(3)
-		OR repl_hit_entry_i(4) OR repl_hit_entry_i(5) OR repl_hit_entry_i(6) OR repl_hit_entry_i(7)
-		OR repl_hit_entry_i(8) OR repl_hit_entry_i(9) OR repl_hit_entry_i(10) OR repl_hit_entry_i(11);
+proc_inv_hit_i <= proc_inv_hit_entry_i(0) OR proc_inv_hit_entry_i(1) OR proc_inv_hit_entry_i(2) OR proc_inv_hit_entry_i(3)
+		OR proc_inv_hit_entry_i(4) OR proc_inv_hit_entry_i(5) OR proc_inv_hit_entry_i(6) OR proc_inv_hit_entry_i(7)
+		OR proc_inv_hit_entry_i(8) OR proc_inv_hit_entry_i(9) OR proc_inv_hit_entry_i(10) OR proc_inv_hit_entry_i(11);
+
+-- Determine if there is any buffered store waiting to modify the replaced line
+obs_inv_generator : FOR i IN 0 TO SB_ENTRIES - 1 GENERATE
+	obs_inv_hit_entry_i(i) <= valid_fields(i) AND to_std_logic(addr_fields(i)(31 DOWNTO 4) = obs_inv_addr(31 DOWNTO 4));
+END GENERATE obs_inv_generator;
+
+obs_inv_hit_i <= obs_inv_hit_entry_i(0) OR obs_inv_hit_entry_i(1) OR obs_inv_hit_entry_i(2) OR obs_inv_hit_entry_i(3)
+		OR obs_inv_hit_entry_i(4) OR obs_inv_hit_entry_i(5) OR obs_inv_hit_entry_i(6) OR obs_inv_hit_entry_i(7)
+		OR obs_inv_hit_entry_i(8) OR obs_inv_hit_entry_i(9) OR obs_inv_hit_entry_i(10) OR obs_inv_hit_entry_i(11);
 
 -- Determine the entry to be commited
 commit_entry_num_i <= 0 WHEN id_fields(0) = store_id AND valid_fields(0) = '1'
@@ -203,8 +217,5 @@ commit_entry_num_i <= 0 WHEN id_fields(0) = store_id AND valid_fields(0) = '1'
 cache_we <= store_commit;
 cache_addr <= addr_fields(head_i);
 cache_data <= data_fields(head_i);
-
--- Determine if the store buffer has finished
-done <= NOT conflict_i;
 
 END store_buffer_behavior;

@@ -22,9 +22,12 @@ ENTITY cache_data IS
 		mem_addr       : INOUT STD_LOGIC_VECTOR(31 DOWNTO 0);
 		mem_done       : INOUT STD_LOGIC;
 		mem_data       : INOUT STD_LOGIC_VECTOR(127 DOWNTO 0);
-		repl           : OUT   STD_LOGIC;
-		repl_addr      : OUT   STD_LOGIC_VECTOR(31 DOWNTO 0);
-		sb_done        : IN    STD_LOGIC;
+		proc_inv       : OUT   STD_LOGIC;
+		proc_inv_addr  : OUT   STD_LOGIC_VECTOR(31 DOWNTO 0);
+		proc_inv_stop  : IN    STD_LOGIC;
+		obs_inv        : OUT   STD_LOGIC;
+		obs_inv_addr   : OUT   STD_LOGIC_VECTOR(31 DOWNTO 0);
+		obs_inv_stop   : IN    STD_LOGIC;
 		sb_addr        : IN    STD_LOGIC_VECTOR(31 DOWNTO 0);
 		sb_we          : IN    STD_LOGIC;
 		sb_data_in     : IN    STD_LOGIC_VECTOR(31 DOWNTO 0)
@@ -50,20 +53,32 @@ ARCHITECTURE cache_data_behavior OF cache_data IS
 	-- Invalid address
 	SIGNAL invalid_access_i : STD_LOGIC;
 
+	-- Own memory command
+	SIGNAL own_mem_cmd_i : STD_LOGIC;
+
 	-- The next state of the cache
 	SIGNAL state_i    : data_cache_state_t;
 	SIGNAL state_nx_i : data_cache_state_t;
 
+	-- Observer state
+	SIGNAL obs_state_i    : obs_data_cache_state_t;
+	SIGNAL obs_state_nx_i : obs_data_cache_state_t;
+
 	-- Determine the line of the cache that has hit with the access
-	SIGNAL hit_i : STD_LOGIC := '0';
-	SIGNAL hit_line_i : hit_t;
-	SIGNAL hit_line_num_i : INTEGER RANGE 0 TO 3 := 0;
+	SIGNAL proc_hit_i          : STD_LOGIC := '0';
+	SIGNAL proc_hit_line_i     : hit_t;
+	SIGNAL proc_hit_line_num_i : INTEGER RANGE 0 TO 3 := 0;
+
+	-- Determine the line of the cache that has hit with the observation
+	SIGNAL obs_inv_i          : STD_LOGIC := '0';
+	SIGNAL obs_hit_line_i     : hit_t;
+	SIGNAL obs_hit_line_num_i : INTEGER RANGE 0 TO 3 := 0;
 
 	-- Determine the line number to output
 	SIGNAL data_out_line_num_i : INTEGER RANGE 0 TO 3 := 0;
 
-	-- Replacement signals
-	SIGNAL repl_i : STD_LOGIC := '0';
+	-- Processor replacement signals
+	SIGNAL proc_repl_i    : STD_LOGIC := '0';
 	SIGNAL lru_line_num_i : INTEGER RANGE 0 TO 3 := 0;
 
 	-- Determine the target word of the access
@@ -71,7 +86,7 @@ ARCHITECTURE cache_data_behavior OF cache_data IS
 	SIGNAL ch_word_lsb : INTEGER RANGE 0 TO 127 := 0;
 
 	-- Store buffer signals
-	SIGNAL sb_line_i : hit_t;
+	SIGNAL sb_line_i     : hit_t;
 	SIGNAL sb_line_num_i : INTEGER RANGE 0 TO 3 := 0;
 
 	-- Determine the target word of the SB store
@@ -129,25 +144,29 @@ BEGIN
 	IF rising_edge(clk) THEN
 		IF reset = '1' THEN
 			state_i <= READY;
+			obs_state_i <= READY;
 		ELSE
 			state_i <= state_nx_i;
+			obs_state_i <= obs_state_nx_i;
 		END IF;
 	END IF;
 END PROCESS internal_register;
 
 -- Process that computes the next state of the cache
-next_state_process : PROCESS(reset, state_i, re, we, mem_done, arb_ack, sb_done, hit_i, repl_i, invalid_access_i)
+next_state : PROCESS(reset, state_i, obs_state_i, re, we, mem_cmd, mem_addr, mem_done, arb_ack, proc_hit_i, proc_repl_i, proc_inv_stop, obs_inv_i, obs_inv_stop, invalid_access_i)
 BEGIN
 	IF reset = '1' THEN
 		state_nx_i <= READY;
+		obs_state_nx_i <= READY;
 	ELSE
+		-- Processor Next State
 		state_nx_i <= state_i;
 		IF state_i = READY THEN
 			IF (re = '1' OR we = '1') AND invalid_access_i = '0' THEN
-				IF sb_done = '0' THEN
+				IF proc_inv_stop = '1' THEN
 					state_nx_i <= WAITSB;
 				ELSE
-					IF hit_i = '1' THEN
+					IF proc_hit_i = '1' THEN
 						state_nx_i <= READY;
 					ELSE
 						state_nx_i <= ARBREQ;
@@ -156,8 +175,8 @@ BEGIN
 			END IF;
 
 		ELSIF state_i = WAITSB THEN
-			IF sb_done = '1' THEN
-				IF hit_i = '1' THEN
+			IF proc_inv_stop = '0' THEN
+				IF proc_hit_i = '1' THEN
 					state_nx_i <= READY;
 				ELSE
 					state_nx_i <= ARBREQ;
@@ -166,8 +185,8 @@ BEGIN
 
 		ELSIF state_i = ARBREQ THEN
 			IF arb_ack = '1' THEN
-				IF hit_i = '0' THEN
-					IF repl_i = '1' THEN
+				IF proc_hit_i = '0' THEN
+					IF proc_repl_i = '1' THEN
 						state_nx_i <= LINEREPL;
 					ELSE
 						state_nx_i <= LINEREQ;
@@ -185,8 +204,30 @@ BEGIN
 				state_nx_i <= READY;
 			END IF;
 		END IF;
+
+		-- Observer Next State
+		obs_state_nx_i <= obs_state_i;
+		IF obs_state_i = READY THEN
+			IF obs_inv_i = '1' THEN
+				IF obs_inv_stop = '1' THEN
+					obs_state_nx_i <= WAITSB;
+				ELSIF state_i = READY AND we = '1' AND addr(31 DOWNTO 4) = mem_addr(31 DOWNTO 4) THEN
+					state_nx_i <= ARBREQ;
+					obs_state_nx_i <= READY;
+				END IF;
+			END IF;
+		ELSIF obs_state_i = WAITSB THEN
+			IF obs_inv_i = '1' THEN
+				IF obs_inv_stop = '0' THEN
+					obs_state_nx_i <= READY;
+					IF state_i = READY AND we = '1' AND addr(31 DOWNTO 4) = mem_addr(31 DOWNTO 4) THEN
+						state_nx_i <= ARBREQ;
+					END IF;
+				END IF;
+			END IF;
+		END IF;
 	END IF;
-END PROCESS next_state_process;
+END PROCESS next_state;
 
 -- Process that sets the output signals of the cache
 execution_process : PROCESS(clk)
@@ -201,8 +242,8 @@ BEGIN
 		IF state_i = READY OR state_i = WAITSB THEN
 			IF state_nx_i = READY THEN
 				IF re = '1' OR we = '1' THEN
-					LRU_execute(lru_fields, hit_line_num_i);
-					line_num := hit_line_num_i;
+					LRU_execute(lru_fields, proc_hit_line_num_i);
+					line_num := proc_hit_line_num_i;
 				END IF;
 			ELSIF state_nx_i = ARBREQ THEN
 				arb_req <= '1';
@@ -212,15 +253,18 @@ BEGIN
 				mem_cmd <= CMD_PUT;
 				mem_addr <= tag_fields(lru_line_num_i) & "0000";
 				mem_data <= data_fields(lru_line_num_i);
+				own_mem_cmd_i <= '1';
 			ELSIF state_nx_i = LINEREQ THEN
 				mem_cmd <= CMD_GET;
 				mem_addr <= addr;
+				own_mem_cmd_i <= '1';
 			END IF;
 		ELSIF state_i = LINEREPL THEN
 			IF state_nx_i = ARBREQ THEN
 				arb_req <= '1';
 				valid_fields(lru_line_num_i) <= '0';
 				clear_bus(mem_cmd, mem_addr, mem_data, mem_done);
+				own_mem_cmd_i <= '0';
 			END IF;
 		ELSIF state_i = LINEREQ THEN
 			IF state_nx_i = READY THEN
@@ -230,12 +274,23 @@ BEGIN
 				data_fields(lru_line_num_i) <= mem_data;
 				LRU_execute(lru_fields, lru_line_num_i);
 				clear_bus(mem_cmd, mem_addr, mem_data, mem_done);
+				own_mem_cmd_i <= '0';
 				line_num := lru_line_num_i;
 			END IF;
 		END IF;
 
 		IF sb_we = '1' THEN
 			data_fields(sb_line_num_i)(sb_word_msb DOWNTO sb_word_lsb) <= sb_data_in;
+		END IF;
+
+		IF obs_state_i = READY OR obs_state_i = WAITSB THEN
+			IF obs_state_nx_i = READY THEN
+				IF obs_inv_i = '1' THEN
+					mem_data <= data_fields(obs_hit_line_num_i);
+					mem_done <= '1';
+					valid_fields(obs_hit_line_num_i) <= '0';
+				END IF;
+			END IF;
 		END IF;
 
 		data_out_line_num_i <= line_num;
@@ -247,21 +302,52 @@ invalid_access <= invalid_access_i;
 invalid_access_i <= '1' WHEN (re = '1' OR we = '1') AND addr(1 DOWNTO 0) /= "00" ELSE '0';
 
 -- For each line, determine if the access has hit
-hit_line_i(0) <= valid_fields(0) AND to_std_logic(tag_fields(0) = addr(31 DOWNTO 4));
-hit_line_i(1) <= valid_fields(1) AND to_std_logic(tag_fields(1) = addr(31 DOWNTO 4));
-hit_line_i(2) <= valid_fields(2) AND to_std_logic(tag_fields(2) = addr(31 DOWNTO 4));
-hit_line_i(3) <= valid_fields(3) AND to_std_logic(tag_fields(3) = addr(31 DOWNTO 4));
+proc_hit_line_i(0) <= '1' WHEN valid_fields(0) = '1' AND tag_fields(0) = addr(31 DOWNTO 4) ELSE '0';
+proc_hit_line_i(1) <= '1' WHEN valid_fields(1) = '1' AND tag_fields(1) = addr(31 DOWNTO 4) ELSE '0';
+proc_hit_line_i(2) <= '1' WHEN valid_fields(2) = '1' AND tag_fields(2) = addr(31 DOWNTO 4) ELSE '0';
+proc_hit_line_i(3) <= '1' WHEN valid_fields(3) = '1' AND tag_fields(3) = addr(31 DOWNTO 4) ELSE '0';
 
 -- Determine which line has hit
-hit_line_num_i <= 0 WHEN hit_line_i(0) = '1'
-		ELSE 1 WHEN hit_line_i(1) = '1'
-		ELSE 2 WHEN hit_line_i(2) = '1'
-		ELSE 3 WHEN hit_line_i(3) = '1'
+proc_hit_line_num_i <= 0 WHEN proc_hit_line_i(0) = '1'
+		ELSE 1 WHEN proc_hit_line_i(1) = '1'
+		ELSE 2 WHEN proc_hit_line_i(2) = '1'
+		ELSE 3 WHEN proc_hit_line_i(3) = '1'
 		ELSE 0;
 
 -- Determine if the access has hit
-hit <= hit_i;
-hit_i <= hit_line_i(0) OR hit_line_i(1) OR hit_line_i(2) OR hit_line_i(3);
+proc_hit_i <= proc_hit_line_i(0) OR proc_hit_line_i(1) OR proc_hit_line_i(2) OR proc_hit_line_i(3);
+hit <= proc_hit_i;
+
+-- For each line, determine if the observer has hit
+obs_hit_line_i(0) <= '1' WHEN is_cmd(mem_cmd) AND valid_fields(0) = '1' AND tag_fields(0) = mem_addr(31 DOWNTO 4) ELSE '0';
+obs_hit_line_i(1) <= '1' WHEN is_cmd(mem_cmd) AND valid_fields(1) = '1' AND tag_fields(1) = mem_addr(31 DOWNTO 4) ELSE '0';
+obs_hit_line_i(2) <= '1' WHEN is_cmd(mem_cmd) AND valid_fields(2) = '1' AND tag_fields(2) = mem_addr(31 DOWNTO 4) ELSE '0';
+obs_hit_line_i(3) <= '1' WHEN is_cmd(mem_cmd) AND valid_fields(3) = '1' AND tag_fields(3) = mem_addr(31 DOWNTO 4) ELSE '0';
+
+-- Determine which line has hit the observation
+obs_hit_line_num_i <= 0 WHEN obs_hit_line_i(0) = '1'
+		ELSE 1 WHEN obs_hit_line_i(1) = '1'
+		ELSE 2 WHEN obs_hit_line_i(2) = '1'
+		ELSE 3 WHEN obs_hit_line_i(3) = '1'
+		ELSE 0;
+
+-- Determine if the cache needs a line replacement
+proc_repl_i <= (re OR we) AND NOT proc_hit_i AND valid_fields(lru_line_num_i);
+
+-- Determine if the cache observes an invalidation
+obs_inv_i <= '1' WHEN is_cmd(mem_cmd) AND
+				 mem_cmd = CMD_GET    AND
+				 own_mem_cmd_i = '0'  AND
+				(obs_hit_line_i(0) = '1' OR
+				 obs_hit_line_i(1) = '1' OR
+				 obs_hit_line_i(2) = '1' OR
+				 obs_hit_line_i(3) = '1') ELSE '0';
+
+-- Invalidation interface
+proc_inv <= proc_repl_i;
+proc_inv_addr <= tag_fields(lru_line_num_i) & "0000";
+obs_inv <= obs_inv_i;
+obs_inv_addr <= mem_addr;
 
 -- Determine the least recently used line
 lru_line_num_i <= 0 WHEN valid_fields(0) = '0'
@@ -285,13 +371,8 @@ sb_line_num_i <= 0 WHEN sb_line_i(0) = '1'
 		ELSE 3 WHEN sb_line_i(3) = '1'
 		ELSE 0;
 
--- Determine if a replacement is needed
-repl <= repl_i;
-repl_i <= (re OR we) AND NOT hit_i AND valid_fields(lru_line_num_i);
-repl_addr <= tag_fields(lru_line_num_i) & "0000";
-
 -- The cache stalls when there is a cache operation that misses
-done <= hit_i OR NOT(re OR we);
+done <= proc_hit_i OR NOT(re OR we);
 
 -- Store buffer logic
 sb_word_msb <= (to_integer(unsigned(sb_addr(3 DOWNTO 2))) + 1) * WORD_BITS - 1;
