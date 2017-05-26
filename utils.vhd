@@ -5,6 +5,7 @@ USE ieee.numeric_std.all;
 PACKAGE utils IS
 	FUNCTION to_std_logic(value : BOOLEAN) RETURN STD_LOGIC;
 	FUNCTION is_cmd(cmd : STD_LOGIC_VECTOR(2 DOWNTO 0)) RETURN BOOLEAN;
+	FUNCTION is_all_X(s : STD_LOGIC_VECTOR) RETURN BOOLEAN;
 
 	TYPE data_cache_state_t     IS (READY, WAITSB, ARBREQ, LINEREQ, LINEREPL);
 	TYPE obs_data_cache_state_t IS (READY, WAITSB);
@@ -46,4 +47,15 @@ PACKAGE BODY utils IS
 			RETURN(TRUE);
 		END IF;
 	END FUNCTION is_cmd;
+
+	FUNCTION is_all_X(s : STD_LOGIC_VECTOR) RETURN BOOLEAN IS
+    BEGIN
+        FOR i IN s'RANGE LOOP
+            CASE s(i) IS
+                WHEN 'U' | 'X' | 'Z' | 'W' | '-' => NULL;
+                WHEN OTHERS => RETURN FALSE;
+            END CASE;
+        END LOOP;
+        RETURN TRUE;
+    END;
 END utils;

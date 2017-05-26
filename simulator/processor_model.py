@@ -201,7 +201,7 @@ class InkelPentiun:
                     i = 0
                     pos = pos + 1
 
-            if i != 4:
+            if i != 0:
                 while i < 4:
                     mem_line = mem_line + "00000000"
                     i = i + 1
@@ -338,19 +338,34 @@ class InkelPentiun:
         error = False
         with open(dump_folder + "/ram", "r") as f:
             proc_mem_line = 0
-            idx = 0
+            idx_mod = 0
             for line in f:
-                if self.old_memory[idx][0] == proc_mem_line:
-                    line = line[:-1].lower()
-                    mem_line = self._swap_mem_line_endianness(self.old_memory[idx][1])
-                    if mem_line != line:
-                        print "ERROR: memory line %08x has not been updated properly" % proc_mem_line
-                        print "Expected data: %s. Received data: %s" % (mem_line, line)
+                # Assuming both memories are sorted by address
+                line_proc, data_proc = line.split()
+                line_proc = int(line_proc)
+                data_proc = data_proc.lower()
+
+                # Memory lines that are in the processor but not in the model
+                # are not a problem. They are the result of an eviction at stage
+                # C, whereas the model is in stage "commit" of a previous instruction
+
+                line_mod = self.old_memory[idx_mod][0]
+                if line_proc < line_mod:
+                    continue
+
+                if line_proc > line_mod:
+                    print "ERROR: memory line %08x has not been written when it should have" % line_mod
+                    error = True
+                else:
+                    data_mod = self._swap_mem_line_endianness(self.old_memory[idx_mod][1])
+                    if data_mod != data_proc:
+                        print "ERROR: memory line %08x has not been updated properly" % line_proc
+                        print "Expected data: %s. Received data: %s" % (data_mod, data_proc)
                         error = True
-                    idx = idx + 1
-                    if idx == len(self.old_memory):
-                        break
-                proc_mem_line = proc_mem_line + 1
+
+                idx_mod = idx_mod + 1
+                if idx_mod == len(self.old_memory):
+                    break
 
         with open(dump_folder + "/reg", "r") as f:
             reg_line = 0
