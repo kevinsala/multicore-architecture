@@ -17,14 +17,14 @@
 %}
 
 
-%option noyywrap 
- 
+%option noyywrap
+
 digit                                   [0-9]
 lletra                                  [a-zA-Z_]
 llsimb                                  [a-zA-Z_\.\-]
- 
- 
-%% 
+
+
+%%
 
 "."code                                 {SISA_ECHO; return(CODE);}
 "."data                                 {SISA_ECHO; return(DATA);}
@@ -36,7 +36,7 @@ llsimb                                  [a-zA-Z_\.\-]
 "`"                                     {SISA_ECHO; return(APOSTROF);}
 "?"                                     {SISA_ECHO; return(INTERROGANT);}
 
-r[0-7]                                  {SISA_ECHO; return(REG);}
+r[0-9]+                                 {SISA_ECHO; return(REG);}
 
 addi                                    {SISA_ECHO; return(ADDI);}
 add                                     {SISA_ECHO; return(OP3REGS);}
@@ -78,18 +78,18 @@ m[hl]i                                  {SISA_ECHO; return(MOVE);}
 
 \'([^\'])*\'                            {SISA_ECHO; return(STRING);}
 
-[ \t]+                                  {SISA_ECHO;} 
+[ \t]+                                  {SISA_ECHO;}
 "\n"                                    {SISA_ECHO; liniaActual++;}
- 
+
 ";".*$                                  {SISA_ECHO; /* es un comentari */}
 
 .                                       {fprintf(stderr,
                                             "Error lexic en  el caracter: %c en linia %d del fitxer %s\n",
                                             *yytext,liniaActual,fitxerActual);
-                                         exit(-1);} 
+                                         exit(-1);}
 
 "!<arch>"                               {SISA_ECHO; return(AR_HEADER);}
 "//".*$                                 {SISA_ECHO; return(AR_HEADER2);}
 
-%% 
- 
+%%
+

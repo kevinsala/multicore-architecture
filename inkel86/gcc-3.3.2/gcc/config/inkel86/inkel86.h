@@ -82,12 +82,18 @@ extern rtx inkel86_compare_op1;
 /* 10.7 Target Character Escape Sequences */
 
 /* 10.8 Register Usage */
-#define FIRST_PSEUDO_REGISTER 8 /* r0-r7 */
+#define FIRST_PSEUDO_REGISTER 32 /* r0-r31 */
 #define FIXED_REGISTERS \
-  { 0, 0, 0, 0, 0, 1, 1, 1 } /* r5=scratch, r7=SP, r6=FP */
+  { 0, 0, 0, 0, 0, 0, 0, 0,\
+	0, 0, 0, 0, 0, 0, 0, 0,\
+	0, 0, 0, 0, 0, 0, 0, 0,\
+	0, 0, 0, 0, 0, 1, 1, 1 } /* r29=scratch, r31=SP, r30=FP */
 
 #define CALL_USED_REGISTERS \
-  { 0, 1, 0, 0, 0, 1, 1, 1 } /* per r1 es retorna el resultat */
+  { 0, 1, 0, 0, 0, 0, 0, 0,\
+	0, 0, 0, 0, 0, 0, 0, 0,\
+	0, 0, 0, 0, 0, 0, 0, 0,\
+	0, 0, 0, 0, 0, 1, 1, 1 } /* per r1 es retorna el resultat */
 
 /* 10.8.2 Order of Allocation of Registers*/
 
@@ -131,9 +137,9 @@ enum reg_class
 
 #define REG_CLASS_CONTENTS \
 {                          \
-    {0x00},                \
-    {0xff},                \
-    {0xff}                 \
+    {0x00000000},          \
+    {0xffffffff},          \
+    {0xffffffff}           \
 }
 
 #define REGNO_REG_CLASS(REG) GENERAL_REGS
@@ -187,9 +193,9 @@ enum reg_class
 /* 10.10.3 Specifying How Stack Checking is Done */
 
 /* 10.10.4 Registers That Address the Stack Frame */
-#define STACK_POINTER_REGNUM 7
+#define STACK_POINTER_REGNUM 31
 
-#define FRAME_POINTER_REGNUM 6
+#define FRAME_POINTER_REGNUM 30
 
 #define ARG_POINTER_REGNUM FRAME_POINTER_REGNUM
 
@@ -246,7 +252,7 @@ enum reg_class
 /* 10.10.9 How Large Values Are Returned */
 
 /* retornem per memoria en lloc de per r1 totes aquelles dades de
- * mes de 16 bits
+ * mes de 32 bits
  * Nota: el GET_MODE_SIZE(TYPE_MODE(type)) no funciona!!!
  * S'ha d'usar int_size_in_bytes
  */
@@ -459,8 +465,11 @@ enum reg_class
 
 /* 10.20.7 Output of Assembler Instructions */
 
-#define REGISTER_NAMES                                          \
-{ "r0" , "r1" , "r2" , "r3" , "r4" , "r5" , "r6" , "r7" }
+#define REGISTER_NAMES                                      \
+  { "r0",  "r1",  "r2",  "r3",  "r4",  "r5",  "r6",  "r7",  \
+	"r8",  "r9",  "r10", "r11", "r12", "r13", "r14", "r15", \
+	"r16", "r17", "r18", "r19", "r20", "r21", "r22", "r23", \
+	"r24", "r25", "r26", "r27", "r28", "r29", "r30", "r31" }
 
 
 #define PRINT_OPERAND(stream, x, code) print_operand(stream, x, code)
