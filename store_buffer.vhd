@@ -95,6 +95,7 @@ ARCHITECTURE store_buffer_behavior OF store_buffer IS
 			SIGNAL atomic      : IN STD_LOGIC;
 			SIGNAL addr_fields : IN addr_fields_t;
 			SIGNAL data_fields : IN data_fields_t;
+			SIGNAL last_added  : IN INTEGER RANGE 0 TO SB_ENTRIES;
 			SIGNAL hit         : OUT STD_LOGIC;
 			SIGNAL data_out    : OUT STD_LOGIC_VECTOR(31 DOWNTO 0)
 		) IS
@@ -109,14 +110,14 @@ ARCHITECTURE store_buffer_behavior OF store_buffer IS
 				IF addr_fields(i)(31 DOWNTO 2) = addr(31 DOWNTO 2) THEN
 					-- Do not return the last added value in case
 					-- of an atomic operation
-					IF atomic = '0' OR last_added_i /= i THEN
+					IF atomic = '0' OR last_added /= i THEN
 						data_out <= data_fields(i);
 						hit <= '1';
 						EXIT;
 					END IF;
 				END IF;
 
-				EXIT L WHEN i = head_i;
+				EXIT L WHEN i = head;
 				i := (i - 1) MOD SB_ENTRIES;
 			END LOOP;
 		END IF;
@@ -178,7 +179,7 @@ obs_inv_stop <= obs_inv AND obs_inv_hit_i;
 add_entry_i <= we AND NOT invalid_access AND NOT sleep;
 
 -- Output the newest store that hits
-output_data(size_i, head_i, addr, atomic, addr_fields, data_fields, hit, data_out);
+output_data(size_i, head_i, addr, atomic, addr_fields, data_fields, last_added_i, hit, data_out);
 
 -- Determine if there is any buffered store waiting to modify the replaced line
 proc_inv_generator : FOR i IN 0 TO SB_ENTRIES - 1 GENERATE

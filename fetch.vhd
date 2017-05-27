@@ -8,42 +8,42 @@ USE work.utils.ALL;
 
 ENTITY fetch IS
 	PORT (
-		clk            : IN  STD_LOGIC;
-		reset          : IN  STD_LOGIC;
-		priv_status_r  : IN  STD_LOGIC;
-		priv_status_w  : IN  STD_LOGIC;
-		pc             : IN  STD_LOGIC_VECTOR(31  DOWNTO 0);
-		branch_taken   : IN  STD_LOGIC;
-		inst           : OUT STD_LOGIC_VECTOR(31  DOWNTO 0);
-		inst_v         : OUT STD_LOGIC;
-		invalid_access : OUT STD_LOGIC;
-		arb_req        : OUT STD_LOGIC;
-		arb_ack        : IN  STD_LOGIC;
-		mem_cmd        : OUT STD_LOGIC_VECTOR(2 DOWNTO 0);
-		mem_addr       : OUT STD_LOGIC_VECTOR(31  DOWNTO 0);
-		mem_done       : IN  STD_LOGIC;
-		mem_data       : IN  STD_LOGIC_VECTOR(127 DOWNTO 0)
+		clk            : IN    STD_LOGIC;
+		reset          : IN    STD_LOGIC;
+		priv_status_r  : IN    STD_LOGIC;
+		priv_status_w  : IN    STD_LOGIC;
+		pc             : IN    STD_LOGIC_VECTOR(31  DOWNTO 0);
+		branch_taken   : IN    STD_LOGIC;
+		inst           : OUT   STD_LOGIC_VECTOR(31  DOWNTO 0);
+		inst_v         : OUT   STD_LOGIC;
+		invalid_access : OUT   STD_LOGIC;
+		arb_req        : OUT   STD_LOGIC;
+		arb_ack        : IN    STD_LOGIC;
+		mem_cmd        : INOUT STD_LOGIC_VECTOR(2 DOWNTO 0);
+		mem_addr       : INOUT STD_LOGIC_VECTOR(31  DOWNTO 0);
+		mem_done       : INOUT STD_LOGIC;
+		mem_data       : INOUT STD_LOGIC_VECTOR(127 DOWNTO 0)
 	);
 END fetch;
 
 ARCHITECTURE structure OF fetch IS
 	COMPONENT cache_inst IS
 		PORT (
-			clk            : IN  STD_LOGIC;
-			reset          : IN  STD_LOGIC;
-			addr           : IN  STD_LOGIC_VECTOR(31 DOWNTO 0);
-			data_out       : OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
-			done           : OUT STD_LOGIC;
-			invalid_access : OUT STD_LOGIC;
-			state          : IN  inst_cache_state_t;
-			state_nx       : OUT inst_cache_state_t;
-			arb_req        : OUT STD_LOGIC;
-			arb_ack        : IN  STD_LOGIC;
-			mem_cmd        : OUT STD_LOGIC_VECTOR(2 DOWNTO 0);
-			mem_req_abort  : IN  STD_LOGIC;
-			mem_addr       : OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
-			mem_done       : IN  STD_LOGIC;
-			mem_data       : IN  STD_LOGIC_VECTOR(127 DOWNTO 0)
+			clk            : IN    STD_LOGIC;
+			reset          : IN    STD_LOGIC;
+			addr           : IN    STD_LOGIC_VECTOR(31 DOWNTO 0);
+			data_out       : OUT   STD_LOGIC_VECTOR(31 DOWNTO 0);
+			done           : OUT   STD_LOGIC;
+			invalid_access : OUT   STD_LOGIC;
+			state          : IN    inst_cache_state_t;
+			state_nx       : OUT   inst_cache_state_t;
+			arb_req        : OUT   STD_LOGIC;
+			arb_ack        : IN    STD_LOGIC;
+			mem_cmd        : INOUT STD_LOGIC_VECTOR(2 DOWNTO 0);
+			mem_req_abort  : IN    STD_LOGIC;
+			mem_addr       : INOUT STD_LOGIC_VECTOR(31 DOWNTO 0);
+			mem_done       : INOUT STD_LOGIC;
+			mem_data       : INOUT STD_LOGIC_VECTOR(127 DOWNTO 0)
 		);
 	END COMPONENT;
 

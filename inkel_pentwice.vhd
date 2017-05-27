@@ -67,8 +67,8 @@ ARCHITECTURE structure OF inkel_pentwice IS
 	SIGNAL req_one_d_ARB : STD_LOGIC;
 	SIGNAL ack_one_i_ARB : STD_LOGIC;
 	SIGNAL ack_one_d_ARB : STD_LOGIC;
--- 	SIGNAL req_two_i_ARB : STD_LOGIC; --Unused until we use 2 pentiuns
--- 	SIGNAL req_two_d_ARB : STD_LOGIC;
+ 	SIGNAL req_two_i_ARB : STD_LOGIC;
+ 	SIGNAL req_two_d_ARB : STD_LOGIC;
  	SIGNAL ack_two_i_ARB : STD_LOGIC;
  	SIGNAL ack_two_d_ARB : STD_LOGIC;
 
@@ -93,16 +93,14 @@ ARCHITECTURE structure OF inkel_pentwice IS
 			req_one_d => req_one_d_ARB,
 			ack_one_i => ack_one_i_ARB,
 			ack_one_d => ack_one_d_ARB,
-			req_two_i => '0',
-			req_two_d => '0',
+			req_two_i => req_two_i_ARB,
+			req_two_d => req_two_d_ARB,
 			ack_two_i => ack_two_i_ARB,
 			ack_two_d => ack_two_d_ARB
 		);
 
-		proc : inkel_pentiun
-			GENERIC MAP (
-				proc_id => 0
-			)
+		proc0 : inkel_pentiun
+			GENERIC MAP (proc_id => 0)
 			PORT MAP (
 				clk        => clk,
 				reset      => reset,
@@ -116,7 +114,24 @@ ARCHITECTURE structure OF inkel_pentwice IS
 				mem_done   => done_MEM,
 				mem_data   => data_MEM,
 				pc_out     => OPEN
-			);
+		);
+
+		proc1 : inkel_pentiun
+			GENERIC MAP (proc_id => 1)
+			PORT MAP (
+				clk        => clk,
+				reset      => reset,
+				debug_dump => debug_dump,
+				i_arb_req  => req_two_i_ARB,
+				d_arb_req  => req_two_d_ARB,
+				i_arb_ack  => ack_two_i_ARB,
+				d_arb_ack  => ack_two_d_ARB,
+				mem_cmd    => cmd_MEM,
+				mem_addr   => addr_MEM,
+				mem_done   => done_MEM,
+				mem_data   => data_MEM,
+				pc_out     => OPEN
+		);
 
 		debug_dump <= '0';
 

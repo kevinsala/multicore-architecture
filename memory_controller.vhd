@@ -64,7 +64,9 @@ BEGIN
 		state_nx <= state;
 		IF state = READY THEN
 			IF is_cmd(cmd) THEN
-				IF cmd = CMD_GET AND available = '1' THEN
+				IF cmd = CMD_GET_RO THEN
+					state_nx <= WAIT_GET;
+				ELSIF cmd = CMD_GET AND available = '1' THEN
 					state_nx <= WAIT_GET;
 				ELSIF cmd = CMD_PUT THEN
 					state_nx <= WAIT_PUT;
@@ -105,14 +107,16 @@ BEGIN
 			ELSIF state = WAIT_GET THEN
 				IF state_nx = READY THEN
 					mem_req <= '0';
-					--state_fields(block_num) <= NOTAVAIL;
+					IF cmd = CMD_GET THEN
+						state_fields(block_num) <= NOTAVAIL;
+					END IF;
 					data <= mem_data_out;
 					done <= '1';
 				END IF;
 			ELSIF state = WAIT_PUT THEN
 				IF state_nx = READY THEN
 					mem_req <= '0';
-					--state_fields(block_num) <= AVAIL;
+					state_fields(block_num) <= AVAIL;
 					done <= '1';
 				END IF;
 			END IF;
@@ -120,9 +124,8 @@ BEGIN
 	END IF;
 END PROCESS execution;
 
---block_num <= to_integer(unsigned(addr(31 DOWNTO 4))) WHEN req = '1' ELSE 0;
---available <= '1' WHEN state_fields(block_num) = AVAIL ELSE '0';
-available <= '1';
+block_num <= to_integer(unsigned(addr(31 DOWNTO 4))) WHEN is_cmd(cmd) ELSE 0;
+available <= '1' WHEN state_fields(block_num) = AVAIL ELSE '0';
 
 mem_addr <= addr;
 mem_data_in <= data;

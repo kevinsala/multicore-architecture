@@ -98,7 +98,6 @@ ARCHITECTURE cache_stage_behavior OF cache_stage IS
 
 	SIGNAL invalid_access_i : STD_LOGIC;
 	SIGNAL arb_req_i : STD_LOGIC;
-	SIGNAL mem_cmd_i : STD_LOGIC_VECTOR(2 DOWNTO 0);
 
 	-- Interface between cache and store buffer
 	SIGNAL cache_sb_proc_inv      : STD_LOGIC;
@@ -124,7 +123,7 @@ BEGIN
 		invalid_access => invalid_access_i,
 		arb_req        => arb_req_i,
 		arb_ack        => arb_ack,
-		mem_cmd        => mem_cmd_i,
+		mem_cmd        => mem_cmd,
 		mem_addr       => mem_addr,
 		mem_done       => mem_done,
 		mem_data       => mem_data,
@@ -170,7 +169,6 @@ BEGIN
 	data_out <= sb_data_out WHEN sb_hit = '1' ELSE cache_data_out;
 	invalid_access <= invalid_access_i;
 	arb_req <= arb_req_i;
-	mem_cmd <= mem_cmd_i;
 
 	sb_sleep <= arb_req_i;
 END cache_stage_behavior;
