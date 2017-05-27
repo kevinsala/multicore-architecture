@@ -79,6 +79,14 @@ class Instruction:
             self.itype = "i"
             self.dst = self._reg_to_num(args[0])
             self.set_offset(int(args[1], 0))
+        elif self.icode == "pid":
+            if len(args) != 1:
+                raise InvalidInstruction(self.asm)
+
+            self.itype = "r"
+            self.dst = self._reg_to_num(args[0])
+            self.r1 = 0
+            self.r2 = 0
         elif self.icode == "nop":
             if len(args != 0):
                 raise InvalidInstruction(self.asm)
@@ -110,6 +118,8 @@ class Instruction:
                 eicode = 1
             elif self.icode == "mul":
                 eicode = 2
+            elif self.icode == "pid":
+                eicode = 64
             else:
                 raise
 

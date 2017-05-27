@@ -27,6 +27,7 @@ ENTITY decode IS
 		mem_atomic : OUT STD_LOGIC;
 		reg_we : OUT STD_LOGIC;
 		iret : OUT STD_LOGIC;
+		proc_id : OUT STD_LOGIC;
 		invalid_inst : OUT STD_LOGIC
 	);
 END decode;
@@ -51,6 +52,7 @@ ARCHITECTURE structure OF decode IS
 	CONSTANT OP_BNE  : STD_LOGIC_VECTOR := "0110010";
 	CONSTANT OP_JMP  : STD_LOGIC_VECTOR := "0110001";
 	CONSTANT OP_IRET : STD_LOGIC_VECTOR := "0110101";
+	CONSTANT OP_PID  : STD_LOGIC_VECTOR := "1000000";
 	CONSTANT OP_NOP  : STD_LOGIC_VECTOR := "1111111";
 
 	SIGNAL op_code_int  : STD_LOGIC_VECTOR(6 DOWNTO 0);
@@ -106,7 +108,8 @@ BEGIN
 	branch_if_eq <= to_std_logic(op_code_int = OP_BEQ);
 	jump <= to_std_logic(op_code_int = OP_JMP);
 
-	reg_src1_v_int <= NOT to_std_logic(op_code_int = OP_LI OR op_code_int = OP_NOP);
+	reg_src1_v_int <= NOT to_std_logic(op_code_int = OP_LI OR op_code_int = OP_PID OR
+										op_code_int = OP_NOP);
 	reg_src1_v <= reg_src1_v_int;
 
 	reg_src2_v_int <= to_std_logic(op_code_int = OP_ADD OR op_code_int = OP_SUB OR
@@ -124,7 +127,7 @@ BEGIN
 								op_code_int = OP_LI OR op_code_int = OP_MOV OR
 								op_code_int = OP_BEQ OR op_code_int = OP_BNE OR
 								op_code_int = OP_JMP OR op_code_int = OP_IRET OR
-								op_code_int = OP_NOP);
+								op_code_int = OP_PID OR op_code_int = OP_NOP);
 	mem_inst <= to_std_logic(op_code_int = OP_LDW OR op_code_int = OP_STW OR op_code_int = OP_TSL);
 	mul_inst <= to_std_logic(op_code_int = OP_MUL);
 
@@ -135,10 +138,12 @@ BEGIN
 	reg_we_int <= to_std_logic(op_code_int = OP_ADD OR op_code_int = OP_SUB OR
 							op_code_int = OP_MUL OR op_code_int = OP_LDW OR
 							op_code_int = OP_LI OR op_code_int = OP_MOV OR
-							op_code_int = OP_TSL);
+							op_code_int = OP_TSL OR op_code_int = OP_PID);
 	reg_we <= reg_we_int;
 
 	iret <= to_std_logic(op_code_int = OP_IRET);
+
+	proc_id <= to_std_logic(op_code_int = OP_PID);
 
 	invalid_dest <= to_std_logic(reg_dest_int = REG_EXC_CODE OR reg_dest_int = REG_EXC_DATA) AND reg_we_int;
 	invalid_src1 <= to_std_logic(reg_src1_int = REG_EXC_CODE OR reg_src1_int = REG_EXC_DATA) AND

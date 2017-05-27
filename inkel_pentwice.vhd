@@ -11,6 +11,9 @@ END inkel_pentwice;
 
 ARCHITECTURE structure OF inkel_pentwice IS
 	COMPONENT inkel_pentiun IS
+		GENERIC (
+			proc_id : INTEGER
+		);
 		PORT (
 			clk        : IN    STD_LOGIC;
 			reset      : IN    STD_LOGIC;
@@ -70,7 +73,7 @@ ARCHITECTURE structure OF inkel_pentwice IS
  	SIGNAL ack_two_d_ARB : STD_LOGIC;
 
 	SIGNAL debug_dump : STD_LOGIC;
-	
+
 	BEGIN
 		mem : memory PORT MAP (
 			clk        => clk,
@@ -96,21 +99,25 @@ ARCHITECTURE structure OF inkel_pentwice IS
 			ack_two_d => ack_two_d_ARB
 		);
 
-		proc : inkel_pentiun PORT MAP (
-			clk        => clk,
-			reset      => reset,
-			debug_dump => debug_dump,
-			i_arb_req  => req_one_i_ARB,
-			d_arb_req  => req_one_d_ARB,
-			i_arb_ack  => ack_one_i_ARB,
-			d_arb_ack  => ack_one_d_ARB,
-			mem_cmd    => cmd_MEM,
-			mem_addr   => addr_MEM,
-			mem_done   => done_MEM,
-			mem_data   => data_MEM,
-			pc_out     => OPEN
-		);
-		
+		proc : inkel_pentiun
+			GENERIC MAP (
+				proc_id => 0
+			)
+			PORT MAP (
+				clk        => clk,
+				reset      => reset,
+				debug_dump => debug_dump,
+				i_arb_req  => req_one_i_ARB,
+				d_arb_req  => req_one_d_ARB,
+				i_arb_ack  => ack_one_i_ARB,
+				d_arb_ack  => ack_one_d_ARB,
+				mem_cmd    => cmd_MEM,
+				mem_addr   => addr_MEM,
+				mem_done   => done_MEM,
+				mem_data   => data_MEM,
+				pc_out     => OPEN
+			);
+
 		debug_dump <= '0';
-		
+
 END structure;

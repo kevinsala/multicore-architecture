@@ -307,6 +307,10 @@ class InkelPentiun:
             # bne
             if self.reg_b[r1] != self.reg_b[r2]:
                 next_pc = (sign_extend((offsethi << 10) | offsetlo_b, 15) * 4) + self.pc
+        elif icode == 64:
+            # pid
+            # TODO: gtt a real processor number
+            self.reg_b[rdest] = 0;
         else:
             # nop / error
             if icode != (2**7 - 1):
