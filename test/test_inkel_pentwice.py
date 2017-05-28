@@ -6,6 +6,50 @@ from cocotb.result import TestFailure
 sys.path.append("../../simulator")
 import processor_model
 
+class ModelState:
+    max_cycles = 30
+
+    def __init__(self):
+        self.model = processor_model.InkelPentiun("memory_boot")
+        self.finished = False;
+        self.pc = 0x1000
+        self.first_dump = True
+        self.reset_cycles()
+
+    def has_finished(self):
+        return self.finished
+
+    def step(self):
+        self.pc = self.model.step()
+        if self.pc == 0:
+            self.finished = True
+
+    def count_cycles(self):
+        self.cycles = self.cycles + 1
+        if self.cycles == self.max_cycles:
+            raise TestFailure("Processor is in an infinite loop at PC 0x%08x" % self.pc)
+
+    def reset_cycles(self):
+        self.cycles = 1
+
+    def check_dump(self):
+        if not self.first_dump:
+            if self.model.check_dump("dump"):
+                raise TestFailure("Processor register bank doesn't have the expected values")
+        else:
+            self.first_dump = False
+
+    def commit(self):
+        self.model.commit()
+
+    def check_pc(self, pc):
+        if self.pc != pc:
+            raise TestFailure("Processor is at PC 0x%08x, whereas model is at PC 0x%08x" % (pc, self.pc))
+
+        self.old_pc = pc
+
+
+
 @cocotb.coroutine
 def clock_gen(signal):
     while True:
@@ -18,7 +62,7 @@ def clock_gen(signal):
 def init_test(dut):
     cocotb.fork(clock_gen(dut.clk))
     clk_rising = RisingEdge(dut.clk)
-    model = processor_model.InkelPentiun("memory_boot")
+    model = ModelState()
 
     # Init test
     dut.reset <= 1
@@ -27,48 +71,30 @@ def init_test(dut):
     dut.reset <= 0
     yield clk_rising
 
-    first = True
-    # HACK: since inkel_pentwice was created, RAM does not work strictly as expected
-    second = False
-    while True:
-        mod_pc = model.step()
-        if mod_pc == 0:
-            break
+    dut.debug_dump <= 1
 
-        if not first:
-            dut.debug_dump <= 1
-
+    while not model.has_finished():
         # Move simulation forward
         yield clk_rising
 
         # One instruction may take many cycles
-        count = 1
-        while count < 30 and dut.proc.pc_out == 0:
+        while dut.proc.pc_out == 0:
             yield clk_rising
+            model.count_cycles()
 
-            count = count + 1
+        model.reset_cycles()
 
-        if count == 30:
-            raise TestFailure("Processor is in an infinite loop at PC 0x%08x" % mod_pc)
+        cur_pc = int(dut.proc.pc_out)
+        model.check_pc(cur_pc)
+        dut._log.info("Processor PC 0x%08x ok", cur_pc)
 
-        if first:
-            first = False
-            second = True
-        elif second:
-            second = False
-        else:
-            if model.check_dump("dump"):
-                raise TestFailure("Memories don't have the expected values")
-            else:
-                dut._log.info("PC 0x%08x (memory) ok", old_proc_pc)
+        # Update model
+        model.step()
 
-        # Check PC's
-        proc_pc = dut.proc.pc_out
-        if mod_pc != proc_pc:
-            raise TestFailure("Processor is at PC 0x%08x, whereas model is at PC 0x%08x" % (proc_pc, mod_pc))
+        # Check memory after the step is done, in case there is an eviction and memory gets out of sync
+        model.check_dump()
+        dut._log.info("Processor PC 0x%08x (memory) ok" % cur_pc)
 
-
-        old_proc_pc = int(proc_pc)
-        dut._log.info("PC 0x%08x ok", proc_pc)
+        model.commit()
 
     dut._log.info("Test run successfully!")

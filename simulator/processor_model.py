@@ -21,17 +21,6 @@ class InkelPentiun:
         return new_mem_line
 
 
-    def _save_old_memories(self):
-        self.old_memory = list(self.memory)
-        self.old_cache_i_v = list(self.cache_i_v)
-        self.old_cache_i_tag = list(self.cache_i_tag)
-        self.old_cache_i_data = list(self.cache_i_data)
-        self.old_cache_d_v = list(self.cache_d_v)
-        self.old_cache_d_tag = list(self.cache_d_tag)
-        self.old_cache_d_data = list(self.cache_d_data)
-        self.old_reg_b = list(self.reg_b)
-
-
     def _update_old_mem(self, data, addr):
         line = addr >> 4
 
@@ -235,8 +224,6 @@ class InkelPentiun:
 
 
     def step(self):
-        self._save_old_memories()
-
         inst_s = self._read_from_cache_i(self.pc)
         inst = int(inst_s, 16)
 
@@ -323,9 +310,14 @@ class InkelPentiun:
             print "------------------------------"
             print
 
-        cur_pc = self.pc
         self.pc = next_pc
-        return cur_pc
+        return self.pc
+
+
+    def commit(self):
+        self.old_memory = list(self.memory)
+        self.old_reg_b = list(self.reg_b)
+
 
     def check_dump(self, dump_folder):
         # Dumps must be checked with the previous instruction
