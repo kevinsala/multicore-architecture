@@ -118,7 +118,14 @@ class InkelPentiun:
                 break
 
         if index == -1:
-            index = self.cache_d_lru.index(3)
+            for i in range(4):
+                if not self.cache_d_v[i]:
+                    index = i
+                    break
+
+                if self.cache_d_lru[i] == 3:
+                    index = i
+
             if self.cache_d_v[index]:
                 self._write_to_mem(self.cache_d_data[index], self.cache_d_tag[index] << 4)
 
