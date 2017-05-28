@@ -154,8 +154,8 @@ class InkelPentiun:
         return self.cache_d_data[index][elem * 8 : (elem + 1) * 8]
 
 
-    def _write_to_cache_d(self, vaddr, data, is_byte):
-        if not is_byte and vaddr % 4 != 0:
+    def _write_to_cache_d(self, vaddr, data):
+        if vaddr % 4 != 0:
             print "WARNING: Unaligned cache access to address 0x%08x" % addr
 
         paddr = self._physical_addr(vaddr)
@@ -163,16 +163,10 @@ class InkelPentiun:
         index = self._update_cache_d(paddr)
         cache_line = self.cache_d_data[index]
 
-        if is_byte:
-            byte = paddr & (2**4 - 1)
-            data_s = "%02x" % (data & (-1 * 2**8))
-            msb = (byte + 1) * 2
-            lsb = byte * 2
-        else:
-            elem = (paddr & 0xC) >> 2
-            data_s = "%08x" % data
-            msb = (elem + 1) * 4
-            lsb = elem * 4
+        elem = (paddr & 0xC) >> 2
+        data_s = "%08x" % data
+        msb = (elem + 1) * 4
+        lsb = elem * 4
 
         cache_line = cache_line[0:(lsb * 2)] + data_s + cache_line[(msb * 2):len(cache_line)]
         self.cache_d_data[index] = cache_line
@@ -274,26 +268,15 @@ class InkelPentiun:
         elif icode == 15:
             # li
             self.reg_b[rdest] = sign_extend(offset_i, 20)
-        elif icode == 16:
-            # ldb
-            addr = sign_extend(offsetlo, 15) + self.reg_b[r1]
-            align_addr = addr & (-1 * 2**2)
-            byte = addr & (2**2 - 1)
-            data = int(self._read_from_cache_d(align_addr), 16)
-            self.reg_b[rdest] = sign_extend(data & (2**8 - 1), 8)
         elif icode == 17:
             # ldw
             addr = sign_extend(offsetlo, 15) + self.reg_b[r1]
             data = int(self._read_from_cache_d(addr), 16)
             self.reg_b[rdest] = sign_extend(data, 32)
-        elif icode == 18:
-            # stb
-            addr = sign_extend(offsetlo, 15) + self.reg_b[r1]
-            self._write_to_cache_d(addr, self.reg_b[rdest], True)
         elif icode == 19:
             # stw
             addr = sign_extend(offsetlo, 15) + self.reg_b[r1]
-            self._write_to_cache_d(addr, self.reg_b[rdest], False)
+            self._write_to_cache_d(addr, self.reg_b[rdest])
         elif icode == 20:
             # mov
             self.reg_b[rdest] = self.reg_b[r1]
@@ -302,7 +285,7 @@ class InkelPentiun:
             addr = sign_extend(offsetlo, 15) + self.reg_b[r1]
             data = int(self._read_from_cache_d(addr), 16)
             self.reg_b[rdest] = sign_extend(data, 32)
-            self._write_to_cache_d(addr, 1, False)
+            self._write_to_cache_d(addr, 1)
         elif icode == 48:
             # beq
             if self.reg_b[r1] == self.reg_b[r2]:
