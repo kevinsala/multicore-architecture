@@ -108,14 +108,13 @@ BEGIN
 	branch_if_eq <= to_std_logic(op_code_int = OP_BEQ);
 	jump <= to_std_logic(op_code_int = OP_JMP);
 
-	reg_src1_v_int <= NOT to_std_logic(op_code_int = OP_LI OR op_code_int = OP_PID OR
-										op_code_int = OP_NOP);
+	reg_src1_v_int <= NOT to_std_logic(op_code_int = OP_LI OR op_code_int = OP_JMP OR
+										op_code_int = OP_PID OR op_code_int = OP_NOP);
 	reg_src1_v <= reg_src1_v_int;
 
 	reg_src2_v_int <= to_std_logic(op_code_int = OP_ADD OR op_code_int = OP_SUB OR
 							op_code_int = OP_MUL OR op_code_int = OP_BEQ OR
-							op_code_int = OP_BNE OR op_code_int = OP_JMP OR
-							op_code_int = OP_STW);
+							op_code_int = OP_BNE OR op_code_int = OP_STW);
 	reg_src2_v <= reg_src2_v_int;
 
 	inm_src2_v <= to_std_logic(op_code_int = OP_LI OR op_code_int = OP_STW OR
