@@ -947,7 +947,7 @@ BEGIN
 
 	mux_src1_D_BP : mux8_32bits PORT MAP(
 		Din0 => reg_data1_D,
-		Din1 => ALU_out_A,
+		Din1 => data_out_A,
 		Din2 => reg_data_C,
 		Din3 => mul_out_M5,
 		Din4 => reg_src1_D_data_ROB,
@@ -960,7 +960,7 @@ BEGIN
 
 	mux_src2_D_BP : mux8_32bits PORT MAP(
 		Din0 => reg_data2_D,
-		Din1 => ALU_out_A,
+		Din1 => data_out_A,
 		Din2 => reg_data_C,
 		Din3 => mul_out_M5,
 		Din4 => reg_src2_D_data_ROB,
@@ -973,7 +973,7 @@ BEGIN
 
 	mux_mem_data_D_BP : mux8_32bits PORT MAP(
 		Din0 => reg_data2_D,
-		Din1 => ALU_out_A,
+		Din1 => data_out_A,
 		Din2 => reg_data_C,
 		Din3 => mul_out_M5,
 		Din4 => reg_src2_D_data_ROB,
