@@ -46,7 +46,7 @@ ARCHITECTURE structure OF inkel_pentwice IS
 		PORT (
 			clk       : IN  STD_LOGIC;
 			reset     : IN  STD_LOGIC;
-			mem_done  : IN  STD_LOGIC;
+			llc_done  : IN  STD_LOGIC;
 			req_one_i : IN  STD_LOGIC;
 			req_two_i : IN  STD_LOGIC;
 			req_one_d : IN  STD_LOGIC;
@@ -54,7 +54,9 @@ ARCHITECTURE structure OF inkel_pentwice IS
 			ack_one_i : OUT STD_LOGIC;
 			ack_two_i : OUT STD_LOGIC;
 			ack_one_d : OUT STD_LOGIC;
-			ack_two_d : OUT STD_LOGIC
+			ack_two_d : OUT STD_LOGIC;
+			req_llc   : IN  STD_LOGIC;
+			ack_llc   : OUT STD_LOGIC
 		);
 	END COMPONENT;
 
@@ -71,6 +73,8 @@ ARCHITECTURE structure OF inkel_pentwice IS
  	SIGNAL req_two_d_ARB : STD_LOGIC;
  	SIGNAL ack_two_i_ARB : STD_LOGIC;
  	SIGNAL ack_two_d_ARB : STD_LOGIC;
+-- 	SIGNAL req_llc_ARB   : STD_LOGIC; --Unused until we add the LLC
+-- 	SIGNAL ack_llc_ARB   : STD_LOGIC;
 
 	SIGNAL debug_dump : STD_LOGIC;
 
@@ -88,7 +92,7 @@ ARCHITECTURE structure OF inkel_pentwice IS
 		arb : arbiter PORT MAP (
 			clk       => clk,
 			reset     => reset,
-			mem_done  => done_MEM,
+			llc_done  => done_MEM,			--TODO: done_LLC ah?
 			req_one_i => req_one_i_ARB,
 			req_one_d => req_one_d_ARB,
 			ack_one_i => ack_one_i_ARB,
@@ -96,7 +100,9 @@ ARCHITECTURE structure OF inkel_pentwice IS
 			req_two_i => req_two_i_ARB,
 			req_two_d => req_two_d_ARB,
 			ack_two_i => ack_two_i_ARB,
-			ack_two_d => ack_two_d_ARB
+			ack_two_d => ack_two_d_ARB,
+			req_llc   => req_llc_ARB,
+			ack_llc   => ack_llc_ARB
 		);
 
 		proc0 : inkel_pentiun
