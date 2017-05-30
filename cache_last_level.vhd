@@ -46,6 +46,9 @@ ARCHITECTURE cache_last_level_behavior OF cache_last_level IS
 	SIGNAL hit_line_i     : hit_t;
 	SIGNAL hit_line_num_i : INTEGER RANGE 0 TO 31 := 0;
 
+    -- Determine if the hit (if there was a hit) is valid or not
+    SIGNAL hit_valid_i : STD_LOGIC := '0';
+
 	-- Determine the line number to output
 	SIGNAL data_out_line_num_i : INTEGER RANGE 0 TO 31 := 0;
 
@@ -72,8 +75,8 @@ ARCHITECTURE cache_last_level_behavior OF cache_last_level IS
 		RETURN tmp_return;
 	END check_hit;
 	
-	
-	-- Determine the least recently used line
+
+    -- Determine the least recently used line
 	FUNCTION get_lru_line(lru_fields : ARRAY(31 DOWNTO 0) OF INTEGER) 
 	RETURN INTEGER IS
 		VARIABLE tmp_return : INTEGER := 0;
@@ -85,8 +88,8 @@ ARCHITECTURE cache_last_level_behavior OF cache_last_level IS
 			END LOOP;
 		RETURN tmp_return;
 	END get_lru_line;
-	
-	
+
+
 	-- Determine if the access has hit
 	FUNCTION has_access_hit(hit_line_i : ARRAY(31 DOWNTO 0) OF STD_LOGIC) 
 	RETURN STD_LOGIC IS
@@ -109,7 +112,7 @@ ARCHITECTURE cache_last_level_behavior OF cache_last_level IS
 		VARIABLE tmp_return : ARRAY(31 DOWNTO 0) OF STD_LOGIC;
 		BEGIN
 			FOR i IN 0 to 31 LOOP
-				tmp_return(i) <= valid_fields(i) AND to_std_logic(tag_fields(i) = addr(31 DOWNTO 4));
+				tmp_return(i) <= to_std_logic(tag_fields(i) = addr(31 DOWNTO 4));
 			END LOOP;
 		RETURN tmp_return;
 	END lines_hit;
@@ -301,6 +304,9 @@ ARCHITECTURE cache_last_level_behavior OF cache_last_level IS
 	hit <= hit_i;
 	hit_i <= has_access_hit(hit_line_i);
 	
+    -- Determine if the hit (if there was one) is valid
+    hit_valid_i <= valid_fields(hit_line_num_i);
+
 	-- Determine the least recently used line
 	lru_line_num_i <= get_lru_line(lru_fields);
 
