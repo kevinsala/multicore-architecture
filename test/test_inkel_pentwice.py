@@ -5,12 +5,15 @@ from cocotb.result import TestFailure
 
 sys.path.append("../../simulator")
 import processor_model
+import memory_model
 
 class ModelState:
     max_cycles = 30
 
-    def __init__(self):
-        self.model = processor_model.InkelPentiun("memory_boot")
+    def __init__(self, proc_id, memory):
+        self.proc_id = proc_id
+        self.model = processor_model.InkelPentiun(self.proc_id, memory)
+        memory.add_processor(self.model)
         self.finished = False;
         self.pc = 0x1000
         self.first_dump = True
@@ -46,9 +49,6 @@ class ModelState:
         if self.pc != pc:
             raise TestFailure("Processor is at PC 0x%08x, whereas model is at PC 0x%08x" % (pc, self.pc))
 
-        self.old_pc = pc
-
-
 
 @cocotb.coroutine
 def clock_gen(signal):
@@ -62,7 +62,8 @@ def clock_gen(signal):
 def init_test(dut):
     cocotb.fork(clock_gen(dut.clk))
     clk_rising = RisingEdge(dut.clk)
-    model = ModelState()
+    memory = memory_model.MemoryModel("memory_boot")
+    model = ModelState(0, memory)
 
     # Init test
     dut.reset <= 1
@@ -73,6 +74,7 @@ def init_test(dut):
 
     dut.debug_dump <= 1
 
+    dump_count = 0
     while not model.has_finished():
         # Move simulation forward
         yield clk_rising
@@ -93,8 +95,15 @@ def init_test(dut):
 
         # Check memory after the step is done, in case there is an eviction and memory gets out of sync
         model.check_dump()
+        if dump_count > 2:
+            if memory.check_dump("dump"):
+                raise TestFailure("Memory doesn't have the expected values")
+        else:
+            dump_count = dump_count + 1
+
         dut._log.info("Processor PC 0x%08x (memory) ok" % cur_pc)
 
         model.commit()
+        memory.commit()
 
     dut._log.info("Test run successfully!")

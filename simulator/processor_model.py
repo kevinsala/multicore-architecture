@@ -7,70 +7,6 @@ def sign_extend(value, bits):
 class InkelPentiun:
     verbose = False
 
-    def _physical_addr(self, vaddr):
-        return vaddr
-
-    def _swap_mem_line_endianness(self, mem_line):
-        if len(mem_line) % 8:
-            print "WARNING: tring to swap endianness of a memory line of wrong size"
-
-        new_mem_line = ""
-        for i in range(0, len(mem_line), 8):
-            new_mem_line = mem_line[i:i+8] + new_mem_line
-
-        return new_mem_line
-
-
-    def _update_old_mem(self, data, addr):
-        line = addr >> 4
-
-        i = 0
-        while i < len(self.old_memory) and self.old_memory[i][0] < line:
-            i = i + 1
-
-        if i < len(self.old_memory) and self.old_memory[i][0] == line:
-            self.old_memory[i] = (line, data)
-        else:
-            self.old_memory.append((line, data))
-            self.old_memory.sort(key = lambda x: x[0])
-
-
-    def _read_from_mem(self, addr):
-        line = addr >> 4
-
-        if line > 16384:
-            print "WARNING: Out of bounds memory access to address 0x%08x" % addr
-            return "0"*32
-
-        i = 0
-        while i < len(self.memory) and self.memory[i][0] < line:
-            i = i + 1
-
-        if i < len(self.memory) and self.memory[i][0] == line:
-            return self.memory[i][1]
-        else:
-            print "WARNING: Accessing an uninitialized memory position 0x%08x" % addr
-            return "0"*32
-
-
-    def _write_to_mem(self, data, addr):
-        line = addr >> 4
-
-        if line > 16384:
-            print "WARNING: Out of bounds memory access to address 0x%08x" % addr
-            return
-
-        i = 0
-        while i < len(self.memory) and self.memory[i][0] < line:
-            i = i + 1
-
-        if i < len(self.memory) and self.memory[i][0] == line:
-            self.memory[i] = (line, data)
-        else:
-            self.memory.append((line, data))
-            self.memory.sort(key = lambda x: x[0])
-
-
     def _read_from_cache_i(self, addr):
         if addr % 4 != 0:
             print "WARNING: Unaligned cache access to address 0x%08x" % addr
@@ -82,7 +18,7 @@ class InkelPentiun:
         if not self.cache_i_v[line] or self.cache_i_tag[line] != tag:
             self.cache_i_v[line] = True
             self.cache_i_tag[line] = tag
-            self.cache_i_data[line] = self._read_from_mem(addr)
+            self.cache_i_data[line] = self.memory.get_inst(addr)
 
         return self.cache_i_data[line][elem * 8 : (elem + 1) * 8]
 
@@ -116,43 +52,35 @@ class InkelPentiun:
                     index = i
 
             if self.cache_d_v[index]:
-                self._write_to_mem(self.cache_d_data[index], self.cache_d_tag[index] << 4)
-
-                # A dirty eviction is seen already at the end of the execution of the instruction
-                # that it is being run, instead of the next one
-                self._update_old_mem(self.cache_d_data[index], self.cache_d_tag[index] << 4)
+                self.memory.put(self.cache_d_tag[index] << 4, self.cache_d_data[index])
 
             self.cache_d_v[index] = True
             self.cache_d_tag[index] = tag
-            self.cache_d_data[index] = self._read_from_mem(addr)
+            self.cache_d_data[index] = self.memory.get(addr)
 
         self._update_lru_cache_d(index)
 
         return index
 
 
-    def _read_from_cache_d(self, vaddr):
-        if vaddr % 4 != 0:
+    def _read_from_cache_d(self, addr):
+        if addr % 4 != 0:
             print "WARNING: Unaligned cache access to address 0x%08x" % addr
 
-        paddr = self._physical_addr(vaddr)
+        elem = (addr >> 2) & (2**2 - 1) # Bits 2 and 3
 
-        elem = (vaddr >> 2) & (2**2 - 1) # Bits 2 and 3
-
-        index = self._update_cache_d(paddr)
+        index = self._update_cache_d(addr)
         return self.cache_d_data[index][elem * 8 : (elem + 1) * 8]
 
 
-    def _write_to_cache_d(self, vaddr, data):
-        if vaddr % 4 != 0:
+    def _write_to_cache_d(self, addr, data):
+        if addr % 4 != 0:
             print "WARNING: Unaligned cache access to address 0x%08x" % addr
 
-        paddr = self._physical_addr(vaddr)
-
-        index = self._update_cache_d(paddr)
+        index = self._update_cache_d(addr)
         cache_line = self.cache_d_data[index]
 
-        elem = (paddr & 0xC) >> 2
+        elem = (addr & 0xC) >> 2
         data_s = "%08x" % data
         msb = (elem + 1) * 4
         lsb = elem * 4
@@ -161,8 +89,9 @@ class InkelPentiun:
         self.cache_d_data[index] = cache_line
 
 
-    def __init__(self, mem_boot, mem_sys = ""):
-        self.memory = []
+    def __init__(self, proc_id, memory):
+        self.proc_id = proc_id
+        self.memory = memory
 
         self.cache_i_v = [False, False, False, False]
         self.cache_i_tag = [0, 0, 0, 0]
@@ -175,52 +104,6 @@ class InkelPentiun:
 
         self.reg_b = [0] * 32
         self.pc = 0x1000
-
-        pos = 0x100
-        with open(mem_boot, "r") as f:
-            i = 0
-            mem_line = ""
-            for l in f:
-                l = l[:-1]
-                mem_line = mem_line + l
-                i = i + 1
-
-                if i == 4:
-                    self.memory.append((pos, mem_line.lower()))
-                    mem_line = ""
-                    i = 0
-                    pos = pos + 1
-
-            if i != 0:
-                while i < 4:
-                    mem_line = mem_line + "00000000"
-                    i = i + 1
-
-                self.memory.append((pos, mem_line.lower()))
-
-
-        if mem_sys != "":
-            pos = 0x200
-            with open(mem_sys, "r") as f:
-                i = 0
-                mem_line = ""
-                for l in f:
-                    l = l[:-1]
-                    mem_line = mem_line + l
-                    i = i + 1
-
-                    if i == 4:
-                        self.memory.append((pos, mem_line.lower()))
-                        mem_line = ""
-                        i = 0
-                        pos = pos + 1
-
-                if i != 4:
-                    while i < 4:
-                        mem_line = mem_line + "00000000"
-                        i = i + 1
-
-                    self.memory.append((pos, mem_line.lower()))
 
 
     def step(self):
@@ -286,8 +169,7 @@ class InkelPentiun:
                 next_pc = (sign_extend((offsethi << 10) | offsetlo_b, 15) * 4) + self.pc
         elif icode == 64:
             # pid
-            # TODO: gtt a real processor number
-            self.reg_b[rdest] = 0;
+            self.reg_b[rdest] = self.proc_id;
         else:
             # nop / error
             if icode != (2**7 - 1):
@@ -295,8 +177,6 @@ class InkelPentiun:
                 return 0
 
         if self.verbose:
-            print "------------------------------"
-            print self.memory
             print "------------------------------"
             print self.cache_i_v
             print self.cache_i_tag
@@ -315,43 +195,29 @@ class InkelPentiun:
 
 
     def commit(self):
-        self.old_memory = list(self.memory)
         self.old_reg_b = list(self.reg_b)
+
+
+    def get(self, addr):
+        tag = addr >> 4
+
+        index = -1
+
+        for i in range(4):
+            if self.cache_d_v[i] and self.cache_d_tag[i] == tag:
+                index = i
+                break
+
+        if index == -1:
+            return None
+
+        self.cache_d_v[index] = False
+        return self.cache_d_data[index]
 
 
     def check_dump(self, dump_folder):
         # Dumps must be checked with the previous instruction
         error = False
-        with open(dump_folder + "/ram", "r") as f:
-            proc_mem_line = 0
-            idx_mod = 0
-            for line in f:
-                # Assuming both memories are sorted by address
-                line_proc, data_proc = line.split()
-                line_proc = int(line_proc)
-                data_proc = data_proc.lower()
-
-                # Memory lines that are in the processor but not in the model
-                # are not a problem. They are the result of an eviction at stage
-                # C, whereas the model is in stage "commit" of a previous instruction
-
-                line_mod = self.old_memory[idx_mod][0]
-                if line_proc < line_mod:
-                    continue
-
-                if line_proc > line_mod:
-                    print "ERROR: memory line %08x has not been written when it should have" % line_mod
-                    error = True
-                else:
-                    data_mod = self._swap_mem_line_endianness(self.old_memory[idx_mod][1])
-                    if data_mod != data_proc:
-                        print "ERROR: memory line %08x has not been updated properly" % line_proc
-                        print "Expected data: %s. Received data: %s" % (data_mod, data_proc)
-                        error = True
-
-                idx_mod = idx_mod + 1
-                if idx_mod == len(self.old_memory):
-                    break
 
         with open(dump_folder + "/reg", "r") as f:
             reg_line = 0
@@ -366,10 +232,10 @@ class InkelPentiun:
                 reg_line = reg_line + 1
 
         if not error:
-            os.remove(dump_folder + "/ram")
             os.remove(dump_folder + "/reg")
 
         return error
+
 
     def dump_verbose(self):
         print "--- MEMORY ---"
