@@ -23,31 +23,46 @@ class ModelState:
         return self.finished
 
     def step(self):
+        if self.has_finished():
+            return
+
         self.pc = self.model.step()
         if self.pc == 0:
             self.finished = True
 
     def count_cycles(self):
+        if self.has_finished():
+            return
+
         self.cycles = self.cycles + 1
         if self.cycles == self.max_cycles:
-            raise TestFailure("Processor is in an infinite loop at PC 0x%08x" % self.pc)
+            raise TestFailure("Processor %d is in an infinite loop at PC 0x%08x" % (self.proc_id, self.pc))
 
     def reset_cycles(self):
         self.cycles = 1
 
     def check_dump(self):
+        if self.has_finished():
+            return
+
         if not self.first_dump:
             if self.model.check_dump("dump"):
-                raise TestFailure("Processor register bank doesn't have the expected values")
+                raise TestFailure("Processor %d register bank doesn't have the expected values" % self.proc_id)
         else:
             self.first_dump = False
 
     def commit(self):
+        if self.has_finished():
+            return
+
         self.model.commit()
 
     def check_pc(self, pc):
+        if self.has_finished():
+            return
+
         if self.pc != pc:
-            raise TestFailure("Processor is at PC 0x%08x, whereas model is at PC 0x%08x" % (pc, self.pc))
+            raise TestFailure("Processor %d is at PC 0x%08x, whereas model is at PC 0x%08x" % (self.proc_id, pc, self.pc))
 
 
 @cocotb.coroutine
@@ -63,7 +78,8 @@ def init_test(dut):
     cocotb.fork(clock_gen(dut.clk))
     clk_rising = RisingEdge(dut.clk)
     memory = memory_model.MemoryModel("memory_boot")
-    model = ModelState(0, memory)
+    model0 = ModelState(0, memory)
+    model1 = ModelState(1, memory)
 
     # Init test
     dut.reset <= 1
@@ -75,35 +91,54 @@ def init_test(dut):
     dut.debug_dump <= 1
 
     dump_count = 0
-    while not model.has_finished():
+    while not (model1.has_finished() and model2.has_finished()):
         # Move simulation forward
         yield clk_rising
 
         # One instruction may take many cycles
-        while dut.proc.pc_out == 0:
+        while dut.proc0.pc_out == 0 and dut.proc1.pc_out == 0:
+            model0.count_cycles()
+            model1.count_cycles()
             yield clk_rising
-            model.count_cycles()
 
-        model.reset_cycles()
+        proc0_pc = int(dut.proc0.pc_out)
+        proc1_pc = int(dut.proc1.pc_out)
 
-        cur_pc = int(dut.proc.pc_out)
-        model.check_pc(cur_pc)
-        dut._log.info("Processor PC 0x%08x ok", cur_pc)
+        if proc0_pc != 0:
+            model0.reset_cycles()
+            model0.check_pc(proc0_pc)
+            dut._log.info("Processor 0 PC 0x%08x ok", proc0_pc)
 
-        # Update model
-        model.step()
+            # Update model
+            model0.step()
 
-        # Check memory after the step is done, in case there is an eviction and memory gets out of sync
-        model.check_dump()
+            # Check memory after the step is done, in case there is an eviction and memory gets out of sync
+            model0.check_dump()
+
+        if proc1_pc != 0:
+            model1.reset_cycles()
+            model1.check_pc(proc1_pc)
+            dut._log.info("Processor 1 PC 0x%08x ok", proc1_pc)
+
+            # Update model
+            model1.step()
+
+            # Check memory after the step is done, in case there is an eviction and memory gets out of sync
+            model1.check_dump()
+
         if dump_count > 2:
             if memory.check_dump("dump"):
                 raise TestFailure("Memory doesn't have the expected values")
         else:
             dump_count = dump_count + 1
 
-        dut._log.info("Processor PC 0x%08x (memory) ok" % cur_pc)
-
-        model.commit()
+        dut._log.info("Memory ok")
         memory.commit()
+
+        if proc0_pc != 0:
+            model0.commit()
+
+        if proc1_pc != 0:
+            model1.commit()
 
     dut._log.info("Test run successfully!")

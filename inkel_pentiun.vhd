@@ -163,6 +163,9 @@ ARCHITECTURE structure OF inkel_pentiun IS
 	END COMPONENT;
 
 	COMPONENT reg_bank IS
+		GENERIC(
+			proc_id : INTEGER
+		);
 		PORT(
 			clk : IN STD_LOGIC;
 			reset : IN STD_LOGIC;
@@ -929,20 +932,22 @@ BEGIN
 		invalid_inst => invalid_inst_D
 	);
 
-	rb: reg_bank PORT MAP(
-		clk => clk,
-		reset => reset,
-		debug_dump => debug_dump,
-		src1 => reg_src1_D,
-		src2 => reg_src2_D,
-		data1 => reg_data1_D,
-		data2 => reg_data2_D,
-		we => reg_we_ROB,
-		dest => reg_dest_ROB,
-		data_in => reg_data_ROB,
-		exception => exc_ROB,
-		exc_code => exc_code_ROB,
-		exc_data => exc_data_ROB
+	rb: reg_bank
+		GENERIC MAP (proc_id => proc_id)
+		PORT MAP(
+			clk => clk,
+			reset => reset,
+			debug_dump => debug_dump,
+			src1 => reg_src1_D,
+			src2 => reg_src2_D,
+			data1 => reg_data1_D,
+			data2 => reg_data2_D,
+			we => reg_we_ROB,
+			dest => reg_dest_ROB,
+			data_in => reg_data_ROB,
+			exception => exc_ROB,
+			exc_code => exc_code_ROB,
+			exc_data => exc_data_ROB
 	);
 
 	mux_src1_D_BP : mux8_32bits PORT MAP(

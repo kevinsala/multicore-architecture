@@ -6,6 +6,9 @@ USE std.textio.ALL;
 USE work.utils.ALL;
 
 ENTITY reg_bank IS
+	GENERIC(
+		proc_id : INTEGER
+	);
 	PORT(
 		clk : IN STD_LOGIC;
 		reset : IN STD_LOGIC;
@@ -46,7 +49,7 @@ BEGIN
 		-- Write on falling edge
 		IF falling_edge(clk) THEN
 			IF debug_dump = '1' THEN
-				dump_reg_bank("dump/reg", reg_bank);
+				dump_reg_bank("dump/reg" & INTEGER'IMAGE(proc_id), reg_bank);
 			END IF;
 
 			IF reset = '1' THEN
