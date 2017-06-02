@@ -30,6 +30,8 @@ ARCHITECTURE cache_last_level_behavior OF cache_last_level IS
 	TYPE tag_fields_t   IS ARRAY(31 DOWNTO 0) OF STD_LOGIC_VECTOR(27 DOWNTO 0);
 	TYPE data_fields_t  IS ARRAY(31 DOWNTO 0) OF STD_LOGIC_VECTOR(127 DOWNTO 0);
 	TYPE valid_fields_t IS ARRAY(31 DOWNTO 0) OF STD_LOGIC;
+	
+	TYPE memory_controller_state_t IS (READY, MEM_REQ, MEM_STORE, ARB_REQ, BUS_WAIT, MEM_DAH);
 
 	-- Fields of the LLC
 	SIGNAL lru_fields   : lru_fields_t;
@@ -61,6 +63,15 @@ ARCHITECTURE cache_last_level_behavior OF cache_last_level IS
 	SIGNAL ch_word_msb : INTEGER RANGE 0 TO 127 := 31;
 	SIGNAL ch_word_lsb : INTEGER RANGE 0 TO 127 := 0;
 	
+	-- Temporary signals to store a previous request
+	-- Used when:
+	--   Cache requests a block, LLC needs to replace an invalid block that
+    --   maps to the same address, which means it is valid on the other cache. 
+	-- Actions:
+	--   Store address requested by cache while faking a request so the other
+	--   cache evicts the block.
+	SIGNAL temp_address : STD_LOGIC_VECTOR(31 DOWNTO 0);
+	SIGNAL priority_req : STD_LOGIC;
 	
 	-- Determine which line has hit
 	FUNCTION check_hit(hit_line_i : ARRAY(31 DOWNTO 0) OF STD_LOGIC) 
@@ -145,8 +156,10 @@ ARCHITECTURE cache_last_level_behavior OF cache_last_level IS
 		FOR i IN 0 TO 31 LOOP
 			lru_fields(i)   <= i;
 			valid_fields(i) <= '0';
+			temp_address(i) <= '0';
 		END LOOP;
 		
+		 priority_req <= '0';
 		arb_req      <= '0';
 		arb_priority <= '0';
 	END PROCEDURE;
@@ -192,55 +205,81 @@ ARCHITECTURE cache_last_level_behavior OF cache_last_level IS
 	END PROCESS internal_register;
 
 	-- Process that computes the next state of the cache
-	next_state_process : PROCESS(reset, state_i, re, we, mem_done, arb_ack, sb_done, hit_i, repl_dirty_i, invalid_access_i)
+	-- States are: READY, ARBREQ, LINEREQ, LINEREPL
+	next_state_process : PROCESS(reset, state_i, mem_done, arb_ack, hit_i, hit_valid_i, repl_dirty_i, invalid_access_i)
 	BEGIN
 		IF reset = '1' THEN
 			state_nx_i <= READY;
 		ELSE
 			state_nx_i <= state_i;
 			IF state_i = READY THEN
-				IF (re = '1' OR we = '1') AND invalid_access_i = '0' THEN
-					IF sb_done = '0' THEN
-						state_nx_i <= WAITSB;
-					ELSE
-						IF hit_i = '1' THEN
-							state_nx_i <= READY;
-						ELSE
-							state_nx_i <= ARBREQ;
-						END IF;
-					END IF;
-				END IF;
-
-			ELSIF state_i = WAITSB THEN
-				IF sb_done = '1' THEN
-					IF hit_i = '1' THEN
-						state_nx_i <= READY;
-					ELSE
-						state_nx_i <= ARBREQ;
-					END IF;
-				END IF;
-
-			ELSIF state_i = ARBREQ THEN
-				IF arb_ack = '1' THEN
-					IF hit_i = '0' THEN
-						IF repl_dirty_i = '1' THEN
-							state_nx_i <= LINEREPL;
-						ELSE
-							state_nx_i <= LINEREQ;
-						END IF;
-					END IF;
-				END IF;
-
-			ELSIF state_i = LINEREPL THEN
-				IF mem_done = '1' THEN
-					state_nx_i <= ARBREQ;
-				END IF;
-
-			ELSIF state_i = LINEREQ THEN
-				IF mem_done = '1' THEN
-					state_nx_i <= READY;
-				END IF;
-			END IF;
+                IF priority_req = '1' THEN
+                    state_nx_i <= ARB_REQ;
+                ELSE
+                    IF (cmd = CMD_GET_RO) THEN
+                        IF hit_i = '1' THEN
+                            state_nx_i <= READY;
+                        ELSE
+                            IF repl_i = '1' THEN
+                                IF hit_valid_i = '1' THEN
+                                    state_nx_i <= MEM_STORE;
+                                ELSE
+                                    state_nx_i <= MEM_REQ;
+                                ENDIF;
+                            ELSE
+                                state_nx_i <= MEM_REQ;
+                        ENDIF;
+                                   
+                    ELSIF (cmd = CMD_GET) THEN
+                        IF hit_i = '1' THEN
+                            IF hit_valid_i = '1' THEN
+                                state_nx_i <= READY;
+                            ELSE
+                                state_nx_i <= MEM_REQ;
+                            ENDIF;
+                        ELSE
+                            IF repl_i = '1' THEN
+                                IF hit_valid_i = '1' THEN
+                                    state_nx_i <= MEM_STORE;
+                                ELSE
+                                    state_nx_i <= MEM_REQ;
+                                END;
+                            ELSE
+                                state_nx_i <= MEM_REQ;
+                            ENDIF;
+                        ENDIF;
+                        
+                    ELSIF (cmd = CMD_PUT) THEN
+                        state_nx_i <= READY;
+                    
+                    ENDIF;
+                ENDIF;
+            
+            ELSIF state_i = MEM_REQ THEN
+                IF mem_done = '1' THEN
+                    state_nx_i <= READY;
+                ENDIF;
+            
+            ELSIF state_i = MEM_STORE THEN
+                IF mem_done = '1' THEN
+                    state_nx_i <= MEM_REQ;
+                ENDIF;
+            
+            ELSIF state_i = ARB_REQ THEN
+                IF arb_ack = '1' THEN
+                    state_nx_i <= BUS_WAIT;
+                ENDIF;
+                
+            ELSIF state_i = BUS_WAIT THEN
+                IF done = '1' THEN
+                    state_nx_i <= MEM_DAH;
+                ENDIF;
+            
+            ELSIF state_i = MEM_DAH THEN
+                IF mem_done = '1' THEN
+                    state_nx_i <= READY;
+                ENDIF;
+            ENDIF;
 		END IF;
 	END PROCESS next_state_process;
 
@@ -254,43 +293,86 @@ ARCHITECTURE cache_last_level_behavior OF cache_last_level IS
 			clear_bus(mem_cmd, mem_addr, mem_data);
 
 		ELSIF falling_edge(clk) AND reset = '0' THEN
-			IF state_i = READY OR state_i = WAITSB THEN
-				IF state_nx_i = READY THEN
-					IF re = '1' OR we = '1' THEN
-						LRU_execute(lru_fields, hit_line_num_i);
-						line_num := hit_line_num_i;
-					END IF;
-				ELSIF state_nx_i = ARBREQ THEN
-					arb_req <= '1';
-				END IF;
-			ELSIF state_i = ARBREQ THEN
-				IF state_nx_i = LINEREPL THEN
-					mem_cmd <= CMD_PUT;
-					mem_addr <= tag_fields(lru_line_num_i) & "0000";
-					mem_data <= data_fields(lru_line_num_i);
-				ELSIF state_nx_i = LINEREQ THEN
-					mem_cmd <= CMD_GET;
-					mem_addr <= addr;
-				END IF;
-			ELSIF state_i = LINEREPL THEN
-				IF state_nx_i = ARBREQ THEN
-					arb_req <= '1';
-					clear_bus(mem_cmd, mem_addr, mem_data);
-				END IF;
-			ELSIF state_i = LINEREQ THEN
-				IF state_nx_i = READY THEN
-					arb_req <= '0';
-					valid_fields(lru_line_num_i) <= '1';
-					tag_fields(lru_line_num_i) <= addr(31 DOWNTO 4);
-					data_fields(lru_line_num_i) <= mem_data;
-					LRU_execute(lru_fields, lru_line_num_i);
-					clear_bus(mem_cmd, mem_addr, mem_data);
-					line_num := lru_line_num_i;
-				END IF;
-			END IF;
-
-			data_out_line_num_i <= line_num;
-		END IF;
+            IF state_i = READY THEN
+                IF state_nx_i = MEM_STORE THEN
+                    mem_cmd  <= CMD_PUT;
+                    mem_addr <= repl_addr;
+                    mem_data <= data_fields(lru_line_num_i);
+                    valid_fields(lru_line_num_i) <= '0';
+                    
+                ELSIF state_nx_i = MEM_REQ THEN
+                    IF (cmd = CMD_GET_RO) OR (cmd = CMD_GET) THEN
+                        IF hit_i = '0' AND repl_i = '1' AND valid_fields(lru_line_num_i) = '0' THEN
+                            priority_req <= '1'; -- save state
+                            temp_address <= repl_addr;
+                        ENDIF;
+                    ELSIF (cmd = CMD_GET) THEN
+                        IF hit_i = '1' AND valid_fields(lru_line_num_i) = '0' THEN
+                            priority_req <= '1'; -- save state
+                            temp_address <= repl_addr;
+                        ENDIF;
+                    ENDIF;
+                    mem_cmd <= CMD_GET;
+                    mem_addr <= addr;
+                
+                ELSIF state_nx_i = ARB_REQ THEN
+                    arb_req <= 1;
+		
+                ELSIF state_nx_i = READY THEN
+                    IF (cmd = CMD_PUT) THEN
+                        LRU_execute(lru_fields, hit_line_num_i);
+                        valid_fields(hit_line_num_i) <= '1';
+                        data_fields(hit_line_num_i) <= data;
+                        done <= '1';
+                    ELSIF (cmd = CMD_GET) OR (cmd = CMD_GET_RO) THEN
+                        data <= data_fields(hit_line_num_i);
+                        done <= '1';
+                        IF (cmd = CMD_GET) THEN
+                            valid_fields(hit_line_num_i) <= '0';
+                        ENDIF;
+                    ENDIF;
+                ENDIF;
+		
+            ELSIF state_i = MEM_REQ THEN
+                IF state_nx_i = READY THEN
+                    data <= mem_data;
+                    tag_fields(lru_line_num_i) <= addr(31 DOWNTO 4);
+                    
+                    IF (cmd = CMD_GET_RO) THEN
+                        data_fields(lru_line_num_i) <= data;
+                        valid_fields(lru_line_num_i) <= '1';
+                    ELSE THEN
+                        valid_fields(lru_line_num_i) <= '0';
+                    ENDIF;
+                    done <= '1';
+                ENDIF;
+            
+            ELSIF state_i = MEM_STORE THEN
+                IF state_nx_i = MEM_REQ THEN
+                    mem_cmd <= CMD_GET;
+                    mem_addr <= addr;
+                ENDIF;
+		
+            ELSIF state_i = ARB_REQ THEN
+                IF state_nx_i = BUS_WAIT THEN
+                    cmd <= CMD_GET;
+                    addr <= temp_address;
+                ENDIF;
+            
+            ELSIF state_i = BUS_WAIT THEN
+                IF state_nx_i = MEM_DAH THEN
+                    mem_cmd <= CMD_PUT;
+                    mem_addr <= temp_address;
+                    mem_data <= data;
+                ENDIF;
+                
+            ELSIF state_i = MEM_DAH THEN
+                IF state_nx_i = READY THEN
+                    done <= '1';
+                    priority_req <= '0';
+                ENDIF;
+            ENDIF;
+        ENDIF;
 	END PROCESS execution_process;
 
 	
