@@ -97,7 +97,8 @@ ARCHITECTURE cache_data_behavior OF cache_data IS
 	PROCEDURE reset_cache(
 			SIGNAL lru_fields : OUT lru_fields_t;
 			SIGNAL valid_fields : OUT valid_fields_t;
-			SIGNAL arb_req : OUT STD_LOGIC
+			SIGNAL arb_req : OUT STD_LOGIC;
+			SIGNAL own_mem_cmd : OUT STD_LOGIC
 		) IS
 	BEGIN
 		-- Initialize LRU and valid fields
@@ -107,6 +108,7 @@ ARCHITECTURE cache_data_behavior OF cache_data IS
 		END LOOP;
 
 		arb_req <= '0';
+		own_mem_cmd <= '0';
 	END PROCEDURE;
 
 	PROCEDURE clear_bus(
@@ -153,12 +155,12 @@ BEGIN
 END PROCESS internal_register;
 
 -- Process that computes the next state of the cache
-next_state : PROCESS(reset, state_i, obs_state_i, re, we, mem_cmd, mem_addr, mem_done, arb_ack, proc_hit_i, proc_repl_i, proc_inv_stop, obs_inv_i, obs_inv_stop, invalid_access_i)
+next_state : PROCESS(clk, reset, state_i, obs_state_i, re, we, mem_cmd, mem_addr, mem_done, arb_ack, proc_hit_i, proc_repl_i, proc_inv_stop, obs_inv_i, obs_inv_stop, invalid_access_i)
 BEGIN
 	IF reset = '1' THEN
 		state_nx_i <= READY;
 		obs_state_nx_i <= READY;
-	ELSE
+	ELSIF clk = '1' THEN
 		-- Processor Next State
 		state_nx_i <= state_i;
 		IF state_i = READY THEN
@@ -232,10 +234,13 @@ END PROCESS next_state;
 -- Process that sets the output signals of the cache
 execution_process : PROCESS(clk)
 	VARIABLE line_num : INTEGER RANGE 0 TO 3;
+	VARIABLE can_clear_bus : BOOLEAN;
 BEGIN
 	line_num := 0;
+	can_clear_bus := TRUE;
+
 	IF rising_edge(clk) AND reset = '1' THEN
-		reset_cache(lru_fields, valid_fields, arb_req);
+		reset_cache(lru_fields, valid_fields, arb_req, own_mem_cmd_i);
 		clear_bus(mem_cmd, mem_addr, mem_data, mem_done);
 
 	ELSIF falling_edge(clk) AND reset = '0' THEN
@@ -254,17 +259,21 @@ BEGIN
 				mem_addr <= tag_fields(lru_line_num_i) & "0000";
 				mem_data <= data_fields(lru_line_num_i);
 				own_mem_cmd_i <= '1';
+				can_clear_bus := FALSE;
 			ELSIF state_nx_i = LINEREQ THEN
 				mem_cmd <= CMD_GET;
 				mem_addr <= addr;
 				own_mem_cmd_i <= '1';
+				can_clear_bus := FALSE;
 			END IF;
 		ELSIF state_i = LINEREPL THEN
 			IF state_nx_i = ARBREQ THEN
 				arb_req <= '1';
 				valid_fields(lru_line_num_i) <= '0';
-				clear_bus(mem_cmd, mem_addr, mem_data, mem_done);
+				--clear_bus(mem_cmd, mem_addr, mem_data, mem_done);
 				own_mem_cmd_i <= '0';
+			ELSE
+				can_clear_bus := FALSE;
 			END IF;
 		ELSIF state_i = LINEREQ THEN
 			IF state_nx_i = READY THEN
@@ -273,9 +282,11 @@ BEGIN
 				tag_fields(lru_line_num_i) <= addr(31 DOWNTO 4);
 				data_fields(lru_line_num_i) <= mem_data;
 				LRU_execute(lru_fields, lru_line_num_i);
-				clear_bus(mem_cmd, mem_addr, mem_data, mem_done);
+				--clear_bus(mem_cmd, mem_addr, mem_data, mem_done);
 				own_mem_cmd_i <= '0';
 				line_num := lru_line_num_i;
+			ELSE
+				can_clear_bus := FALSE;
 			END IF;
 		END IF;
 
@@ -289,8 +300,13 @@ BEGIN
 					mem_data <= data_fields(obs_hit_line_num_i);
 					mem_done <= '1';
 					valid_fields(obs_hit_line_num_i) <= '0';
+					can_clear_bus := FALSE;
 				END IF;
 			END IF;
+		END IF;
+
+		IF can_clear_bus THEN
+			clear_bus(mem_cmd, mem_addr, mem_data, mem_done);
 		END IF;
 
 		data_out_line_num_i <= line_num;

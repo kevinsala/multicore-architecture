@@ -219,7 +219,8 @@ class InkelPentiun:
         # Dumps must be checked with the previous instruction
         error = False
 
-        with open(dump_folder + "/reg", "r") as f:
+        path = dump_folder + "/reg" + str(self.proc_id)
+        with open(path, "r") as f:
             reg_line = 0
             for line in f:
                 if self.old_reg_b[reg_line]:
@@ -232,7 +233,7 @@ class InkelPentiun:
                 reg_line = reg_line + 1
 
         if not error:
-            os.remove(dump_folder + "/reg")
+            os.remove(path)
 
         return error
 

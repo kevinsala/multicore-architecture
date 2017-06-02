@@ -97,21 +97,21 @@ ARCHITECTURE structure OF inkel_pentiun IS
 
 	COMPONENT fetch IS
 		PORT (
-			clk            : IN  STD_LOGIC;
-			reset          : IN  STD_LOGIC;
-			priv_status_r  : IN  STD_LOGIC;
-			priv_status_w  : IN  STD_LOGIC;
-			pc             : IN  STD_LOGIC_VECTOR(31  DOWNTO 0);
-			branch_taken   : IN  STD_LOGIC;
-			inst           : OUT STD_LOGIC_VECTOR(31  DOWNTO 0);
-			inst_v         : OUT STD_LOGIC;
-			invalid_access : OUT STD_LOGIC;
-			arb_req        : OUT STD_LOGIC;
-			arb_ack        : IN  STD_LOGIC;
-			mem_cmd        : OUT STD_LOGIC_VECTOR(2 DOWNTO 0);
-			mem_addr       : OUT STD_LOGIC_VECTOR(31  DOWNTO 0);
-			mem_done       : IN  STD_LOGIC;
-			mem_data       : IN  STD_LOGIC_VECTOR(127 DOWNTO 0)
+			clk            : IN    STD_LOGIC;
+			reset          : IN    STD_LOGIC;
+			priv_status_r  : IN    STD_LOGIC;
+			priv_status_w  : IN    STD_LOGIC;
+			pc             : IN    STD_LOGIC_VECTOR(31  DOWNTO 0);
+			branch_taken   : IN    STD_LOGIC;
+			inst           : OUT   STD_LOGIC_VECTOR(31  DOWNTO 0);
+			inst_v         : OUT   STD_LOGIC;
+			invalid_access : OUT   STD_LOGIC;
+			arb_req        : OUT   STD_LOGIC;
+			arb_ack        : IN    STD_LOGIC;
+			mem_cmd        : INOUT STD_LOGIC_VECTOR(2 DOWNTO 0);
+			mem_addr       : INOUT STD_LOGIC_VECTOR(31  DOWNTO 0);
+			mem_done       : INOUT STD_LOGIC;
+			mem_data       : INOUT STD_LOGIC_VECTOR(127 DOWNTO 0)
 		);
 	END COMPONENT;
 
@@ -163,6 +163,9 @@ ARCHITECTURE structure OF inkel_pentiun IS
 	END COMPONENT;
 
 	COMPONENT reg_bank IS
+		GENERIC(
+			proc_id : INTEGER
+		);
 		PORT(
 			clk : IN STD_LOGIC;
 			reset : IN STD_LOGIC;
@@ -929,20 +932,22 @@ BEGIN
 		invalid_inst => invalid_inst_D
 	);
 
-	rb: reg_bank PORT MAP(
-		clk => clk,
-		reset => reset,
-		debug_dump => debug_dump,
-		src1 => reg_src1_D,
-		src2 => reg_src2_D,
-		data1 => reg_data1_D,
-		data2 => reg_data2_D,
-		we => reg_we_ROB,
-		dest => reg_dest_ROB,
-		data_in => reg_data_ROB,
-		exception => exc_ROB,
-		exc_code => exc_code_ROB,
-		exc_data => exc_data_ROB
+	rb: reg_bank
+		GENERIC MAP (proc_id => proc_id)
+		PORT MAP(
+			clk => clk,
+			reset => reset,
+			debug_dump => debug_dump,
+			src1 => reg_src1_D,
+			src2 => reg_src2_D,
+			data1 => reg_data1_D,
+			data2 => reg_data2_D,
+			we => reg_we_ROB,
+			dest => reg_dest_ROB,
+			data_in => reg_data_ROB,
+			exception => exc_ROB,
+			exc_code => exc_code_ROB,
+			exc_data => exc_data_ROB
 	);
 
 	mux_src1_D_BP : mux8_32bits PORT MAP(
