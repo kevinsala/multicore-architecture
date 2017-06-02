@@ -31,7 +31,7 @@ ARCHITECTURE cache_last_level_behavior OF cache_last_level IS
 	TYPE data_fields_t  IS ARRAY(31 DOWNTO 0) OF STD_LOGIC_VECTOR(127 DOWNTO 0);
 	TYPE valid_fields_t IS ARRAY(31 DOWNTO 0) OF STD_LOGIC;
 	
-	TYPE memory_controller_state_t IS (READY, MEM_REQ, MEM_STORE, ARB_REQ, BUS_WAIT, MEM_DAH);
+	TYPE cache_last_level_state_t IS (READY, MEM_REQ, MEM_STORE, ARB_LLC_REQ, BUS_WAIT, MEM_DAH);
 
 	-- Fields of the LLC
 	SIGNAL lru_fields   : lru_fields_t;
@@ -40,8 +40,8 @@ ARCHITECTURE cache_last_level_behavior OF cache_last_level IS
 	SIGNAL valid_fields : valid_fields_t;
 
 	-- The next state of the cache
-	SIGNAL state_i    : data_cache_state_t;
-	SIGNAL state_nx_i : data_cache_state_t;
+	SIGNAL state_i    : cache_last_level_state_t;
+	SIGNAL state_nx_i : cache_last_level_state_t;
 
 	-- Determine the line of the cache that has hit with the access
 	SIGNAL hit_i          : STD_LOGIC := '0';
@@ -55,9 +55,10 @@ ARCHITECTURE cache_last_level_behavior OF cache_last_level IS
 	SIGNAL data_out_line_num_i : INTEGER RANGE 0 TO 31 := 0;
 
 	-- Replacement signals
-	SIGNAL repl_i : STD_LOGIC := '0';
-	SIGNAL repl_dirty_i : STD_LOGIC := '0';
-	SIGNAL lru_line_num_i : INTEGER RANGE 0 TO 31 := 0;
+	SIGNAL repl_i         : STD_LOGIC := '0';
+	SIGNAL repl_dirty_i   : STD_LOGIC := '0';
+	SIGNAL repl_addr      : STD_LOGIC_VECTOR(31 DOWNTO 0) := (OTHERS => '0');
+    SIGNAL lru_line_num_i : INTEGER RANGE 0 TO 31 := 0;
 
 	-- Determine the target word of the access
 	SIGNAL ch_word_msb : INTEGER RANGE 0 TO 127 := 31;
@@ -71,16 +72,15 @@ ARCHITECTURE cache_last_level_behavior OF cache_last_level IS
 	--   Store address requested by cache while faking a request so the other
 	--   cache evicts the block.
 	SIGNAL temp_address : STD_LOGIC_VECTOR(31 DOWNTO 0) := (OTHERS => '0');
-	SIGNAL priority_req : STD_LOGIC := 0;
+	SIGNAL priority_req : STD_LOGIC := '0';
 	
 	-- Determine which line has hit
-	FUNCTION check_hit(hit_line_i : ARRAY(31 DOWNTO 0) OF STD_LOGIC) 
-	RETURN INTEGER IS
+	FUNCTION check_hit(hit_line_i : hit_t) RETURN INTEGER IS
 		VARIABLE tmp_return : INTEGER := 0;
 		BEGIN
 			FOR i IN 0 to 31 LOOP
 				IF hit_line_i(i) = '1' THEN
-					tmp_return <= i;
+					tmp_return := i;
 				END IF;
 			END LOOP;
 		RETURN tmp_return;
@@ -88,13 +88,12 @@ ARCHITECTURE cache_last_level_behavior OF cache_last_level IS
 	
 
     -- Determine the least recently used line
-	FUNCTION get_lru_line(lru_fields : ARRAY(31 DOWNTO 0) OF INTEGER) 
-	RETURN INTEGER IS
+	FUNCTION get_lru_line(lru_fields : lru_fields_t) RETURN INTEGER IS
 		VARIABLE tmp_return : INTEGER := 0;
 		BEGIN
 			FOR i IN 0 to 31 LOOP
 				IF lru_fields(i) = 31 THEN
-					tmp_return <= i;
+					tmp_return := i;
 				END IF;
 			END LOOP;
 		RETURN tmp_return;
@@ -102,12 +101,11 @@ ARCHITECTURE cache_last_level_behavior OF cache_last_level IS
 
 
 	-- Determine if the access has hit
-	FUNCTION has_access_hit(hit_line_i : ARRAY(31 DOWNTO 0) OF STD_LOGIC) 
-	RETURN STD_LOGIC IS
+	FUNCTION has_access_hit(hit_line_i : hit_t) RETURN STD_LOGIC IS
 		VARIABLE tmp_return : STD_LOGIC := '0';
 		BEGIN
 			FOR i IN 0 to 31 LOOP
-				tmp_return <= tmp_return OR hit_line_i(i);
+				tmp_return := tmp_return OR hit_line_i(i);
 			END LOOP;
 		RETURN tmp_return;
 	END has_access_hit;
@@ -115,15 +113,14 @@ ARCHITECTURE cache_last_level_behavior OF cache_last_level IS
 	
 	-- For each line, determine if the access has hit
 	FUNCTION lines_hit(
-		valid_fields : ARRAY(31 DOWNTO 0) OF STD_LOGIC;
-		tag_fields   : ARRAY(31 DOWNTO 0) OF STD_LOGIC_VECTOR(27 DOWNTO 0);
+		valid_fields : valid_fields_t;
+		tag_fields   : tag_fields_t;
 		addr         : STD_LOGIC_VECTOR(31 DOWNTO 0)
-	) 
-	RETURN ARRAY(31 DOWNTO 0) OF STD_LOGIC IS
-		VARIABLE tmp_return : ARRAY(31 DOWNTO 0) OF STD_LOGIC;
+    ) RETURN hit_t IS
+		VARIABLE tmp_return : hit_t;
 		BEGIN
 			FOR i IN 0 to 31 LOOP
-				tmp_return(i) <= to_std_logic(tag_fields(i) = addr(31 DOWNTO 4));
+				tmp_return(i) := to_std_logic(tag_fields(i) = addr(31 DOWNTO 4));
 			END LOOP;
 		RETURN tmp_return;
 	END lines_hit;
@@ -131,15 +128,13 @@ ARCHITECTURE cache_last_level_behavior OF cache_last_level IS
 	
 	-- Determine if a replacement is needed
 	FUNCTION replace_needed(
-		hit_i        : STD_LOGIC;
-		valid_fields : ARRAY(31 DOWNTO 0) OF STD_LOGIC
-	)
-	RETURN STD_LOGIC IS
+        hit_i        : STD_LOGIC;
+        valid_fields : valid_fields_t) RETURN STD_LOGIC IS
 		VARIABLE tmp_return : STD_LOGIC;
 		BEGIN
-			tmp_return <= NOT hit_i;
+			tmp_return := NOT hit_i;
 			FOR i IN 0 to 31 LOOP
-				tmp_return <= tmp_return AND valid_fields(i);
+				tmp_return := tmp_return AND valid_fields(i);
 			END LOOP;
 		RETURN tmp_return;
 	END replace_needed;
@@ -149,6 +144,9 @@ ARCHITECTURE cache_last_level_behavior OF cache_last_level IS
 	PROCEDURE reset_cache (
 			SIGNAL lru_fields   : OUT lru_fields_t;
 			SIGNAL valid_fields : OUT valid_fields_t;
+            SIGNAL temp_address : OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
+            SIGNAL priority_req : OUT STD_LOGIC;
+            SIGNAL arb_priority : OUT STD_LOGIC;
 			SIGNAL arb_req      : OUT STD_LOGIC
 		) IS
 		BEGIN
@@ -159,7 +157,7 @@ ARCHITECTURE cache_last_level_behavior OF cache_last_level IS
 			temp_address(i) <= '0';
 		END LOOP;
 		
-		 priority_req <= '0';
+		priority_req <= '0';
 		arb_req      <= '0';
 		arb_priority <= '0';
 	END PROCEDURE;
@@ -206,7 +204,7 @@ ARCHITECTURE cache_last_level_behavior OF cache_last_level IS
 
 	-- Process that computes the next state of the cache
 	-- States are: READY, ARBREQ, LINEREQ, LINEREPL
-	next_state_process : PROCESS(reset, state_i, mem_done, arb_ack, hit_i, hit_valid_i, repl_dirty_i, invalid_access_i)
+	next_state_process : PROCESS(reset, state_i, mem_done, arb_ack, hit_i, hit_valid_i, repl_i, cmd, done)
 	BEGIN
 		IF reset = '1' THEN
 			state_nx_i <= READY;
@@ -214,7 +212,7 @@ ARCHITECTURE cache_last_level_behavior OF cache_last_level IS
 			state_nx_i <= state_i;
 			IF state_i = READY THEN
                 IF priority_req = '1' THEN
-                    state_nx_i <= ARB_REQ;
+                    state_nx_i <= ARB_LLC_REQ;
                 ELSE
                     IF (cmd = CMD_GET_RO) THEN
                         IF hit_i = '1' THEN
@@ -228,6 +226,7 @@ ARCHITECTURE cache_last_level_behavior OF cache_last_level IS
                                 END IF;
                             ELSE
                                 state_nx_i <= MEM_REQ;
+                            END IF;
                         END IF;
                                    
                     ELSIF (cmd = CMD_GET) THEN
@@ -243,7 +242,7 @@ ARCHITECTURE cache_last_level_behavior OF cache_last_level IS
                                     state_nx_i <= MEM_STORE;
                                 ELSE
                                     state_nx_i <= MEM_REQ;
-                                END;
+                                END IF;
                             ELSE
                                 state_nx_i <= MEM_REQ;
                             END IF;
@@ -265,7 +264,7 @@ ARCHITECTURE cache_last_level_behavior OF cache_last_level IS
                     state_nx_i <= MEM_REQ;
                 END IF;
             
-            ELSIF state_i = ARB_REQ THEN
+            ELSIF state_i = ARB_LLC_REQ THEN
                 IF arb_ack = '1' THEN
                     state_nx_i <= BUS_WAIT;
                 END IF;
@@ -289,7 +288,7 @@ ARCHITECTURE cache_last_level_behavior OF cache_last_level IS
 	BEGIN
 		line_num := 0;
 		IF rising_edge(clk) AND reset = '1' THEN
-			reset_cache(lru_fields, valid_fields, dirty_fields, arb_req);
+			reset_cache(lru_fields, valid_fields, temp_address, priority_req, arb_priority, arb_req);
 			clear_bus(mem_cmd, mem_addr, mem_data);
 
 		ELSIF falling_edge(clk) AND reset = '0' THEN
@@ -315,7 +314,7 @@ ARCHITECTURE cache_last_level_behavior OF cache_last_level IS
                     mem_cmd <= CMD_GET;
                     mem_addr <= addr;
                 
-                ELSIF state_nx_i = ARB_REQ THEN
+                ELSIF state_nx_i = ARB_LLC_REQ THEN
                     arb_req <= 1;
 		
                 ELSIF state_nx_i = READY THEN
@@ -353,7 +352,7 @@ ARCHITECTURE cache_last_level_behavior OF cache_last_level IS
                     mem_addr <= addr;
                 END IF;
 		
-            ELSIF state_i = ARB_REQ THEN
+            ELSIF state_i = ARB_LLC_REQ THEN
                 IF state_nx_i = BUS_WAIT THEN
                     cmd <= CMD_GET;
                     addr <= temp_address;
