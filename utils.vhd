@@ -12,6 +12,7 @@ PACKAGE utils IS
 	TYPE inst_cache_state_t     IS (READY, ARBREQ, LINEREQ);
 	TYPE store_buffer_state_t   IS (READY, FLUSHING, FLUSHED);
 	TYPE memory_block_state_t   IS (AVAIL, NOTAVAIL);
+	TYPE cache_last_level_state_t IS (READY, MEM_REQ, MEM_STORE, ARB_LLC_REQ, BUS_WAIT, MEM_DAH);
 
 	CONSTANT REG_EXC_CODE : STD_LOGIC_VECTOR := x"1E";
 	CONSTANT REG_EXC_DATA : STD_LOGIC_VECTOR := x"1F";

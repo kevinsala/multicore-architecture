@@ -73,8 +73,8 @@ ARCHITECTURE structure OF inkel_pentwice IS
  	SIGNAL req_two_d_ARB : STD_LOGIC;
  	SIGNAL ack_two_i_ARB : STD_LOGIC;
  	SIGNAL ack_two_d_ARB : STD_LOGIC;
--- 	SIGNAL req_llc_ARB   : STD_LOGIC; --Unused until we add the LLC
--- 	SIGNAL ack_llc_ARB   : STD_LOGIC;
+ 	SIGNAL req_llc_ARB   : STD_LOGIC;
+ 	SIGNAL ack_llc_ARB   : STD_LOGIC;
 
 	SIGNAL debug_dump : STD_LOGIC;
 
@@ -92,7 +92,7 @@ ARCHITECTURE structure OF inkel_pentwice IS
 		arb : arbiter PORT MAP (
 			clk       => clk,
 			reset     => reset,
-			llc_done  => done_MEM,			--TODO: done_LLC ah?
+			llc_done  => done_MEM,
 			req_one_i => req_one_i_ARB,
 			req_one_d => req_one_d_ARB,
 			ack_one_i => ack_one_i_ARB,

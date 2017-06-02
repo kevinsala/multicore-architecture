@@ -30,8 +30,6 @@ ARCHITECTURE cache_last_level_behavior OF cache_last_level IS
 	TYPE tag_fields_t   IS ARRAY(31 DOWNTO 0) OF STD_LOGIC_VECTOR(27 DOWNTO 0);
 	TYPE data_fields_t  IS ARRAY(31 DOWNTO 0) OF STD_LOGIC_VECTOR(127 DOWNTO 0);
 	TYPE valid_fields_t IS ARRAY(31 DOWNTO 0) OF STD_LOGIC;
-	
-	TYPE cache_last_level_state_t IS (READY, MEM_REQ, MEM_STORE, ARB_LLC_REQ, BUS_WAIT, MEM_DAH);
 
 	-- Fields of the LLC
 	SIGNAL lru_fields   : lru_fields_t;
@@ -51,19 +49,11 @@ ARCHITECTURE cache_last_level_behavior OF cache_last_level IS
     -- Determine if the hit (if there was a hit) is valid or not
     SIGNAL hit_valid_i : STD_LOGIC := '0';
 
-	-- Determine the line number to output
-	SIGNAL data_out_line_num_i : INTEGER RANGE 0 TO 31 := 0;
-
 	-- Replacement signals
 	SIGNAL repl_i         : STD_LOGIC := '0';
-	SIGNAL repl_dirty_i   : STD_LOGIC := '0';
-	SIGNAL repl_addr      : STD_LOGIC_VECTOR(31 DOWNTO 0) := (OTHERS => '0');
+	SIGNAL repl_addr_i      : STD_LOGIC_VECTOR(31 DOWNTO 0) := (OTHERS => '0');
     SIGNAL lru_line_num_i : INTEGER RANGE 0 TO 31 := 0;
 
-	-- Determine the target word of the access
-	SIGNAL ch_word_msb : INTEGER RANGE 0 TO 127 := 31;
-	SIGNAL ch_word_lsb : INTEGER RANGE 0 TO 127 := 0;
-	
 	-- Temporary signals to store a previous request
 	-- Used when:
 	--   Cache requests a block, LLC needs to replace an invalid block that
@@ -154,15 +144,28 @@ ARCHITECTURE cache_last_level_behavior OF cache_last_level IS
 		FOR i IN 0 TO 31 LOOP
 			lru_fields(i)   <= i;
 			valid_fields(i) <= '0';
-			temp_address(i) <= '0';
 		END LOOP;
 		
+		temp_address <= (OTHERS => '0');
 		priority_req <= '0';
 		arb_req      <= '0';
 		arb_priority <= '0';
 	END PROCEDURE;
 
 	PROCEDURE clear_bus (
+			SIGNAL cmd  : OUT STD_LOGIC_VECTOR(2   DOWNTO 0);
+			SIGNAL addr : OUT STD_LOGIC_VECTOR(31  DOWNTO 0);
+			SIGNAL data : OUT STD_LOGIC_VECTOR(127 DOWNTO 0);
+			SIGNAL done : OUT STD_LOGIC
+		) IS
+		BEGIN
+		cmd  <= (OTHERS => 'Z');
+		addr <= (OTHERS => 'Z');
+		data <= (OTHERS => 'Z');
+		done <= 'Z';
+	END PROCEDURE;
+
+	PROCEDURE clear_mem (
 			SIGNAL cmd  : OUT STD_LOGIC_VECTOR(2   DOWNTO 0);
 			SIGNAL addr : OUT STD_LOGIC_VECTOR(31  DOWNTO 0);
 			SIGNAL data : OUT STD_LOGIC_VECTOR(127 DOWNTO 0)
@@ -284,38 +287,43 @@ ARCHITECTURE cache_last_level_behavior OF cache_last_level IS
 
 	-- Process that sets the output signals of the cache
 	execution_process : PROCESS(clk)
-		VARIABLE line_num : INTEGER RANGE 0 TO 3;
+		VARIABLE can_clear_mem : BOOLEAN;
+		VARIABLE can_clear_bus : BOOLEAN;
 	BEGIN
-		line_num := 0;
+		can_clear_mem := TRUE;
+		can_clear_bus := TRUE;
 		IF rising_edge(clk) AND reset = '1' THEN
 			reset_cache(lru_fields, valid_fields, temp_address, priority_req, arb_priority, arb_req);
-			clear_bus(mem_cmd, mem_addr, mem_data);
+			clear_bus(cmd, addr, data, done);
+			clear_mem(mem_cmd, mem_addr, mem_data);
 
 		ELSIF falling_edge(clk) AND reset = '0' THEN
             IF state_i = READY THEN
                 IF state_nx_i = MEM_STORE THEN
                     mem_cmd  <= CMD_PUT;
-                    mem_addr <= repl_addr;
+                    mem_addr <= repl_addr_i;
                     mem_data <= data_fields(lru_line_num_i);
                     valid_fields(lru_line_num_i) <= '0';
+					can_clear_mem := FALSE;
                     
                 ELSIF state_nx_i = MEM_REQ THEN
                     IF (cmd = CMD_GET_RO) OR (cmd = CMD_GET) THEN
                         IF hit_i = '0' AND repl_i = '1' AND valid_fields(lru_line_num_i) = '0' THEN
                             priority_req <= '1'; -- save state
-                            temp_address <= repl_addr;
+                            temp_address <= repl_addr_i;
                         END IF;
                     ELSIF (cmd = CMD_GET) THEN
                         IF hit_i = '1' AND valid_fields(lru_line_num_i) = '0' THEN
                             priority_req <= '1'; -- save state
-                            temp_address <= repl_addr;
+                            temp_address <= repl_addr_i;
                         END IF;
                     END IF;
                     mem_cmd <= CMD_GET;
                     mem_addr <= addr;
+					can_clear_mem := FALSE;
                 
                 ELSIF state_nx_i = ARB_LLC_REQ THEN
-                    arb_req <= 1;
+                    arb_req <= '1';
 		
                 ELSIF state_nx_i = READY THEN
                     IF (cmd = CMD_PUT) THEN
@@ -330,6 +338,7 @@ ARCHITECTURE cache_last_level_behavior OF cache_last_level IS
                             valid_fields(hit_line_num_i) <= '0';
                         END IF;
                     END IF;
+					can_clear_bus := FALSE;
                 END IF;
 		
             ELSIF state_i = MEM_REQ THEN
@@ -340,10 +349,13 @@ ARCHITECTURE cache_last_level_behavior OF cache_last_level IS
                     IF (cmd = CMD_GET_RO) THEN
                         data_fields(lru_line_num_i) <= data;
                         valid_fields(lru_line_num_i) <= '1';
-                    ELSE THEN
+                    ELSE
                         valid_fields(lru_line_num_i) <= '0';
                     END IF;
                     done <= '1';
+					can_clear_bus := FALSE;
+				ELSE
+					can_clear_mem := FALSE;
                 END IF;
             
             ELSIF state_i = MEM_STORE THEN
@@ -351,11 +363,13 @@ ARCHITECTURE cache_last_level_behavior OF cache_last_level IS
                     mem_cmd <= CMD_GET;
                     mem_addr <= addr;
                 END IF;
+				can_clear_mem := FALSE;
 		
             ELSIF state_i = ARB_LLC_REQ THEN
                 IF state_nx_i = BUS_WAIT THEN
                     cmd <= CMD_GET;
                     addr <= temp_address;
+					can_clear_bus := FALSE;
                 END IF;
             
             ELSIF state_i = BUS_WAIT THEN
@@ -363,14 +377,28 @@ ARCHITECTURE cache_last_level_behavior OF cache_last_level IS
                     mem_cmd <= CMD_PUT;
                     mem_addr <= temp_address;
                     mem_data <= data;
+					can_clear_mem := FALSE;
+				ELSE
+					can_clear_bus := FALSE;
                 END IF;
                 
             ELSIF state_i = MEM_DAH THEN
                 IF state_nx_i = READY THEN
                     done <= '1';
                     priority_req <= '0';
+					can_clear_bus := FALSE;
+				ELSE
+					can_clear_mem := FALSE;
                 END IF;
             END IF;
+			
+			IF can_clear_mem THEN
+				clear_mem(mem_cmd, mem_addr, mem_data);
+			END IF;
+			
+			IF can_clear_bus THEN
+				clear_bus(cmd, addr, data, done);
+			END IF;
         END IF;
 	END PROCESS execution_process;
 
@@ -382,7 +410,6 @@ ARCHITECTURE cache_last_level_behavior OF cache_last_level IS
 	hit_line_num_i <= check_hit(hit_line_i);
 
 	-- Determine if the access has hit
-	hit <= hit_i;
 	hit_i <= has_access_hit(hit_line_i);
 	
     -- Determine if the hit (if there was one) is valid
@@ -392,17 +419,6 @@ ARCHITECTURE cache_last_level_behavior OF cache_last_level IS
 	lru_line_num_i <= get_lru_line(lru_fields);
 
 	-- Determine if a replacement is needed
-	repl <= repl_i;
 	repl_i <= replace_needed(hit_i, valid_fields);
-	repl_dirty_i <= repl_i AND dirty_fields(lru_line_num_i);
-	repl_addr <= tag_fields(lru_line_num_i) & "0000";
-
-	-- The cache stalls when there is a cache operation that misses
-	done <= hit_i OR NOT(re OR we);
-
-	-- Output Data logic
-	ch_word_msb <= (to_integer(unsigned(addr(3 DOWNTO 2))) + 1) * WORD_BITS - 1;
-	ch_word_lsb <= to_integer(unsigned(addr(3 DOWNTO 2))) * WORD_BITS;
-	data_out <= data_fields(data_out_line_num_i)(ch_word_msb DOWNTO ch_word_lsb);
-
+	repl_addr_i <= tag_fields(lru_line_num_i) & "0000";
 END cache_last_level_behavior;
