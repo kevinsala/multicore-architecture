@@ -70,8 +70,8 @@ ARCHITECTURE cache_last_level_behavior OF cache_last_level IS
 	-- Actions:
 	--   Store address requested by cache while faking a request so the other
 	--   cache evicts the block.
-	SIGNAL temp_address : STD_LOGIC_VECTOR(31 DOWNTO 0);
-	SIGNAL priority_req : STD_LOGIC;
+	SIGNAL temp_address : STD_LOGIC_VECTOR(31 DOWNTO 0) := (OTHERS => '0');
+	SIGNAL priority_req : STD_LOGIC := 0;
 	
 	-- Determine which line has hit
 	FUNCTION check_hit(hit_line_i : ARRAY(31 DOWNTO 0) OF STD_LOGIC) 
@@ -80,7 +80,7 @@ ARCHITECTURE cache_last_level_behavior OF cache_last_level IS
 		BEGIN
 			FOR i IN 0 to 31 LOOP
 				IF hit_line_i(i) = '1' THEN
-					tmp_return := i;
+					tmp_return <= i;
 				END IF;
 			END LOOP;
 		RETURN tmp_return;
@@ -94,7 +94,7 @@ ARCHITECTURE cache_last_level_behavior OF cache_last_level IS
 		BEGIN
 			FOR i IN 0 to 31 LOOP
 				IF lru_fields(i) = 31 THEN
-					tmp_return := i;
+					tmp_return <= i;
 				END IF;
 			END LOOP;
 		RETURN tmp_return;
@@ -225,10 +225,10 @@ ARCHITECTURE cache_last_level_behavior OF cache_last_level IS
                                     state_nx_i <= MEM_STORE;
                                 ELSE
                                     state_nx_i <= MEM_REQ;
-                                ENDIF;
+                                END IF;
                             ELSE
                                 state_nx_i <= MEM_REQ;
-                        ENDIF;
+                        END IF;
                                    
                     ELSIF (cmd = CMD_GET) THEN
                         IF hit_i = '1' THEN
@@ -236,7 +236,7 @@ ARCHITECTURE cache_last_level_behavior OF cache_last_level IS
                                 state_nx_i <= READY;
                             ELSE
                                 state_nx_i <= MEM_REQ;
-                            ENDIF;
+                            END IF;
                         ELSE
                             IF repl_i = '1' THEN
                                 IF hit_valid_i = '1' THEN
@@ -246,40 +246,40 @@ ARCHITECTURE cache_last_level_behavior OF cache_last_level IS
                                 END;
                             ELSE
                                 state_nx_i <= MEM_REQ;
-                            ENDIF;
-                        ENDIF;
+                            END IF;
+                        END IF;
                         
                     ELSIF (cmd = CMD_PUT) THEN
                         state_nx_i <= READY;
                     
-                    ENDIF;
-                ENDIF;
+                    END IF;
+                END IF;
             
             ELSIF state_i = MEM_REQ THEN
                 IF mem_done = '1' THEN
                     state_nx_i <= READY;
-                ENDIF;
+                END IF;
             
             ELSIF state_i = MEM_STORE THEN
                 IF mem_done = '1' THEN
                     state_nx_i <= MEM_REQ;
-                ENDIF;
+                END IF;
             
             ELSIF state_i = ARB_REQ THEN
                 IF arb_ack = '1' THEN
                     state_nx_i <= BUS_WAIT;
-                ENDIF;
+                END IF;
                 
             ELSIF state_i = BUS_WAIT THEN
                 IF done = '1' THEN
                     state_nx_i <= MEM_DAH;
-                ENDIF;
+                END IF;
             
             ELSIF state_i = MEM_DAH THEN
                 IF mem_done = '1' THEN
                     state_nx_i <= READY;
-                ENDIF;
-            ENDIF;
+                END IF;
+            END IF;
 		END IF;
 	END PROCESS next_state_process;
 
@@ -305,13 +305,13 @@ ARCHITECTURE cache_last_level_behavior OF cache_last_level IS
                         IF hit_i = '0' AND repl_i = '1' AND valid_fields(lru_line_num_i) = '0' THEN
                             priority_req <= '1'; -- save state
                             temp_address <= repl_addr;
-                        ENDIF;
+                        END IF;
                     ELSIF (cmd = CMD_GET) THEN
                         IF hit_i = '1' AND valid_fields(lru_line_num_i) = '0' THEN
                             priority_req <= '1'; -- save state
                             temp_address <= repl_addr;
-                        ENDIF;
-                    ENDIF;
+                        END IF;
+                    END IF;
                     mem_cmd <= CMD_GET;
                     mem_addr <= addr;
                 
@@ -329,9 +329,9 @@ ARCHITECTURE cache_last_level_behavior OF cache_last_level IS
                         done <= '1';
                         IF (cmd = CMD_GET) THEN
                             valid_fields(hit_line_num_i) <= '0';
-                        ENDIF;
-                    ENDIF;
-                ENDIF;
+                        END IF;
+                    END IF;
+                END IF;
 		
             ELSIF state_i = MEM_REQ THEN
                 IF state_nx_i = READY THEN
@@ -343,36 +343,36 @@ ARCHITECTURE cache_last_level_behavior OF cache_last_level IS
                         valid_fields(lru_line_num_i) <= '1';
                     ELSE THEN
                         valid_fields(lru_line_num_i) <= '0';
-                    ENDIF;
+                    END IF;
                     done <= '1';
-                ENDIF;
+                END IF;
             
             ELSIF state_i = MEM_STORE THEN
                 IF state_nx_i = MEM_REQ THEN
                     mem_cmd <= CMD_GET;
                     mem_addr <= addr;
-                ENDIF;
+                END IF;
 		
             ELSIF state_i = ARB_REQ THEN
                 IF state_nx_i = BUS_WAIT THEN
                     cmd <= CMD_GET;
                     addr <= temp_address;
-                ENDIF;
+                END IF;
             
             ELSIF state_i = BUS_WAIT THEN
                 IF state_nx_i = MEM_DAH THEN
                     mem_cmd <= CMD_PUT;
                     mem_addr <= temp_address;
                     mem_data <= data;
-                ENDIF;
+                END IF;
                 
             ELSIF state_i = MEM_DAH THEN
                 IF state_nx_i = READY THEN
                     done <= '1';
                     priority_req <= '0';
-                ENDIF;
-            ENDIF;
-        ENDIF;
+                END IF;
+            END IF;
+        END IF;
 	END PROCESS execution_process;
 
 	
