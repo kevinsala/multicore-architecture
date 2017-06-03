@@ -155,7 +155,7 @@ BEGIN
 END PROCESS internal_register;
 
 -- Process that computes the next state of the cache
-next_state : PROCESS(clk, reset, state_i, obs_state_i, re, we, mem_cmd, mem_addr, mem_done, arb_ack, proc_hit_i, proc_repl_i, proc_inv_stop, obs_inv_i, obs_inv_stop, invalid_access_i)
+next_state : PROCESS(clk, reset, state_i, obs_state_i, re, we, addr, mem_cmd, mem_addr, mem_done, arb_ack, proc_hit_i, proc_repl_i, proc_inv_stop, obs_inv_i, obs_inv_stop, invalid_access_i)
 BEGIN
 	IF reset = '1' THEN
 		state_nx_i <= READY;
