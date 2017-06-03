@@ -3,9 +3,8 @@ li r1, 1
 li r2, 0x10000
 li r3, 0x20000
 
-pid r6
+tsl r6, 0(r2)
 beq r6, r1, loop
-stw r1, 0(r2)
 stw r0, 0(r3)
 stw r0, 0(r2)
 
