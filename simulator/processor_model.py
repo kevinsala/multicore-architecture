@@ -54,9 +54,9 @@ class InkelPentiun:
             if self.cache_d_v[index]:
                 self.memory.put(self.cache_d_tag[index] << 4, self.cache_d_data[index])
 
+            self.cache_d_data[index] = self.memory.get(addr)
             self.cache_d_v[index] = True
             self.cache_d_tag[index] = tag
-            self.cache_d_data[index] = self.memory.get(addr)
 
         self._update_lru_cache_d(index)
 
