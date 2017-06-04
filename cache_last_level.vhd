@@ -249,12 +249,12 @@ ARCHITECTURE cache_last_level_behavior OF cache_last_level IS
 			
 			ELSIF state_i = BUS_WAIT THEN
 				IF bus_done = '1' THEN
-					state_nx_i <= FAKE_REQ;          -- BUS_WAIT -> FAKE_REQ
+					state_nx_i <= FORCED_STORE;     -- BUS_WAIT -> FORCED_STORE
 				END IF;
 			
-			ELSIF state_i = FAKE_REQ THEN
+			ELSIF state_i = FORCED_STORE THEN
 				IF mem_done = '1' THEN
-					state_nx_i <= READY;            -- FAKE_REQ -> READY
+					state_nx_i <= READY;            -- FORCED_STORE -> READY
 				END IF;
 			END IF;
 		END IF;
@@ -305,13 +305,13 @@ ARCHITECTURE cache_last_level_behavior OF cache_last_level IS
 					ELSIF (bus_cmd = CMD_GET) OR (bus_cmd = CMD_GET_RO) THEN
 						IF (hit_i = '1' AND hit_avail_i = '1') THEN
 							bus_data <= data_fields(hit_line_num_i);
+							bus_done <= '1';
 							IF (bus_cmd = CMD_GET) THEN
 								avail_fields(hit_line_num_i) <= '0';
-							ELSIF (hit_i = '1' AND hit_avail_i = '0' AND bus_cmd = CMD_GET) THEN
-								can_clear_bus := TRUE; -- Do nothing, only clear bus - another L1 transfers the data
 							END IF;
+						ELSIF (hit_i = '1' AND hit_avail_i = '0' AND bus_cmd = CMD_GET) THEN
+							can_clear_bus := TRUE; -- Do nothing, only clear bus - another L1 transfers the data	
 						END IF;
-						bus_done <= '1';
 					END IF;
 				END IF;
 					
@@ -324,6 +324,7 @@ ARCHITECTURE cache_last_level_behavior OF cache_last_level IS
 					can_clear_bus := FALSE;
 						
 					IF (bus_cmd = CMD_GET_RO) THEN
+						LRU_execute(lru_fields, lru_line_num_i);
 						data_fields(lru_line_num_i) <= mem_data;
 						avail_fields(lru_line_num_i) <= '1';
 					ELSE
@@ -348,7 +349,7 @@ ARCHITECTURE cache_last_level_behavior OF cache_last_level IS
 				END IF;
 					
 			ELSIF state_i = BUS_WAIT THEN
-				IF state_nx_i = FAKE_REQ THEN
+				IF state_nx_i = FORCED_STORE THEN
 					mem_cmd <= CMD_PUT;
 					mem_addr <= temp_address;
 					mem_data <= bus_data;
@@ -357,7 +358,7 @@ ARCHITECTURE cache_last_level_behavior OF cache_last_level IS
 					can_clear_bus := FALSE;
 				END IF;
 				
-			ELSIF state_i = FAKE_REQ THEN
+			ELSIF state_i = FORCED_STORE THEN
 				IF state_nx_i = READY THEN
 					bus_done <= '1';
 					priority_req <= '0';
