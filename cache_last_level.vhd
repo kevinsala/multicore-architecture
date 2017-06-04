@@ -132,6 +132,7 @@ ARCHITECTURE cache_last_level_behavior OF cache_last_level IS
 	PROCEDURE reset_cache (
 			SIGNAL lru_fields   : OUT lru_fields_t;
 			SIGNAL valid_fields : OUT valid_fields_t;
+			SIGNAL avail_fields : OUT avail_fields_t;
 			SIGNAL tmp_address  : OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
 			SIGNAL priority_req : OUT STD_LOGIC;
 			SIGNAL arb_req      : OUT STD_LOGIC
@@ -141,6 +142,7 @@ ARCHITECTURE cache_last_level_behavior OF cache_last_level IS
 		FOR i IN 0 TO 31 LOOP
 			lru_fields(i)   <= i;
 			valid_fields(i) <= '0';
+			avail_fields(i) <= '0';
 		END LOOP;
 		
 		tmp_address  <= (OTHERS => '0');
@@ -201,12 +203,12 @@ ARCHITECTURE cache_last_level_behavior OF cache_last_level IS
 	END PROCESS internal_register;
 	
 	-- Process that computes the next state of the cache
-	next_state_process : PROCESS(reset, state_i, mem_done, arb_ack, hit_i, hit_avail_i, repl_i, repl_avail_i, bus_cmd, bus_done)
+	next_state_process : PROCESS(clk, reset, state_i, mem_done, arb_ack, hit_i, hit_avail_i, repl_i, repl_avail_i, bus_cmd, bus_done, priority_req)
 	BEGIN
 		IF reset = '1' THEN
 			state_nx_i <= READY;
 			
-		ELSE
+		ELSIF clk = '1' THEN
 			state_nx_i <= state_i;
 			
 			IF state_i = READY THEN
@@ -262,14 +264,14 @@ ARCHITECTURE cache_last_level_behavior OF cache_last_level IS
 
 	-- Process that sets the output signals of the cache
 	execution_process : PROCESS(clk)
-	VARIABLE can_clear_mem : BOOLEAN;
-	VARIABLE can_clear_bus : BOOLEAN;
+		VARIABLE can_clear_mem : BOOLEAN;
+		VARIABLE can_clear_bus : BOOLEAN;
 	BEGIN
 		can_clear_mem := TRUE;
 		can_clear_bus := TRUE;
 		
 		IF rising_edge(clk) AND reset = '1' THEN
-			reset_cache(lru_fields, valid_fields, tmp_address, priority_req, arb_req);
+			reset_cache(lru_fields, valid_fields, avail_fields, tmp_address, priority_req, arb_req);
 			clear_bus(bus_cmd, bus_addr, bus_data, bus_done);
 			clear_mem(mem_cmd, mem_addr, mem_data);
 		
@@ -296,12 +298,12 @@ ARCHITECTURE cache_last_level_behavior OF cache_last_level IS
 					arb_req <= '1';
 					
 				ELSIF state_nx_i = READY THEN
-					can_clear_bus := FALSE;
 					IF (bus_cmd = CMD_PUT) THEN
 						LRU_execute(lru_fields, hit_line_num_i);
 						avail_fields(hit_line_num_i) <= '1';
 						data_fields(hit_line_num_i) <= bus_data;
 						bus_done <= '1';
+						can_clear_bus := FALSE;
 					ELSIF (bus_cmd = CMD_GET) OR (bus_cmd = CMD_GET_RO) THEN
 						IF (hit_i = '1' AND hit_avail_i = '1') THEN
 							bus_data <= data_fields(hit_line_num_i);
@@ -309,9 +311,10 @@ ARCHITECTURE cache_last_level_behavior OF cache_last_level IS
 							IF (bus_cmd = CMD_GET) THEN
 								avail_fields(hit_line_num_i) <= '0';
 							END IF;
-						ELSIF (hit_i = '1' AND hit_avail_i = '0' AND bus_cmd = CMD_GET) THEN
-							can_clear_bus := TRUE; -- Do nothing, only clear bus - another L1 transfers the data	
+							can_clear_bus := FALSE;
 						END IF;
+						
+						LRU_execute(lru_fields, hit_line_num_i);
 					END IF;
 				END IF;
 					
@@ -320,10 +323,10 @@ ARCHITECTURE cache_last_level_behavior OF cache_last_level IS
 					bus_data <= mem_data;
 					tag_fields(lru_line_num_i)   <= bus_addr(31 DOWNTO 4);
 					valid_fields(lru_line_num_i) <= '1';
-					LRU_execute(lru_fields, hit_line_num_i);
+					LRU_execute(lru_fields, lru_line_num_i);
 					bus_done <= '1';
 					can_clear_bus := FALSE;
-						
+					
 					IF (bus_cmd = CMD_GET_RO) THEN
 						data_fields(lru_line_num_i)  <= mem_data;
 						avail_fields(lru_line_num_i) <= '1';

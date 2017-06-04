@@ -61,11 +61,11 @@ ARCHITECTURE structure OF cache_inst IS
 		mem_done <= 'Z';
 	END PROCEDURE;
 BEGIN
-	next_state_process : PROCESS(reset, state, hit_cache, addr, mem_req_abort, mem_done, mem_data, arb_ack)
+	next_state_process : PROCESS(clk, reset, state, hit_cache, addr, mem_req_abort, mem_done, mem_data, arb_ack)
 	BEGIN
 		IF reset = '1' THEN
 			state_nx_i <= READY;
-		ELSE
+		ELSIF clk = '1' THEN
 			state_nx_i <= state;
 			IF state = READY THEN
 				IF hit_cache = '0' AND invalid_access_i = '0' AND mem_req_abort = '0' THEN

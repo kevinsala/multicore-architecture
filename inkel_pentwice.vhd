@@ -114,7 +114,7 @@ ARCHITECTURE structure OF inkel_pentwice IS
 		arb : arbiter PORT MAP (
 			clk       => clk,
 			reset     => reset,
-			llc_done  => done_MEM,
+			llc_done  => done_BUS,
 			req_one_i => req_one_i_ARB,
 			req_one_d => req_one_d_ARB,
 			ack_one_i => ack_one_i_ARB,
@@ -135,9 +135,9 @@ ARCHITECTURE structure OF inkel_pentwice IS
 			bus_addr => addr_BUS,
 			bus_data => data_BUS,
 			mem_done => done_MEM,
-			mem_cmd  => cmd_BUS,
-			mem_addr => addr_BUS,
-			mem_data => data_BUS,
+			mem_cmd  => cmd_MEM,
+			mem_addr => addr_MEM,
+			mem_data => data_MEM,
 			arb_req  => req_llc_ARB,
 			arb_ack  => ack_llc_ARB
 		);
