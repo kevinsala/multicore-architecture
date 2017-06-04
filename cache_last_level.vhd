@@ -320,11 +320,11 @@ ARCHITECTURE cache_last_level_behavior OF cache_last_level IS
 					bus_data <= mem_data;
 					tag_fields(lru_line_num_i) <= bus_addr(31 DOWNTO 4);
 					valid_fields(lru_line_num_i) <= '1';
+					LRU_execute(lru_fields, hit_line_num_i);
 					bus_done <= '1';
 					can_clear_bus := FALSE;
 						
 					IF (bus_cmd = CMD_GET_RO) THEN
-						LRU_execute(lru_fields, lru_line_num_i);
 						data_fields(lru_line_num_i) <= mem_data;
 						avail_fields(lru_line_num_i) <= '1';
 					ELSE
