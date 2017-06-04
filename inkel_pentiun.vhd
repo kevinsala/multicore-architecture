@@ -15,10 +15,10 @@ ENTITY inkel_pentiun IS
 		d_arb_req  : OUT   STD_LOGIC;
 		i_arb_ack  : IN    STD_LOGIC;
 		d_arb_ack  : IN    STD_LOGIC;
-		mem_cmd    : INOUT STD_LOGIC_VECTOR(2 DOWNTO 0);
-		mem_addr   : INOUT STD_LOGIC_VECTOR(31 DOWNTO 0);
-		mem_done   : INOUT STD_LOGIC;
-		mem_data   : INOUT STD_LOGIC_VECTOR(127 DOWNTO 0);
+		bus_cmd    : INOUT STD_LOGIC_VECTOR(2 DOWNTO 0);
+		bus_addr   : INOUT STD_LOGIC_VECTOR(31 DOWNTO 0);
+		bus_done   : INOUT STD_LOGIC;
+		bus_data   : INOUT STD_LOGIC_VECTOR(127 DOWNTO 0);
 		pc_out     : OUT   STD_LOGIC_VECTOR(31  DOWNTO 0)
 	);
 END inkel_pentiun;
@@ -862,10 +862,10 @@ BEGIN
 		invalid_access => invalid_access_F,
 		arb_req => i_arb_req,
 		arb_ack => i_arb_ack,
-		mem_cmd => mem_cmd,
-		mem_addr => mem_addr,
-		mem_done => mem_done,
-		mem_data => mem_data
+		mem_cmd => bus_cmd,
+		mem_addr => bus_addr,
+		mem_done => bus_done,
+		mem_data => bus_data
 	);
 
 	reg_F_D_reset <= reg_F_D_reset_DU OR exc_F_E;
@@ -1302,10 +1302,10 @@ BEGIN
 		invalid_access => invalid_access_C,
 		arb_req => d_arb_req,
 		arb_ack => d_arb_ack,
-		mem_cmd => mem_cmd,
-		mem_addr => mem_addr,
-		mem_done => mem_done,
-		mem_data => mem_data,
+		mem_cmd => bus_cmd,
+		mem_addr => bus_addr,
+		mem_done => bus_done,
+		mem_data => bus_data,
 		sb_store_id => sb_store_id_C,
 		sb_store_commit => sb_store_commit_C,
 		sb_squash => sb_squash_C

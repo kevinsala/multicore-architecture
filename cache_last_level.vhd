@@ -65,7 +65,7 @@ ARCHITECTURE cache_last_level_behavior OF cache_last_level IS
 	-- Actions:
 	--   Store address requested by cache while faking a request so the other
 	--   cache evicts the block.
-	SIGNAL temp_address : STD_LOGIC_VECTOR(31 DOWNTO 0) := (OTHERS => '0');
+	SIGNAL tmp_address  : STD_LOGIC_VECTOR(31 DOWNTO 0) := (OTHERS => '0');
 	SIGNAL priority_req : STD_LOGIC := '0';
 	
 	
@@ -132,7 +132,7 @@ ARCHITECTURE cache_last_level_behavior OF cache_last_level IS
 	PROCEDURE reset_cache (
 			SIGNAL lru_fields   : OUT lru_fields_t;
 			SIGNAL valid_fields : OUT valid_fields_t;
-			SIGNAL temp_address : OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
+			SIGNAL tmp_address  : OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
 			SIGNAL priority_req : OUT STD_LOGIC;
 			SIGNAL arb_req      : OUT STD_LOGIC
 		) IS
@@ -143,7 +143,7 @@ ARCHITECTURE cache_last_level_behavior OF cache_last_level IS
 			valid_fields(i) <= '0';
 		END LOOP;
 		
-		temp_address <= (OTHERS => '0');
+		tmp_address  <= (OTHERS => '0');
 		priority_req <= '0';
 		arb_req      <= '0';
 	END PROCEDURE;
@@ -269,7 +269,7 @@ ARCHITECTURE cache_last_level_behavior OF cache_last_level IS
 		can_clear_bus := TRUE;
 		
 		IF rising_edge(clk) AND reset = '1' THEN
-			reset_cache(lru_fields, valid_fields, temp_address, priority_req, arb_req);
+			reset_cache(lru_fields, valid_fields, tmp_address, priority_req, arb_req);
 			clear_bus(bus_cmd, bus_addr, bus_data, bus_done);
 			clear_mem(mem_cmd, mem_addr, mem_data);
 		
@@ -286,9 +286,9 @@ ARCHITECTURE cache_last_level_behavior OF cache_last_level IS
 					IF (hit_i = '0' AND repl_i = '1' AND repl_avail_i = '0') THEN
 						-- Save current state, must fake a request
 						priority_req <= '1';
-						temp_address <= repl_addr_i;
+						tmp_address  <= repl_addr_i;
 					END IF;
-					mem_cmd <= CMD_GET;
+					mem_cmd  <= CMD_GET;
 					mem_addr <= bus_addr;
 					can_clear_mem := FALSE;
 					
@@ -318,14 +318,14 @@ ARCHITECTURE cache_last_level_behavior OF cache_last_level IS
 			ELSIF state_i = MEM_REQ THEN
 				IF state_nx_i = READY THEN
 					bus_data <= mem_data;
-					tag_fields(lru_line_num_i) <= bus_addr(31 DOWNTO 4);
+					tag_fields(lru_line_num_i)   <= bus_addr(31 DOWNTO 4);
 					valid_fields(lru_line_num_i) <= '1';
 					LRU_execute(lru_fields, hit_line_num_i);
 					bus_done <= '1';
 					can_clear_bus := FALSE;
 						
 					IF (bus_cmd = CMD_GET_RO) THEN
-						data_fields(lru_line_num_i) <= mem_data;
+						data_fields(lru_line_num_i)  <= mem_data;
 						avail_fields(lru_line_num_i) <= '1';
 					ELSE
 						avail_fields(lru_line_num_i) <= '0';
@@ -336,22 +336,22 @@ ARCHITECTURE cache_last_level_behavior OF cache_last_level IS
 					
 			ELSIF state_i = MEM_STORE THEN
 				IF state_nx_i = MEM_REQ THEN
-					mem_cmd <= CMD_GET;
+					mem_cmd  <= CMD_GET;
 					mem_addr <= bus_addr;
 				END IF;
 				can_clear_mem := FALSE;
 	
 			ELSIF state_i = ARB_LLC_REQ THEN
 				IF state_nx_i = BUS_WAIT THEN
-					bus_cmd <= CMD_GET;
-					bus_addr <= temp_address;
+					bus_cmd  <= CMD_GET;
+					bus_addr <= tmp_address;
 					can_clear_bus := FALSE;
 				END IF;
 					
 			ELSIF state_i = BUS_WAIT THEN
 				IF state_nx_i = FORCED_STORE THEN
-					mem_cmd <= CMD_PUT;
-					mem_addr <= temp_address;
+					mem_cmd  <= CMD_PUT;
+					mem_addr <= tmp_address;
 					mem_data <= bus_data;
 					can_clear_mem := FALSE;
 				ELSE
@@ -360,7 +360,7 @@ ARCHITECTURE cache_last_level_behavior OF cache_last_level IS
 				
 			ELSIF state_i = FORCED_STORE THEN
 				IF state_nx_i = READY THEN
-					bus_done <= '1';
+					bus_done     <= '1';
 					priority_req <= '0';
 					can_clear_bus := FALSE;
 				ELSE
