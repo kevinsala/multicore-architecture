@@ -7,11 +7,12 @@ PACKAGE utils IS
 	FUNCTION is_cmd(cmd : STD_LOGIC_VECTOR(2 DOWNTO 0)) RETURN BOOLEAN;
 	FUNCTION is_all_X(s : STD_LOGIC_VECTOR) RETURN BOOLEAN;
 
-	TYPE data_cache_state_t     IS (READY, WAITSB, ARBREQ, LINEREQ, LINEREPL);
-	TYPE obs_data_cache_state_t IS (READY, WAITSB);
-	TYPE inst_cache_state_t     IS (READY, ARBREQ, LINEREQ);
-	TYPE store_buffer_state_t   IS (READY, FLUSHING, FLUSHED);
-	TYPE memory_block_state_t   IS (AVAIL, NOTAVAIL);
+	TYPE data_cache_state_t       IS (READY, WAITSB, ARBREQ, LINEREQ, LINEREPL);
+	TYPE obs_data_cache_state_t   IS (READY, WAITSB);
+	TYPE inst_cache_state_t       IS (READY, ARBREQ, LINEREQ);
+	TYPE store_buffer_state_t     IS (READY, FLUSHING, FLUSHED);
+	TYPE memory_block_state_t     IS (AVAIL, NOTAVAIL);
+	TYPE cache_last_level_state_t IS (READY, MEM_REQ, MEM_STORE, ARB_LLC_REQ, BUS_WAIT, FORCED_STORE);
 
 	CONSTANT REG_EXC_CODE : STD_LOGIC_VECTOR := x"1E";
 	CONSTANT REG_EXC_DATA : STD_LOGIC_VECTOR := x"1F";
