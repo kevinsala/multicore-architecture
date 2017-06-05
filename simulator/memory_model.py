@@ -1,9 +1,6 @@
 import os
 
 class MemoryModel:
-    state_unavailable = 0
-    state_available = 1
-
     def _swap_mem_line_endianness(self, mem_line):
         if len(mem_line) % 8:
             print "WARNING: tring to swap endianness of a memory line of wrong size"
@@ -14,7 +11,7 @@ class MemoryModel:
 
         return new_mem_line
 
-    def _get_index(self, line):
+    def _get_mem_index(self, line):
         if line > 16384:
             print "WARNING: Out of bounds memory access to line 0x%08x" % line
             return -1
@@ -28,10 +25,94 @@ class MemoryModel:
         else:
             return -1
 
+    def _get_from_mem(self, addr):
+        line = addr >> 4
+        idx = self._get_mem_index(line)
+
+        if idx == -1:
+            data = "0" * 32
+            self.memory.append((line, data))
+            self.memory.sort(key = lambda x: x[0])
+        else:
+            data = self.memory[idx][1]
+
+        return data
+
+    def _write_to_mem(self, addr, data):
+        line = addr >> 4
+        idx = self._get_mem_index(line)
+
+        if idx == -1:
+            self.memory.append((line, data))
+            self.memory.sort(key = lambda x: x[0])
+        else:
+            self.memory[idx] = (line, data)
+
+    def _update_lru_llc(self, line):
+        old_lru = self.llc_lru[line]
+        for i in range(32):
+            if self.llc_lru[i] < old_lru:
+                self.llc_lru[i] = self.llc_lru[i] + 1
+
+        self.llc_lru[line] = 0
+
+    def _update_llc(self, addr):
+        tag = addr >> 4
+
+        index = -1
+        for i in range(32):
+            if self.llc_v[i] and self.llc_tag[i] == tag:
+                index = i
+                break
+
+        if index == -1:
+            for i in range(32):
+                if not self.llc_v[i]:
+                    index = i
+                    break
+
+                if self.llc_lru[i] == 31:
+                    index = i
+
+            if self.llc_v[index]:
+                rep_addr = self.llc_tag[index] << 4
+                if self.llc_a[index]:
+                    # LLC has the most recent copy, send to mem and forget
+                    self._write_to_mem(rep_addr, self.llc_data[index])
+                else:
+                    # LLC doesn't have the most recent copy. Get it
+                    for p in self.processors:
+                        data = p.get(rep_addr)
+                        if data != None:
+                            break
+
+                    self._write_to_mem(rep_addr)
+
+            self.llc_data[index] = self._get_from_mem(addr)
+            self.llc_v[index] = True
+            self.llc_a[index] = True
+            self.llc_tag[index] = tag
+
+        self._update_lru_llc(index)
+
+        return index
 
     def __init__(self, mem_boot, mem_sys = ""):
         self.memory = []
         self.processors = []
+
+        self.llc_v = []
+        self.llc_a = []
+        self.llc_tag = []
+        self.llc_lru = []
+        self.llc_data = []
+
+        for i in range(32):
+            self.llc_v.append(False)
+            self.llc_a.append(False)
+            self.llc_tag.append(0)
+            self.llc_lru.append(i)
+            self.llc_data.append("")
 
         pos = 0x100
         with open(mem_boot, "r") as f:
@@ -43,7 +124,7 @@ class MemoryModel:
                 i = i + 1
 
                 if i == 4:
-                    self.memory.append((pos, self.state_available, mem_line.lower()))
+                    self.memory.append((pos, mem_line.lower()))
                     mem_line = ""
                     i = 0
                     pos = pos + 1
@@ -53,7 +134,7 @@ class MemoryModel:
                     mem_line = mem_line + "00000000"
                     i = i + 1
 
-                self.memory.append((pos, self.state_available, mem_line.lower()))
+                self.memory.append((pos, mem_line.lower()))
 
 
         if mem_sys != "":
@@ -67,7 +148,7 @@ class MemoryModel:
                     i = i + 1
 
                     if i == 4:
-                        self.memory.append((pos, self.state_available, mem_line.lower()))
+                        self.memory.append((pos, mem_line.lower()))
                         mem_line = ""
                         i = 0
                         pos = pos + 1
@@ -77,7 +158,7 @@ class MemoryModel:
                         mem_line = mem_line + "00000000"
                         i = i + 1
 
-                    self.memory.append((pos, self.state_available, mem_line.lower()))
+                    self.memory.append((pos, mem_line.lower()))
 
 
     def add_processor(self, proc):
@@ -85,59 +166,28 @@ class MemoryModel:
 
 
     def get_inst(self, addr):
-        line = addr >> 4
-        idx = self._get_index(line)
-
-        data = "0" * 32
-        if idx == -1:
-            self.memory.append((line, self.state_available, data))
-            self.memory.sort(key = lambda x: x[0])
-        else:
-            data = self.memory[idx][2]
-
-        return data
+        index = self._update_llc(addr)
+        self.llc_a[index] = True
+        return self.llc_data[index]
 
 
     def get(self, addr):
-        line = addr >> 4
-        idx = self._get_index(line)
-
-        data = "0" * 32
-        if idx == -1:
-            self.memory.append((line, self.state_unavailable, data))
-            self.memory.sort(key = lambda x: x[0])
+        index = self._update_llc(addr)
+        
+        if self.llc_a[index]:
+            self.llc_a[index] = False
+            return self.llc_data[index]
         else:
-            if self.memory[idx][1] == self.state_unavailable:
-                for p in self.processors:
-                    data = p.get(addr)
-                    if data != None:
-                        break
-            else:
-                data = self.memory[idx][2]
-
-        return data
+            for p in self.processors:
+                data = p.get(addr)
+                if data != None:
+                    return data
 
 
     def put(self, addr, data):
-        line = addr >> 4
-        idx = self._get_index(line)
-
-        if idx == -1:
-            self.memory.append((line, self.state_available, data))
-            self.memory.sort(key = lambda x: x[0])
-        else:
-            self.memory[idx] = (line, self.state_available, data)
-
-        # PUT request means eviction, update old_memory
-        i = 0
-        while i < len(self.old_memory) and self.old_memory[i][0] < line:
-            i = i + 1
-
-        if i < len(self.old_memory) and self.old_memory[i][0] == line:
-            self.old_memory[i] = (line, self.state_available, data)
-        else:
-            self.old_memory.append((line, self.state_available, data))
-            self.old_memory.sort(key = lambda x: x[0])
+        index = self.update_llc(addr)
+        self.llc_data[index] = data
+        self.llc_a[index] = True
 
 
     def commit(self):
@@ -168,14 +218,14 @@ class MemoryModel:
                     print "ERROR: memory line %08x has not been written when it should have" % line_mod
                     error = True
                 else:
-                    data_mod = self._swap_mem_line_endianness(self.old_memory[idx_mod][2])
+                    data_mod = self._swap_mem_line_endianness(self.old_memory[idx_mod][1])
                     if data_mod != data_proc:
                         print "ERROR: memory line %08x has not been updated properly" % line_proc
                         print "Expected data: %s. Received data: %s" % (data_mod, data_proc)
                         error = True
 
                 idx_mod = idx_mod + 1
-                while idx_mod != len(self.old_memory) and self.old_memory[idx_mod][1] == self.state_unavailable:
+                while idx_mod != len(self.old_memory):
                     idx_mod = idx_mod + 1
 
                 if idx_mod == len(self.old_memory):
@@ -187,6 +237,17 @@ class MemoryModel:
         return error
 
     def dump_verbose(self):
+        print "--- LLC ---"
+        for i in range(32):
+            v = "-"
+            a = "-"
+            if self.llc_v[i]:
+                v = "V"
+            if self.llc_a[i]:
+                a = "A"
+
+            print "(%c%c) 0x%04x -> %s" % (v, a, self.llc_tag[i], self.llc_data[i])
+
         print "--- MEMORY ---"
         for m in self.memory:
-            print "0x%04x (S %d) -> %s" % (m[0], m[1], m[2])
+            print "0x%04x -> %s" % (m[0], m[1])
