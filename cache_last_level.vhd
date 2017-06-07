@@ -341,6 +341,7 @@ ARCHITECTURE cache_last_level_behavior OF cache_last_level IS
 				IF state_nx_i = MEM_REQ THEN
 					mem_cmd  <= CMD_GET;
 					mem_addr <= bus_addr;
+					mem_data <= (OTHERS => 'Z');
 				END IF;
 				can_clear_mem := FALSE;
 	
