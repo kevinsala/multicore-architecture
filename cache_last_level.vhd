@@ -365,6 +365,7 @@ ARCHITECTURE cache_last_level_behavior OF cache_last_level IS
 				IF state_nx_i = READY THEN
 					bus_done     <= '1';
 					priority_req <= '0';
+					arb_req      <= '0';
 					can_clear_bus := FALSE;
 				ELSE
 					can_clear_mem := FALSE;
