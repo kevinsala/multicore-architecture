@@ -44,7 +44,7 @@ add r5, r2, r5
 add r3, r1, r3
 bne r3, r4, vecsum
 
-end:
 nop
-jmp end
+nop
+nop
 nop

@@ -27,12 +27,12 @@ add r7, r2, r7
 stw r7, 0(r5)
 stw r0, 0(r9)
 add r5, r6, r5
-sub r4, r1, r4
+sub r4, r4, r1
 bne r0, r4, vecsum
 
-end:
 nop
-jmp end
+nop
+nop
 nop
 
 
