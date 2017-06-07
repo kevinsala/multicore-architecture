@@ -353,9 +353,13 @@ ARCHITECTURE cache_last_level_behavior OF cache_last_level IS
 					
 			ELSIF state_i = BUS_WAIT THEN
 				IF state_nx_i = FORCED_STORE THEN
-					mem_cmd  <= CMD_PUT;
-					mem_addr <= tmp_address;
-					mem_data <= bus_data;
+					mem_cmd      <= CMD_PUT;
+					mem_addr     <= tmp_address;
+					mem_data     <= bus_data;
+					bus_done     <= '1';
+					priority_req <= '0';
+					arb_req      <= '0';
+					can_clear_bus := FALSE;
 					can_clear_mem := FALSE;
 				ELSE
 					can_clear_bus := FALSE;
@@ -363,10 +367,7 @@ ARCHITECTURE cache_last_level_behavior OF cache_last_level IS
 				
 			ELSIF state_i = FORCED_STORE THEN
 				IF state_nx_i = READY THEN
-					bus_done     <= '1';
-					priority_req <= '0';
-					arb_req      <= '0';
-					can_clear_bus := FALSE;
+					-- Do nothing
 				ELSE
 					can_clear_mem := FALSE;
 				END IF;
