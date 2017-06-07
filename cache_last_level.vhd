@@ -359,7 +359,7 @@ ARCHITECTURE cache_last_level_behavior OF cache_last_level IS
 					bus_done     <= '1';
 					priority_req <= '0';
 					arb_req      <= '0';
-					can_clear_bus := FALSE;
+					can_clear_bus := TRUE;
 					can_clear_mem := FALSE;
 				ELSE
 					can_clear_bus := FALSE;
