@@ -86,7 +86,7 @@ class MemoryModel:
                         if data != None:
                             break
 
-                    self._write_to_mem(rep_addr)
+                    self._write_to_mem(rep_addr, data)
 
             self.llc_data[index] = self._get_from_mem(addr)
             self.llc_v[index] = True

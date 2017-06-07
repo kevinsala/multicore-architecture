@@ -91,7 +91,7 @@ def init_test(dut):
     dut.debug_dump <= 1
 
     dump_count = 0
-    while not (model1.has_finished() and model2.has_finished()):
+    while not (model0.has_finished() and model1.has_finished()):
         # Move simulation forward
         yield clk_rising
 
