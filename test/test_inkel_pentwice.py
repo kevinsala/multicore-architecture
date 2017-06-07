@@ -8,7 +8,7 @@ import processor_model
 import memory_model
 
 class ModelState:
-    max_cycles = 30
+    max_cycles = 50
 
     def __init__(self, proc_id, memory):
         self.proc_id = proc_id
