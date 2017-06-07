@@ -185,7 +185,7 @@ class MemoryModel:
 
 
     def put(self, addr, data):
-        index = self.update_llc(addr)
+        index = self._update_llc(addr)
         self.llc_data[index] = data
         self.llc_a[index] = True
 

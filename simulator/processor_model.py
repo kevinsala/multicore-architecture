@@ -225,7 +225,8 @@ class InkelPentiun:
             for line in f:
                 if self.old_reg_b[reg_line]:
                     line = line[:-1].lower()
-                    str_reg_line = "%08x" % self.old_reg_b[reg_line]
+                    unsigned_reg = self.old_reg_b[reg_line] & ((2**32) - 1)
+                    str_reg_line = "%08x" % unsigned_reg
                     if str_reg_line != line:
                         print "ERROR: Register %d has not been updated properly" % reg_line
                         print "Expected data: %s. Received data: %s" % (str_reg_line, line)
