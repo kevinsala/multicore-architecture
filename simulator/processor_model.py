@@ -240,10 +240,6 @@ class InkelPentiun:
 
 
     def dump_verbose(self):
-        print "--- MEMORY ---"
-        for m in self.memory:
-            print "0x%04x -> %s" % (m[0], m[1])
-
         print "--- ICACHE ---"
         for i in range(len(self.cache_i_v)):
             if self.cache_i_v[i]:
