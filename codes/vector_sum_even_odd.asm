@@ -24,7 +24,7 @@ beq r7, r1, wait
 
 
 pids:
-li r2, 4
+li r2, 8
 li r3, 0
 li r4, 512
 pid r7
