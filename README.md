@@ -7,7 +7,7 @@ To read about the architecture details, please head to the documentation:
 
 ## Tools
 ### Compilation
-The script `compiler/compile.py` compiles an assembly file into binary code that can later be used in the processor. The output file `memory_boot` should be placed at the root of the project, in order to be read properly by the processor.
+The script `compiler/compiler.py` compiles an assembly file into binary code that can later be used in the processor. The output file `memory_boot` should be placed at the root of the project, in order to be read properly by the processor.
 
 ### Simulation
 The utility `simulator/run_code.py` simulates the binary code passed as an argument as if it was run on an Inkel Pentwice processor
