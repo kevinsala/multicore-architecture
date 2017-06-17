@@ -1,7 +1,13 @@
+Code obtained from the bachelor thesis:
 
+Salagre, P. C., & Navarro, J. J. (2004). Generació de codi per a una arquitectura RISC pedagògica. (http://cataleg.upc.edu/record=b1264636~S1*cat)
+
+Thanks to Pau Cabré for allowing us to use and modify the code from his Bachelor Thesis.
+
+---------------------
 Contingut d'aquest CD:
 
-as  -> MAS Assembler v0.07b, Copyright (C) 2003 Christian P�rez Llamas
+as  -> MAS Assembler v0.07b, Copyright (C) 2003 Christian Pérez Llamas
 lincador -> lincador i fals assemblador. Veure el fitxer lincador/README
 simualdor -> simulador del sisa-C. Veure el fitxer simulador/README
 gcc-3.3.2/gcc/config/sisa -> fitxers de configuracio del backend del GCC per a SISA-C. Veure el fitxer gcc-3.3.2/gcc/config/sisa/IMPORTANT
@@ -57,9 +63,4 @@ java -classpath ~/SISA-C/simulador Simulador $1
 
 Aquest script accepta un parametre que es el fitxer executable a simular
 
-
-
-Per a qualsevol consulta envieu un mail a pau.cabre@wanadoo.es
-
-Pau Cabre
 
