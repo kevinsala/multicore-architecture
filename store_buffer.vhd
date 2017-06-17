@@ -12,18 +12,19 @@ ENTITY store_buffer IS
 		data_out       : OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
 		re             : IN  STD_LOGIC;
 		we             : IN  STD_LOGIC;
-		is_byte        : IN  STD_LOGIC;
 		atomic         : IN  STD_LOGIC;
 		invalid_access : IN  STD_LOGIC;
 		id             : IN  STD_LOGIC_VECTOR(3 DOWNTO 0);
 		sleep          : IN  STD_LOGIC;
-		repl           : IN  STD_LOGIC;
-		repl_addr      : IN  STD_LOGIC_VECTOR(31 DOWNTO 0);
-		done           : OUT STD_LOGIC;
+		proc_inv       : IN  STD_LOGIC;
+		proc_inv_addr  : IN  STD_LOGIC_VECTOR(31 DOWNTO 0);
+		proc_inv_stop  : OUT STD_LOGIC;
+		obs_inv        : IN  STD_LOGIC;
+		obs_inv_addr   : IN  STD_LOGIC_VECTOR(31 DOWNTO 0);
+		obs_inv_stop   : OUT STD_LOGIC;
 		hit            : OUT STD_LOGIC;
 		cache_addr     : OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
 		cache_we       : OUT STD_LOGIC;
-		cache_is_byte  : OUT STD_LOGIC;
 		cache_data     : OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
 		store_id       : IN  STD_LOGIC_VECTOR(3 DOWNTO 0);
 		store_commit   : IN  STD_LOGIC;
@@ -37,7 +38,6 @@ ARCHITECTURE store_buffer_behavior OF store_buffer IS
 	TYPE id_fields_t IS ARRAY(SB_ENTRIES - 1 DOWNTO 0) OF STD_LOGIC_VECTOR(3 DOWNTO 0);
 	TYPE valid_fields_t IS ARRAY(SB_ENTRIES - 1 DOWNTO 0) OF STD_LOGIC;
 	TYPE addr_fields_t IS ARRAY(SB_ENTRIES - 1 DOWNTO 0) OF STD_LOGIC_VECTOR(31 DOWNTO 0);
-	TYPE byte_fields_t IS ARRAY(SB_ENTRIES - 1 DOWNTO 0) OF STD_LOGIC;
 	TYPE data_fields_t IS ARRAY(SB_ENTRIES - 1 DOWNTO 0) OF STD_LOGIC_VECTOR(31 DOWNTO 0);
 	TYPE hit_t IS ARRAY(SB_ENTRIES - 1 DOWNTO 0) OF STD_LOGIC;
 
@@ -45,7 +45,6 @@ ARCHITECTURE store_buffer_behavior OF store_buffer IS
 	SIGNAL id_fields : id_fields_t;
 	SIGNAL valid_fields : valid_fields_t;
 	SIGNAL addr_fields : addr_fields_t;
-	SIGNAL byte_fields : byte_fields_t;
 	SIGNAL data_fields : data_fields_t;
 
 	-- State, size and first buffer entry
@@ -55,12 +54,13 @@ ARCHITECTURE store_buffer_behavior OF store_buffer IS
 	SIGNAL head_nx_i : INTEGER RANGE 0 TO SB_ENTRIES - 1;
 	SIGNAL last_added_i : INTEGER RANGE 0 TO SB_ENTRIES;
 
-	-- Determine if there is any replacement conflict
-	SIGNAL conflict_i : STD_LOGIC := '0';
+	-- Determine the entry of the buffer that has hit with the replaced cache line
+	SIGNAL proc_inv_hit_i : STD_LOGIC := '0';
+	SIGNAL proc_inv_hit_entry_i : hit_t;
 
 	-- Determine the entry of the buffer that has hit with the replaced cache line
-	SIGNAL repl_hit_i : STD_LOGIC := '0';
-	SIGNAL repl_hit_entry_i : hit_t;
+	SIGNAL obs_inv_hit_i : STD_LOGIC := '0';
+	SIGNAL obs_inv_hit_entry_i : hit_t;
 
 	-- Determine the entry to be commited (used only with OoO)
 	SIGNAL commit_entry_num_i : INTEGER RANGE 0 TO SB_ENTRIES - 1 := 0;
@@ -72,7 +72,6 @@ ARCHITECTURE store_buffer_behavior OF store_buffer IS
 	PROCEDURE reset_entries(
 			SIGNAL valid_fields : OUT valid_fields_t;
 			SIGNAL addr_fields : OUT addr_fields_t;
-			SIGNAL byte_fields : OUT byte_fields_t;
 			SIGNAL size_nx_i : OUT INTEGER RANGE 0 TO SB_ENTRIES;
 			SIGNAL head_nx_i : OUT INTEGER RANGE 0 TO SB_ENTRIES - 1;
 			SIGNAL last_added_i : OUT INTEGER RANGE 0 TO SB_ENTRIES
@@ -82,7 +81,6 @@ ARCHITECTURE store_buffer_behavior OF store_buffer IS
 		FOR i IN 0 TO SB_ENTRIES - 1 LOOP
 			valid_fields(i) <= '0';
 			addr_fields(i) <= x"FFFFFFFF";
-			byte_fields(i) <= '0';
 		END LOOP;
 
 		size_nx_i <= 0;
@@ -97,6 +95,7 @@ ARCHITECTURE store_buffer_behavior OF store_buffer IS
 			SIGNAL atomic      : IN STD_LOGIC;
 			SIGNAL addr_fields : IN addr_fields_t;
 			SIGNAL data_fields : IN data_fields_t;
+			SIGNAL last_added  : IN INTEGER RANGE 0 TO SB_ENTRIES;
 			SIGNAL hit         : OUT STD_LOGIC;
 			SIGNAL data_out    : OUT STD_LOGIC_VECTOR(31 DOWNTO 0)
 		) IS
@@ -111,14 +110,14 @@ ARCHITECTURE store_buffer_behavior OF store_buffer IS
 				IF addr_fields(i)(31 DOWNTO 2) = addr(31 DOWNTO 2) THEN
 					-- Do not return the last added value in case
 					-- of an atomic operation
-					IF atomic = '0' OR last_added_i /= i THEN
+					IF atomic = '0' OR last_added /= i THEN
 						data_out <= data_fields(i);
 						hit <= '1';
 						EXIT;
 					END IF;
 				END IF;
 
-				EXIT L WHEN i = head_i;
+				EXIT L WHEN i = head;
 				i := (i - 1) MOD SB_ENTRIES;
 			END LOOP;
 		END IF;
@@ -145,7 +144,7 @@ execution_process : PROCESS(clk, reset)
 BEGIN
 	IF falling_edge(clk) THEN
 		IF reset = '1' OR squash = '1' THEN
-			reset_entries(valid_fields, addr_fields, byte_fields, size_nx_i, head_nx_i, last_added_i);
+			reset_entries(valid_fields, addr_fields, size_nx_i, head_nx_i, last_added_i);
 		ELSE
 			head := head_i;
 			size := size_i;
@@ -162,7 +161,6 @@ BEGIN
 				id_fields(new_entry) <= id;
 				valid_fields(new_entry) <= '1';
 				addr_fields(new_entry) <= addr;
-				byte_fields(new_entry) <= is_byte;
 				data_fields(new_entry) <= data_in;
 				size := size + 1;
 			END IF;
@@ -174,22 +172,32 @@ BEGIN
 END PROCESS execution_process;
 
 -- Determine if there is any replacement conflict
-conflict_i <= repl AND repl_hit_i AND NOT sleep;
+proc_inv_stop <= proc_inv AND proc_inv_hit_i AND NOT sleep;
+obs_inv_stop <= obs_inv AND obs_inv_hit_i;
 
 -- Logic to determine if a new entry has to be added
 add_entry_i <= we AND NOT invalid_access AND NOT sleep;
 
 -- Output the newest store that hits
-output_data(size_i, head_i, addr, atomic, addr_fields, data_fields, hit, data_out);
+output_data(size_i, head_i, addr, atomic, addr_fields, data_fields, last_added_i, hit, data_out);
 
 -- Determine if there is any buffered store waiting to modify the replaced line
-repl_generator : FOR i IN 0 TO SB_ENTRIES - 1 GENERATE
-	repl_hit_entry_i(i) <= valid_fields(i) AND to_std_logic(addr_fields(i)(31 DOWNTO 4) = repl_addr(31 DOWNTO 4));
-END GENERATE repl_generator;
+proc_inv_generator : FOR i IN 0 TO SB_ENTRIES - 1 GENERATE
+	proc_inv_hit_entry_i(i) <= valid_fields(i) AND to_std_logic(addr_fields(i)(31 DOWNTO 4) = proc_inv_addr(31 DOWNTO 4));
+END GENERATE proc_inv_generator;
 
-repl_hit_i <= repl_hit_entry_i(0) OR repl_hit_entry_i(1) OR repl_hit_entry_i(2) OR repl_hit_entry_i(3)
-		OR repl_hit_entry_i(4) OR repl_hit_entry_i(5) OR repl_hit_entry_i(6) OR repl_hit_entry_i(7)
-		OR repl_hit_entry_i(8) OR repl_hit_entry_i(9) OR repl_hit_entry_i(10) OR repl_hit_entry_i(11);
+proc_inv_hit_i <= proc_inv_hit_entry_i(0) OR proc_inv_hit_entry_i(1) OR proc_inv_hit_entry_i(2) OR proc_inv_hit_entry_i(3)
+		OR proc_inv_hit_entry_i(4) OR proc_inv_hit_entry_i(5) OR proc_inv_hit_entry_i(6) OR proc_inv_hit_entry_i(7)
+		OR proc_inv_hit_entry_i(8) OR proc_inv_hit_entry_i(9) OR proc_inv_hit_entry_i(10) OR proc_inv_hit_entry_i(11);
+
+-- Determine if there is any buffered store waiting to modify the replaced line
+obs_inv_generator : FOR i IN 0 TO SB_ENTRIES - 1 GENERATE
+	obs_inv_hit_entry_i(i) <= valid_fields(i) AND to_std_logic(addr_fields(i)(31 DOWNTO 4) = obs_inv_addr(31 DOWNTO 4));
+END GENERATE obs_inv_generator;
+
+obs_inv_hit_i <= obs_inv_hit_entry_i(0) OR obs_inv_hit_entry_i(1) OR obs_inv_hit_entry_i(2) OR obs_inv_hit_entry_i(3)
+		OR obs_inv_hit_entry_i(4) OR obs_inv_hit_entry_i(5) OR obs_inv_hit_entry_i(6) OR obs_inv_hit_entry_i(7)
+		OR obs_inv_hit_entry_i(8) OR obs_inv_hit_entry_i(9) OR obs_inv_hit_entry_i(10) OR obs_inv_hit_entry_i(11);
 
 -- Determine the entry to be commited
 commit_entry_num_i <= 0 WHEN id_fields(0) = store_id AND valid_fields(0) = '1'
@@ -209,10 +217,6 @@ commit_entry_num_i <= 0 WHEN id_fields(0) = store_id AND valid_fields(0) = '1'
 -- Logic to commit a buffered store
 cache_we <= store_commit;
 cache_addr <= addr_fields(head_i);
-cache_is_byte <= byte_fields(head_i);
 cache_data <= data_fields(head_i);
-
--- Determine if the store buffer has finished
-done <= NOT conflict_i;
 
 END store_buffer_behavior;

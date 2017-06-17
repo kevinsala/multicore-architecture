@@ -27,8 +27,12 @@ class Instruction:
         self.offset_set = False
         self.label = ""
         self.asm = asm
-        self.icode, args = self.asm.split(" ", 1)
-        args = args.replace(" ","").split(",")
+        if not " " in asm:
+            self.icode = self.asm
+            args = []
+        else:
+            self.icode, args = self.asm.split(" ", 1)
+            args = args.replace(" ","").split(",")
 
         if self.icode == "add" or self.icode == "sub" or self.icode == "mul":
             if len(args) != 3:
@@ -79,8 +83,16 @@ class Instruction:
             self.itype = "i"
             self.dst = self._reg_to_num(args[0])
             self.set_offset(int(args[1], 0))
+        elif self.icode == "pid":
+            if len(args) != 1:
+                raise InvalidInstruction(self.asm)
+
+            self.itype = "r"
+            self.dst = self._reg_to_num(args[0])
+            self.r1 = 0
+            self.r2 = 0
         elif self.icode == "nop":
-            if len(args != 0):
+            if len(args) != 0:
                 raise InvalidInstruction(self.asm)
 
             self.itype = "n"
@@ -110,6 +122,8 @@ class Instruction:
                 eicode = 1
             elif self.icode == "mul":
                 eicode = 2
+            elif self.icode == "pid":
+                eicode = 64
             else:
                 raise
 

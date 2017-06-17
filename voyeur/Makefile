@@ -6,6 +6,7 @@ VHDL_SOURCES = $(PWD)/../utils.vhd \
                 $(PWD)/../bypass_unit.vhd \
                 $(PWD)/../cache_data.vhd \
                 $(PWD)/../cache_inst.vhd \
+                $(PWD)/../cache_last_level.vhd \
                 $(PWD)/../cache_stage.vhd \
                 $(PWD)/../comp_28bits.vhd \
                 $(PWD)/../decode.vhd \

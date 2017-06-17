@@ -6,7 +6,6 @@ ENTITY reg_DA IS
 		reset : IN STD_LOGIC;
 		we : IN STD_LOGIC;
 		mem_we_in : IN STD_LOGIC;
-		byte_in : IN STD_LOGIC;
 		mem_read_in : IN STD_LOGIC;
 		mem_atomic_in : IN STD_LOGIC;
 		reg_we_in : IN STD_LOGIC;
@@ -25,8 +24,8 @@ ENTITY reg_DA IS
 		reg_data2_in : IN STD_LOGIC_VECTOR(31 DOWNTO 0);
 		mem_data_in : IN STD_LOGIC_VECTOR(31 DOWNTO 0);
 		iret_in : IN STD_LOGIC;
+		proc_id_in : IN STD_LOGIC;
 		mem_we_out : OUT STD_LOGIC;
-		byte_out : OUT STD_LOGIC;
 		mem_read_out : OUT STD_LOGIC;
 		mem_atomic_out : OUT STD_LOGIC;
 		reg_we_out : OUT STD_LOGIC;
@@ -44,7 +43,8 @@ ENTITY reg_DA IS
 		reg_data1_out : OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
 		reg_data2_out : OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
 		mem_data_out : OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
-		iret_out : OUT STD_LOGIC
+		iret_out : OUT STD_LOGIC;
+		proc_id_out : OUT STD_LOGIC
 	);
 END reg_DA;
 
@@ -55,7 +55,6 @@ BEGIN
 		IF rising_edge(clk) THEN
 			IF reset = '1' THEN
 				mem_we_out <= '0';
-				byte_out <= '0';
 				mem_read_out <= '0';
 				mem_atomic_out <= '0';
 				reg_we_out <= '0';
@@ -74,10 +73,10 @@ BEGIN
 				reg_data2_out <= (OTHERS => '0');
 				mem_data_out <= (OTHERS => '0');
 				iret_out <= '0';
+				proc_id_out <= '0';
 			ELSE
 				IF we = '1' THEN
 					mem_we_out <= mem_we_in;
-					byte_out <= byte_in;
 					mem_read_out <= mem_read_in;
 					mem_atomic_out <= mem_atomic_in;
 					reg_we_out <= reg_we_in;
@@ -96,6 +95,7 @@ BEGIN
 					reg_data2_out <= reg_data2_in;
 					mem_data_out <= mem_data_in;
 					iret_out <= iret_in;
+					proc_id_out <= proc_id_in;
 				END IF;
 			END IF;
 		END IF;

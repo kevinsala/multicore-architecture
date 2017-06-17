@@ -23,11 +23,11 @@ ENTITY decode IS
 		reg_src2_v : OUT STD_LOGIC;
 		inm_src2_v : OUT STD_LOGIC;
 		mem_write : OUT STD_LOGIC;
-		byte : OUT STD_LOGIC;
 		mem_read : OUT STD_LOGIC;
 		mem_atomic : OUT STD_LOGIC;
 		reg_we : OUT STD_LOGIC;
 		iret : OUT STD_LOGIC;
+		proc_id : OUT STD_LOGIC;
 		invalid_inst : OUT STD_LOGIC
 	);
 END decode;
@@ -43,10 +43,8 @@ ARCHITECTURE structure OF decode IS
 	CONSTANT OP_ADD  : STD_LOGIC_VECTOR := "0000000";
 	CONSTANT OP_SUB  : STD_LOGIC_VECTOR := "0000001";
 	CONSTANT OP_MUL  : STD_LOGIC_VECTOR := "0000010";
-	CONSTANT OP_LDB  : STD_LOGIC_VECTOR := "0010000";
 	CONSTANT OP_LDW  : STD_LOGIC_VECTOR := "0010001";
 	CONSTANT OP_LI   : STD_LOGIC_VECTOR := "0001111";
-	CONSTANT OP_STB  : STD_LOGIC_VECTOR := "0010010";
 	CONSTANT OP_STW  : STD_LOGIC_VECTOR := "0010011";
 	CONSTANT OP_MOV  : STD_LOGIC_VECTOR := "0010100";
 	CONSTANT OP_TSL  : STD_LOGIC_VECTOR := "0010101";
@@ -54,6 +52,7 @@ ARCHITECTURE structure OF decode IS
 	CONSTANT OP_BNE  : STD_LOGIC_VECTOR := "0110010";
 	CONSTANT OP_JMP  : STD_LOGIC_VECTOR := "0110001";
 	CONSTANT OP_IRET : STD_LOGIC_VECTOR := "0110101";
+	CONSTANT OP_PID  : STD_LOGIC_VECTOR := "1000000";
 	CONSTANT OP_NOP  : STD_LOGIC_VECTOR := "1111111";
 
 	SIGNAL op_code_int  : STD_LOGIC_VECTOR(6 DOWNTO 0);
@@ -95,8 +94,7 @@ BEGIN
 	reg_dest_int <= inst(24 DOWNTO 20);
 	reg_dest <= reg_dest_int;
 
-	reg_src2_int <= inst(24 DOWNTO 20) WHEN op_code_int = OP_STW OR op_code_int = OP_STB ELSE
-					inst(14 DOWNTO 10);
+	reg_src2_int <= inst(24 DOWNTO 20) WHEN op_code_int = OP_STW ELSE inst(14 DOWNTO 10);
 	reg_src2 <= reg_src2_int;
 
 	ALU_ctrl <= "000" WHEN op_code_int = OP_ADD ELSE
@@ -110,18 +108,17 @@ BEGIN
 	branch_if_eq <= to_std_logic(op_code_int = OP_BEQ);
 	jump <= to_std_logic(op_code_int = OP_JMP);
 
-	reg_src1_v_int <= NOT to_std_logic(op_code_int = OP_LI OR op_code_int = OP_NOP);
+	reg_src1_v_int <= NOT to_std_logic(op_code_int = OP_LI OR op_code_int = OP_JMP OR
+										op_code_int = OP_PID OR op_code_int = OP_NOP);
 	reg_src1_v <= reg_src1_v_int;
 
 	reg_src2_v_int <= to_std_logic(op_code_int = OP_ADD OR op_code_int = OP_SUB OR
 							op_code_int = OP_MUL OR op_code_int = OP_BEQ OR
-							op_code_int = OP_BNE OR op_code_int = OP_JMP OR
-							op_code_int = OP_STW OR op_code_int = OP_STB);
+							op_code_int = OP_BNE OR op_code_int = OP_STW);
 	reg_src2_v <= reg_src2_v_int;
 
 	inm_src2_v <= to_std_logic(op_code_int = OP_LI OR op_code_int = OP_STW OR
-							op_code_int = OP_STB OR op_code_int = OP_LDW OR
-							op_code_int = OP_LDB OR op_code_int = OP_TSL OR
+							op_code_int = OP_LDW OR op_code_int = OP_TSL OR
 							op_code_int = OP_BEQ OR op_code_int = OP_BNE OR
 							op_code_int = OP_JMP);
 
@@ -129,24 +126,23 @@ BEGIN
 								op_code_int = OP_LI OR op_code_int = OP_MOV OR
 								op_code_int = OP_BEQ OR op_code_int = OP_BNE OR
 								op_code_int = OP_JMP OR op_code_int = OP_IRET OR
-								op_code_int = OP_NOP);
-	mem_inst <= to_std_logic(op_code_int = OP_LDB OR op_code_int = OP_LDW OR
-								op_code_int = OP_STB OR op_code_int = OP_STW OR
-								op_code_int = OP_TSL);
+								op_code_int = OP_PID OR op_code_int = OP_NOP);
+	mem_inst <= to_std_logic(op_code_int = OP_LDW OR op_code_int = OP_STW OR op_code_int = OP_TSL);
 	mul_inst <= to_std_logic(op_code_int = OP_MUL);
 
-	mem_write <= to_std_logic(op_code_int = OP_STW OR op_code_int = OP_STB OR op_code_int = OP_TSL);
-	byte <= to_std_logic(op_code_int = OP_LDB OR op_code_int = OP_STB);
-	mem_read <= to_std_logic(op_code_int = OP_LDW OR op_code_int = OP_LDB OR op_code_int = OP_TSL);
+	mem_write <= to_std_logic(op_code_int = OP_STW OR op_code_int = OP_TSL);
+	mem_read <= to_std_logic(op_code_int = OP_LDW OR op_code_int = OP_TSL);
 	mem_atomic <= to_std_logic(op_code_int = OP_TSL);
 
 	reg_we_int <= to_std_logic(op_code_int = OP_ADD OR op_code_int = OP_SUB OR
 							op_code_int = OP_MUL OR op_code_int = OP_LDW OR
-							op_code_int = OP_LDB OR op_code_int = OP_LI OR
-							op_code_int = OP_MOV OR op_code_int = OP_TSL);
+							op_code_int = OP_LI OR op_code_int = OP_MOV OR
+							op_code_int = OP_TSL OR op_code_int = OP_PID);
 	reg_we <= reg_we_int;
 
 	iret <= to_std_logic(op_code_int = OP_IRET);
+
+	proc_id <= to_std_logic(op_code_int = OP_PID);
 
 	invalid_dest <= to_std_logic(reg_dest_int = REG_EXC_CODE OR reg_dest_int = REG_EXC_DATA) AND reg_we_int;
 	invalid_src1 <= to_std_logic(reg_src1_int = REG_EXC_CODE OR reg_src1_int = REG_EXC_DATA) AND

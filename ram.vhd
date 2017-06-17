@@ -61,10 +61,14 @@ ARCHITECTURE structure OF ram IS
 		VARIABLE lbuf : LINE;
 	BEGIN
 		FOR n_line IN 0 TO MEMORY_BLOCKS - 1 LOOP
-			-- Hex convert
-			hwrite(lbuf, ram(n_line));
-			-- Write to file
-			writeline(dumpfile, lbuf);
+			IF NOT is_all_X(ram(n_line)) THEN
+				-- Hex convert
+				write(lbuf, n_line);
+				write(lbuf, ' ');
+				hwrite(lbuf, ram(n_line));
+				-- Write to file
+				writeline(dumpfile, lbuf);
+			END IF;
 		END LOOP;
 	END PROCEDURE;
 BEGIN

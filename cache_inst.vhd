@@ -7,21 +7,21 @@ USE work.utils.ALL;
 
 ENTITY cache_inst IS
 	PORT (
-		clk            : IN  STD_LOGIC;
-		reset          : IN  STD_LOGIC;
-		addr           : IN  STD_LOGIC_VECTOR(31 DOWNTO 0);
-		data_out       : OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
-		done           : OUT STD_LOGIC;
-		invalid_access : OUT STD_LOGIC;
-		state          : IN  inst_cache_state_t;
-		state_nx       : OUT inst_cache_state_t;
-		arb_req        : OUT STD_LOGIC;
-		arb_ack        : IN  STD_LOGIC;
-		mem_cmd        : OUT STD_LOGIC_VECTOR(2 DOWNTO 0);
-		mem_req_abort  : IN  STD_LOGIC;
-		mem_addr       : OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
-		mem_done       : IN  STD_LOGIC;
-		mem_data       : IN  STD_LOGIC_VECTOR(127 DOWNTO 0)
+		clk            : IN    STD_LOGIC;
+		reset          : IN    STD_LOGIC;
+		addr           : IN    STD_LOGIC_VECTOR(31 DOWNTO 0);
+		data_out       : OUT   STD_LOGIC_VECTOR(31 DOWNTO 0);
+		done           : OUT   STD_LOGIC;
+		invalid_access : OUT   STD_LOGIC;
+		state          : IN    inst_cache_state_t;
+		state_nx       : OUT   inst_cache_state_t;
+		arb_req        : OUT   STD_LOGIC;
+		arb_ack        : IN    STD_LOGIC;
+		mem_cmd        : INOUT STD_LOGIC_VECTOR(2 DOWNTO 0);
+		mem_req_abort  : IN    STD_LOGIC;
+		mem_addr       : INOUT STD_LOGIC_VECTOR(31 DOWNTO 0);
+		mem_done       : INOUT STD_LOGIC;
+		mem_data       : INOUT STD_LOGIC_VECTOR(127 DOWNTO 0)
 	);
 END cache_inst;
 
@@ -49,19 +49,23 @@ ARCHITECTURE structure OF cache_inst IS
 	SIGNAL state_nx_i : inst_cache_state_t;
 
 	PROCEDURE clear_bus(
-			SIGNAL mem_cmd  : OUT STD_LOGIC_VECTOR(2 DOWNTO 0);
-			SIGNAL mem_addr : OUT STD_LOGIC_VECTOR(31  DOWNTO 0)
+			SIGNAL mem_cmd  : OUT STD_LOGIC_VECTOR(2   DOWNTO 0);
+			SIGNAL mem_addr : OUT STD_LOGIC_VECTOR(31  DOWNTO 0);
+			SIGNAL mem_data : OUT STD_LOGIC_VECTOR(127 DOWNTO 0);
+			SIGNAL mem_done : OUT STD_LOGIC
 		) IS
 	BEGIN
 		mem_cmd  <= (OTHERS => 'Z');
 		mem_addr <= (OTHERS => 'Z');
+		mem_data <= (OTHERS => 'Z');
+		mem_done <= 'Z';
 	END PROCEDURE;
 BEGIN
-	next_state_process : PROCESS(reset, state, hit_cache, addr, mem_req_abort, mem_done, mem_data, arb_ack)
+	next_state_process : PROCESS(clk, reset, state, hit_cache, addr, mem_req_abort, mem_done, mem_data, arb_ack)
 	BEGIN
 		IF reset = '1' THEN
 			state_nx_i <= READY;
-		ELSE
+		ELSIF clk = '1' THEN
 			state_nx_i <= state;
 			IF state = READY THEN
 				IF hit_cache = '0' AND invalid_access_i = '0' AND mem_req_abort = '0' THEN
@@ -82,14 +86,16 @@ BEGIN
 	END PROCESS next_state_process;
 
 	execution_process : PROCESS(clk)
+		VARIABLE can_clear_bus : BOOLEAN;
 	BEGIN
 		IF rising_edge(clk) AND reset = '1' THEN
 			FOR i IN 0 TO CACHE_LINES - 1 LOOP
 				valid_fields(i) <= '0';
 			END LOOP;
 			arb_req <= '0';
-			clear_bus(mem_cmd, mem_addr);
+			clear_bus(mem_cmd, mem_addr, mem_data, mem_done);
 		ELSIF falling_edge(clk) AND reset = '0' THEN
+			can_clear_bus := TRUE;
 			IF state = READY THEN
 				IF state_nx_i = ARBREQ THEN
 					arb_req <= '1';
@@ -98,13 +104,14 @@ BEGIN
 				IF state_nx_i = READY THEN
 					arb_req <= '0';
 					IF arb_ack = '1' THEN
-						-- The request must be sent
-						mem_cmd <= CMD_GET;
-						mem_addr <= addr;
+						-- Terminate the request
+						mem_done <= '1';
+						can_clear_bus := FALSE;
 					END IF;
 				ELSIF state_nx_i = LINEREQ THEN
-					mem_cmd <= CMD_GET;
+					mem_cmd <= CMD_GET_RO;
 					mem_addr <= addr;
+					can_clear_bus := FALSE;
 				END IF;
 			ELSIF state = LINEREQ THEN
 				IF state_nx_i = READY THEN
@@ -114,8 +121,13 @@ BEGIN
 						valid_fields(cache_line) <= '1';
 						data_fields(cache_line) <= mem_data;
 					END IF;
-					clear_bus(mem_cmd, mem_addr);
+				ELSE
+					can_clear_bus := FALSE;
 				END IF;
+			END IF;
+
+			IF can_clear_bus THEN
+				clear_bus(mem_cmd, mem_addr, mem_data, mem_done);
 			END IF;
 		END IF;
 	END PROCESS execution_process;

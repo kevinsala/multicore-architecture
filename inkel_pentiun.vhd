@@ -1,8 +1,12 @@
 LIBRARY IEEE;
 USE IEEE.STD_LOGIC_1164.ALL;
+USE IEEE.NUMERIC_STD.ALL;
 USE WORK.UTILS.ALL;
 
 ENTITY inkel_pentiun IS
+	GENERIC (
+		proc_id : INTEGER
+	);
 	PORT (
 		clk        : IN    STD_LOGIC;
 		reset      : IN    STD_LOGIC;
@@ -11,10 +15,10 @@ ENTITY inkel_pentiun IS
 		d_arb_req  : OUT   STD_LOGIC;
 		i_arb_ack  : IN    STD_LOGIC;
 		d_arb_ack  : IN    STD_LOGIC;
-		mem_cmd    : OUT   STD_LOGIC_VECTOR(2 DOWNTO 0);
-		mem_addr   : OUT   STD_LOGIC_VECTOR(31 DOWNTO 0);
-		mem_done   : IN    STD_LOGIC;
-		mem_data   : INOUT STD_LOGIC_VECTOR(127 DOWNTO 0);
+		bus_cmd    : INOUT STD_LOGIC_VECTOR(2 DOWNTO 0);
+		bus_addr   : INOUT STD_LOGIC_VECTOR(31 DOWNTO 0);
+		bus_done   : INOUT STD_LOGIC;
+		bus_data   : INOUT STD_LOGIC_VECTOR(127 DOWNTO 0);
 		pc_out     : OUT   STD_LOGIC_VECTOR(31  DOWNTO 0)
 	);
 END inkel_pentiun;
@@ -93,21 +97,21 @@ ARCHITECTURE structure OF inkel_pentiun IS
 
 	COMPONENT fetch IS
 		PORT (
-			clk            : IN  STD_LOGIC;
-			reset          : IN  STD_LOGIC;
-			priv_status_r  : IN  STD_LOGIC;
-			priv_status_w  : IN  STD_LOGIC;
-			pc             : IN  STD_LOGIC_VECTOR(31  DOWNTO 0);
-			branch_taken   : IN  STD_LOGIC;
-			inst           : OUT STD_LOGIC_VECTOR(31  DOWNTO 0);
-			inst_v         : OUT STD_LOGIC;
-			invalid_access : OUT STD_LOGIC;
-			arb_req        : OUT STD_LOGIC;
-			arb_ack        : IN  STD_LOGIC;
-			mem_cmd        : OUT STD_LOGIC_VECTOR(2 DOWNTO 0);
-			mem_addr       : OUT STD_LOGIC_VECTOR(31  DOWNTO 0);
-			mem_done       : IN  STD_LOGIC;
-			mem_data       : IN  STD_LOGIC_VECTOR(127 DOWNTO 0)
+			clk            : IN    STD_LOGIC;
+			reset          : IN    STD_LOGIC;
+			priv_status_r  : IN    STD_LOGIC;
+			priv_status_w  : IN    STD_LOGIC;
+			pc             : IN    STD_LOGIC_VECTOR(31  DOWNTO 0);
+			branch_taken   : IN    STD_LOGIC;
+			inst           : OUT   STD_LOGIC_VECTOR(31  DOWNTO 0);
+			inst_v         : OUT   STD_LOGIC;
+			invalid_access : OUT   STD_LOGIC;
+			arb_req        : OUT   STD_LOGIC;
+			arb_ack        : IN    STD_LOGIC;
+			mem_cmd        : INOUT STD_LOGIC_VECTOR(2 DOWNTO 0);
+			mem_addr       : INOUT STD_LOGIC_VECTOR(31  DOWNTO 0);
+			mem_done       : INOUT STD_LOGIC;
+			mem_data       : INOUT STD_LOGIC_VECTOR(127 DOWNTO 0)
 		);
 	END COMPONENT;
 
@@ -121,16 +125,15 @@ ARCHITECTURE structure OF inkel_pentiun IS
 			data_out        : OUT   STD_LOGIC_VECTOR(31  DOWNTO 0);
 			re              : IN    STD_LOGIC;
 			we              : IN    STD_LOGIC;
-			is_byte         : IN    STD_LOGIC;
 			atomic          : IN    STD_LOGIC;
 			id              : IN    STD_LOGIC_VECTOR(3   DOWNTO 0);
 			done            : OUT   STD_LOGIC;
 			invalid_access  : OUT   STD_LOGIC;
 			arb_req         : OUT   STD_LOGIC;
 			arb_ack         : IN    STD_LOGIC;
-			mem_cmd         : OUT   STD_LOGIC_VECTOR(2 DOWNTO 0);
-			mem_addr        : OUT   STD_LOGIC_VECTOR(31  DOWNTO 0);
-			mem_done        : IN    STD_LOGIC;
+			mem_cmd         : INOUT STD_LOGIC_VECTOR(2 DOWNTO 0);
+			mem_addr        : INOUT STD_LOGIC_VECTOR(31  DOWNTO 0);
+			mem_done        : INOUT STD_LOGIC;
 			mem_data        : INOUT STD_LOGIC_VECTOR(127 DOWNTO 0);
 			sb_store_id     : IN    STD_LOGIC_VECTOR(3   DOWNTO 0);
 			sb_store_commit : IN    STD_LOGIC;
@@ -160,6 +163,9 @@ ARCHITECTURE structure OF inkel_pentiun IS
 	END COMPONENT;
 
 	COMPONENT reg_bank IS
+		GENERIC(
+			proc_id : INTEGER
+		);
 		PORT(
 			clk : IN STD_LOGIC;
 			reset : IN STD_LOGIC;
@@ -197,11 +203,11 @@ ARCHITECTURE structure OF inkel_pentiun IS
 			reg_src2_v : OUT STD_LOGIC;
 			inm_src2_v : OUT STD_LOGIC;
 			mem_write : OUT STD_LOGIC;
-			byte : OUT STD_LOGIC;
 			mem_read : OUT STD_LOGIC;
 			mem_atomic : OUT STD_LOGIC;
 			reg_we : OUT STD_LOGIC;
 			iret : OUT STD_LOGIC;
+			proc_id : OUT STD_LOGIC;
 			invalid_inst : OUT STD_LOGIC
 		);
 	END COMPONENT;
@@ -281,7 +287,6 @@ ARCHITECTURE structure OF inkel_pentiun IS
 			reset : IN STD_LOGIC;
 			we : IN STD_LOGIC;
 			mem_we_in : IN STD_LOGIC;
-			byte_in : IN STD_LOGIC;
 			mem_read_in : IN STD_LOGIC;
 			mem_atomic_in : IN STD_LOGIC;
 			reg_we_in : IN STD_LOGIC;
@@ -300,8 +305,8 @@ ARCHITECTURE structure OF inkel_pentiun IS
 			reg_data2_in : IN STD_LOGIC_VECTOR(31 DOWNTO 0);
 			mem_data_in : IN STD_LOGIC_VECTOR(31 DOWNTO 0);
 			iret_in : IN STD_LOGIC;
+			proc_id_in : IN STD_LOGIC;
 			mem_we_out : OUT STD_LOGIC;
-			byte_out : OUT STD_LOGIC;
 			mem_read_out : OUT STD_LOGIC;
 			mem_atomic_out : OUT STD_LOGIC;
 			reg_we_out : OUT STD_LOGIC;
@@ -319,7 +324,8 @@ ARCHITECTURE structure OF inkel_pentiun IS
 			reg_data1_out : OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
 			reg_data2_out : OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
 			mem_data_out : OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
-			iret_out : OUT STD_LOGIC
+			iret_out : OUT STD_LOGIC;
+			proc_id_out : OUT STD_LOGIC
 		);
 	END COMPONENT;
 
@@ -405,7 +411,6 @@ ARCHITECTURE structure OF inkel_pentiun IS
 			reset : IN STD_LOGIC;
 			we : IN STD_LOGIC;
 			mem_we_in : IN STD_LOGIC;
-			byte_in : IN STD_LOGIC;
 			mem_read_in : IN STD_LOGIC;
 			mem_atomic_in : IN STD_LOGIC;
 			reg_we_in : IN STD_LOGIC;
@@ -413,7 +418,6 @@ ARCHITECTURE structure OF inkel_pentiun IS
 			ALU_out_in : IN STD_LOGIC_VECTOR(31 DOWNTO 0);
 			mem_data_in : IN STD_LOGIC_VECTOR(31 DOWNTO 0);
 			mem_we_out : OUT STD_LOGIC;
-			byte_out : OUT STD_LOGIC;
 			mem_read_out : OUT STD_LOGIC;
 			mem_atomic_out : OUT STD_LOGIC;
 			reg_we_out : OUT STD_LOGIC;
@@ -501,6 +505,8 @@ ARCHITECTURE structure OF inkel_pentiun IS
 		);
 	END COMPONENT;
 
+	SIGNAL proc_id_vec : STD_LOGIC_VECTOR(31 DOWNTO 0);
+
 	-- Fetch stage signals
 	SIGNAL inst_v_F : STD_LOGIC;
 	SIGNAL mem_req_F : STD_LOGIC;
@@ -522,7 +528,6 @@ ARCHITECTURE structure OF inkel_pentiun IS
 	SIGNAL branch_if_eq_D : STD_LOGIC;
 	SIGNAL reg_we_D : STD_LOGIC;
 	SIGNAL mem_read_D : STD_LOGIC;
-	SIGNAL byte_D : STD_LOGIC;
 	SIGNAL mem_we_D : STD_LOGIC;
 	SIGNAL mem_atomic_D : STD_LOGIC;
 	SIGNAL reg_src1_v_D : STD_LOGIC;
@@ -531,6 +536,7 @@ ARCHITECTURE structure OF inkel_pentiun IS
 	SIGNAL priv_status_D : STD_LOGIC;
 	SIGNAL invalid_inst_D : STD_LOGIC;
 	SIGNAL iret_D : STD_LOGIC;
+	SIGNAL proc_id_D : STD_LOGIC;
 	SIGNAL inst_type_D : STD_LOGIC_VECTOR(1 DOWNTO 0);
 	SIGNAL ALU_ctrl_D : STD_LOGIC_VECTOR(2 DOWNTO 0);
 	SIGNAL rob_idx_D : STD_LOGIC_VECTOR(3 DOWNTO 0);
@@ -560,11 +566,11 @@ ARCHITECTURE structure OF inkel_pentiun IS
 	SIGNAL reg_src2_v_A : STD_LOGIC;
 	SIGNAL inm_src2_v_A : STD_LOGIC;
 	SIGNAL mem_we_A : STD_LOGIC;
-	SIGNAL byte_A : STD_LOGIC;
 	SIGNAL mem_atomic_A : STD_LOGIC;
 	SIGNAL reg_we_A : STD_LOGIC;
 	SIGNAL priv_status_A : STD_LOGIC;
 	SIGNAL iret_A : STD_LOGIC;
+	SIGNAL proc_id_A : STD_LOGIC;
 	SIGNAL inst_type_A : STD_LOGIC_VECTOR(1 DOWNTO 0);
 	SIGNAL ALU_ctrl_A : STD_LOGIC_VECTOR(2 DOWNTO 0);
 	SIGNAL rob_idx_A : STD_LOGIC_VECTOR(3 DOWNTO 0);
@@ -579,6 +585,7 @@ ARCHITECTURE structure OF inkel_pentiun IS
 	SIGNAL ALU_data1_A : STD_LOGIC_VECTOR(31 DOWNTO 0);
 	SIGNAL ALU_data2_A : STD_LOGIC_VECTOR(31 DOWNTO 0);
 	SIGNAL ALU_out_A : STD_LOGIC_VECTOR(31 DOWNTO 0);
+	SIGNAL data_out_A : STD_LOGIC_VECTOR(31 DOWNTO 0);
 	SIGNAL mem_data_A : STD_LOGIC_VECTOR(31 DOWNTO 0);
 	SIGNAL mem_data_A_BP : STD_LOGIC_VECTOR(31 DOWNTO 0);
 	SIGNAL mem_data_A_atomic : STD_LOGIC_VECTOR(31 DOWNTO 0);
@@ -587,7 +594,6 @@ ARCHITECTURE structure OF inkel_pentiun IS
 	SIGNAL cache_we_C : STD_LOGIC;
 	SIGNAL cache_re_C : STD_LOGIC;
 	SIGNAL mem_atomic_C : STD_LOGIC;
-	SIGNAL byte_C : STD_LOGIC;
 	SIGNAL reg_we_C : STD_LOGIC;
 	SIGNAL priv_status_C : STD_LOGIC;
 	SIGNAL invalid_access_C : STD_LOGIC;
@@ -732,6 +738,8 @@ ARCHITECTURE structure OF inkel_pentiun IS
 
 BEGIN
 
+	proc_id_vec <= STD_LOGIC_VECTOR(to_unsigned(proc_id, 32));
+
 	----------------------------- Control -------------------------------
 
 	exc : exception_unit PORT MAP(
@@ -854,10 +862,10 @@ BEGIN
 		invalid_access => invalid_access_F,
 		arb_req => i_arb_req,
 		arb_ack => i_arb_ack,
-		mem_cmd => mem_cmd,
-		mem_addr => mem_addr,
-		mem_done => mem_done,
-		mem_data => mem_data
+		mem_cmd => bus_cmd,
+		mem_addr => bus_addr,
+		mem_done => bus_done,
+		mem_data => bus_data
 	);
 
 	reg_F_D_reset <= reg_F_D_reset_DU OR exc_F_E;
@@ -916,33 +924,35 @@ BEGIN
 		reg_src2_v => reg_src2_v_D,
 		inm_src2_v => inm_src2_v_D,
 		mem_write => mem_we_D,
-		byte => byte_D,
 		mem_read => mem_read_D,
 		mem_atomic => mem_atomic_D,
 		reg_we => reg_we_D,
 		iret => iret_D,
+		proc_id => proc_id_D,
 		invalid_inst => invalid_inst_D
 	);
 
-	rb: reg_bank PORT MAP(
-		clk => clk,
-		reset => reset,
-		debug_dump => debug_dump,
-		src1 => reg_src1_D,
-		src2 => reg_src2_D,
-		data1 => reg_data1_D,
-		data2 => reg_data2_D,
-		we => reg_we_ROB,
-		dest => reg_dest_ROB,
-		data_in => reg_data_ROB,
-		exception => exc_ROB,
-		exc_code => exc_code_ROB,
-		exc_data => exc_data_ROB
+	rb: reg_bank
+		GENERIC MAP (proc_id => proc_id)
+		PORT MAP(
+			clk => clk,
+			reset => reset,
+			debug_dump => debug_dump,
+			src1 => reg_src1_D,
+			src2 => reg_src2_D,
+			data1 => reg_data1_D,
+			data2 => reg_data2_D,
+			we => reg_we_ROB,
+			dest => reg_dest_ROB,
+			data_in => reg_data_ROB,
+			exception => exc_ROB,
+			exc_code => exc_code_ROB,
+			exc_data => exc_data_ROB
 	);
 
 	mux_src1_D_BP : mux8_32bits PORT MAP(
 		Din0 => reg_data1_D,
-		Din1 => ALU_out_A,
+		Din1 => data_out_A,
 		Din2 => reg_data_C,
 		Din3 => mul_out_M5,
 		Din4 => reg_src1_D_data_ROB,
@@ -955,7 +965,7 @@ BEGIN
 
 	mux_src2_D_BP : mux8_32bits PORT MAP(
 		Din0 => reg_data2_D,
-		Din1 => ALU_out_A,
+		Din1 => data_out_A,
 		Din2 => reg_data_C,
 		Din3 => mul_out_M5,
 		Din4 => reg_src2_D_data_ROB,
@@ -968,7 +978,7 @@ BEGIN
 
 	mux_mem_data_D_BP : mux8_32bits PORT MAP(
 		Din0 => reg_data2_D,
-		Din1 => ALU_out_A,
+		Din1 => data_out_A,
 		Din2 => reg_data_C,
 		Din3 => mul_out_M5,
 		Din4 => reg_src2_D_data_ROB,
@@ -986,7 +996,6 @@ BEGIN
 		reset => reg_D_A_reset,
 		we => reg_D_A_we,
 		mem_we_in => mem_we_D,
-		byte_in => byte_D,
 		mem_read_in => mem_read_D,
 		mem_atomic_in => mem_atomic_D,
 		reg_we_in => reg_we_D,
@@ -1005,8 +1014,8 @@ BEGIN
 		reg_data2_in => data2_BP_D,
 		mem_data_in => mem_data_D_BP,
 		iret_in => iret_D,
+		proc_id_in => proc_id_D,
 		mem_we_out => mem_we_A,
-		byte_out => byte_A,
 		mem_read_out => mem_read_A,
 		mem_atomic_out => mem_atomic_A,
 		reg_we_out => reg_we_A,
@@ -1024,7 +1033,8 @@ BEGIN
 		reg_data1_out => reg_data1_A,
 		reg_data2_out => reg_data2_A,
 		mem_data_out => mem_data_A,
-		iret_out => iret_A
+		iret_out => iret_A,
+		proc_id_out => proc_id_A
 	);
 
 	reg_status_D_A: reg_status PORT MAP(
@@ -1081,6 +1091,13 @@ BEGIN
 
 	jump_addr_A <= ALU_out_A;
 
+	mux_data_out_A : mux2_32bits PORT MAP(
+		Din0 => ALU_out_A,
+		Din1 => proc_id_vec,
+		ctrl => proc_id_A,
+		Dout => data_out_A
+	);
+
 	mux_mem_data_A_BP : mux4_32bits PORT MAP(
 		Din0 => mem_data_A,
 		Din1 => reg_data_C,
@@ -1104,15 +1121,13 @@ BEGIN
 		reset => reg_A_C_reset,
 		we => reg_A_C_we,
 		mem_we_in => mem_we_A,
-		byte_in => byte_A,
 		mem_read_in => mem_read_A,
 		mem_atomic_in => mem_atomic_A,
 		reg_we_in => reg_we_A,
 		reg_dest_in => reg_dest_A,
-		ALU_out_in => ALU_out_A,
+		ALU_out_in => data_out_A,
 		mem_data_in => mem_data_A_atomic,
 		mem_we_out => cache_we_C,
-		byte_out => byte_C,
 		mem_read_out => cache_re_C,
 		mem_atomic_out => mem_atomic_C,
 		reg_we_out => reg_we_C,
@@ -1155,7 +1170,7 @@ BEGIN
 		we => '1',
 		reg_we_in => reg_we_A,
 		reg_dest_in => reg_dest_A,
-		reg_data_in => ALU_out_A,
+		reg_data_in => data_out_A,
 		mem_we_in => '0',
 		v => v_W_ALU,
 		reg_we_out => reg_we_W_ALU,
@@ -1281,17 +1296,16 @@ BEGIN
 		data_out => reg_data_C,
 		re => cache_re_C,
 		we => cache_we_C,
-		is_byte => byte_C,
 		atomic => mem_atomic_C,
 		id => rob_idx_C,
 		done => done_C,
 		invalid_access => invalid_access_C,
 		arb_req => d_arb_req,
 		arb_ack => d_arb_ack,
-		mem_cmd => mem_cmd,
-		mem_addr => mem_addr,
-		mem_done => mem_done,
-		mem_data => mem_data,
+		mem_cmd => bus_cmd,
+		mem_addr => bus_addr,
+		mem_done => bus_done,
+		mem_data => bus_data,
 		sb_store_id => sb_store_id_C,
 		sb_store_commit => sb_store_commit_C,
 		sb_squash => sb_squash_C
