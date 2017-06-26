@@ -32,3 +32,6 @@ If everything is right, you could now go to the `test` directory and run `make`.
 To observe transactions that cross the bus, you need the same infrastructure described on "Validation".
 
 To run, go to the `voyeur` directory and run `make`. You will be asked to press `<Enter>` before every transaction.
+
+### Documentation
+For completeness, the repository includes both the report and the slides that were used to present this project as our final project of the Multiprocessor Architecture subject from the Master in Innovation and Research in Informatics from the Polytechnic University of Catalonia (FIB BarcelonaTech).
