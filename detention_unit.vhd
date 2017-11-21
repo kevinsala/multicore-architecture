@@ -12,16 +12,16 @@ ENTITY detention_unit IS
 		reg_src1_v_D   : IN STD_LOGIC;
 		reg_src2_v_D   : IN STD_LOGIC;
 		mem_we_D	   : IN STD_LOGIC;
-		branch_taken_A : IN STD_LOGIC;
-		mul_M1 			: IN STD_LOGIC;
-		mul_M2 			: IN STD_LOGIC;
-		reg_dest_M2		: IN STD_LOGIC_VECTOR(4 DOWNTO 0);
-		mul_M3 			: IN STD_LOGIC;
-		reg_dest_M3		: IN STD_LOGIC_VECTOR(4 DOWNTO 0);
-		mul_M4 			: IN STD_LOGIC;
-		reg_dest_M4		: IN STD_LOGIC_VECTOR(4 DOWNTO 0);
-		mul_M5			: IN STD_LOGIC;
-		reg_dest_M5		: IN STD_LOGIC_VECTOR(4 DOWNTO 0);
+		pred_error_A   : IN STD_LOGIC;
+		mul_M1         : IN STD_LOGIC;
+		mul_M2         : IN STD_LOGIC;
+		reg_dest_M2	   : IN STD_LOGIC_VECTOR(4 DOWNTO 0);
+		mul_M3         : IN STD_LOGIC;
+		reg_dest_M3	   : IN STD_LOGIC_VECTOR(4 DOWNTO 0);
+		mul_M4         : IN STD_LOGIC;
+		reg_dest_M4	   : IN STD_LOGIC_VECTOR(4 DOWNTO 0);
+		mul_M5         : IN STD_LOGIC;
+		reg_dest_M5    : IN STD_LOGIC_VECTOR(4 DOWNTO 0);
 		inst_type_A	   : IN STD_LOGIC_VECTOR(1 DOWNTO 0);
 		reg_dest_A     : IN STD_LOGIC_VECTOR(4 DOWNTO 0);
 		reg_we_A       : IN STD_LOGIC;
@@ -76,14 +76,14 @@ BEGIN
 
 	reg_PC_we <= NOT conflict_i AND done_F AND NOT conflict_MEM;
 	rob_count <= NOT conflict_i AND done_F AND NOT conflict_MEM;
-	rob_rollback <= branch_taken_A AND NOT to_std_logic(inst_type_D = INST_TYPE_NOP); -- Don't decrease the ROB counter if the instruction just after the branch was a iCache miss
+	rob_rollback <= pred_error_A AND NOT to_std_logic(inst_type_D = INST_TYPE_NOP); -- Don't decrease the ROB counter if the instruction just after the branch was a iCache miss
 	reg_F_D_we <= NOT conflict_i AND NOT conflict_MEM;
 	reg_D_A_we <= NOT conflict_MEM;
 	reg_A_C_we <= done_C;
 
 	reg_PC_reset <= reset;
-	reg_F_D_reset <= reset OR branch_taken_A OR (NOT done_F AND NOT conflict_MEM AND NOT conflict_i) OR exc_D OR exc_A OR exc_C;
-	reg_D_A_reset <= reset OR branch_taken_A OR conflict_i OR exc_A OR exc_C;
+	reg_F_D_reset <= reset OR pred_error_A OR (NOT done_F AND NOT conflict_MEM AND NOT conflict_i) OR exc_D OR exc_A OR exc_C;
+	reg_D_A_reset <= reset OR pred_error_A OR conflict_i OR exc_A OR exc_C;
 	reg_A_C_reset <= reset OR (done_C AND to_std_logic(inst_type_A /= INST_TYPE_MEM)) OR exc_C;
 
 	conflict <= conflict_i;

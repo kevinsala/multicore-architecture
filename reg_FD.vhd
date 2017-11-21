@@ -7,8 +7,10 @@ ENTITY reg_FD IS
 		we : IN STD_LOGIC;
 		inst_v_in : IN STD_LOGIC;
 		inst_in : IN STD_LOGIC_VECTOR(31 DOWNTO 0);
+		pred_taken_in : IN STD_LOGIC;
 		inst_v_out : OUT STD_LOGIC;
-		inst_out : OUT STD_LOGIC_VECTOR(31 DOWNTO 0)
+		inst_out : OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
+		pred_taken_out : OUT STD_LOGIC
 	);
 END reg_FD;
 
@@ -20,10 +22,12 @@ BEGIN
 			IF reset = '1' THEN
 				inst_v_out <= '0';
 				inst_out <= x"FE000000";
+				pred_taken_out <= '0';
 			ELSE
 				IF we = '1' THEN
 					inst_v_out <= inst_v_in;
 					inst_out <= inst_in;
+					pred_taken_out <= pred_taken_in;
 				END IF;
 			END IF;
 		END IF;

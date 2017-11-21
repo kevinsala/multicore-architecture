@@ -77,11 +77,13 @@ ARCHITECTURE structure OF inkel_pentiun IS
 			clk : IN STD_LOGIC;
 			reset : IN STD_LOGIC;
 			addr_jump : IN STD_LOGIC_VECTOR(31 DOWNTO 0);
-			branch_taken : IN STD_LOGIC;
+			pred_error : IN STD_LOGIC;
 			exception_addr : IN STD_LOGIC_VECTOR(31 DOWNTO 0);
 			exception : IN STD_LOGIC;
 			iret : IN STD_LOGIC;
 			load_PC : IN STD_LOGIC;
+			pred_pc : IN STD_LOGIC_VECTOR(31 DOWNTO 0);
+			pred_taken : IN STD_LOGIC;
 			pc : OUT STD_LOGIC_VECTOR(31 DOWNTO 0)
 		);
 	END COMPONENT;
@@ -95,6 +97,20 @@ ARCHITECTURE structure OF inkel_pentiun IS
 		);
 	END COMPONENT;
 
+	COMPONENT branch_predictor IS
+		PORT(
+			clk	      : IN  STD_LOGIC;
+			reset     : IN  STD_LOGIC;
+			pc_F      : IN  STD_LOGIC_VECTOR(31 DOWNTO 0);
+			next_pc_F : OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
+			taken_F   : OUT STD_LOGIC;
+			branch_A  : IN  STD_LOGIC;
+			taken_A   : IN  STD_LOGIC;
+			pc_A      : IN  STD_LOGIC_VECTOR(31 DOWNTO 0);
+			next_pc_A : IN  STD_LOGIC_VECTOR(31 DOWNTO 0)
+		);
+	END COMPONENT;
+
 	COMPONENT fetch IS
 		PORT (
 			clk            : IN    STD_LOGIC;
@@ -102,7 +118,7 @@ ARCHITECTURE structure OF inkel_pentiun IS
 			priv_status_r  : IN    STD_LOGIC;
 			priv_status_w  : IN    STD_LOGIC;
 			pc             : IN    STD_LOGIC_VECTOR(31  DOWNTO 0);
-			branch_taken   : IN    STD_LOGIC;
+			pred_error     : IN    STD_LOGIC;
 			inst           : OUT   STD_LOGIC_VECTOR(31  DOWNTO 0);
 			inst_v         : OUT   STD_LOGIC;
 			invalid_access : OUT   STD_LOGIC;
@@ -148,8 +164,10 @@ ARCHITECTURE structure OF inkel_pentiun IS
 			we : IN STD_LOGIC;
 			inst_v_in : IN STD_LOGIC;
 			inst_in : IN STD_LOGIC_VECTOR(31 DOWNTO 0);
+			pred_taken_in : IN STD_LOGIC;
 			inst_v_out : OUT STD_LOGIC;
-			inst_out : OUT STD_LOGIC_VECTOR(31 DOWNTO 0)
+			inst_out : OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
+			pred_taken_out : OUT STD_LOGIC
 		);
 	END COMPONENT;
 
@@ -246,7 +264,7 @@ ARCHITECTURE structure OF inkel_pentiun IS
 			reg_src1_v_D   : IN STD_LOGIC;
 			reg_src2_v_D   : IN STD_LOGIC;
 			mem_we_D 	   : IN STD_LOGIC;
-			branch_taken_A : IN STD_LOGIC;
+			pred_error_A   : IN STD_LOGIC;
 			mul_M1		   : IN STD_LOGIC;
 			mul_M2		   : IN STD_LOGIC;
 			reg_dest_M2    : IN STD_LOGIC_VECTOR(4 downto 0);
@@ -306,6 +324,7 @@ ARCHITECTURE structure OF inkel_pentiun IS
 			mem_data_in : IN STD_LOGIC_VECTOR(31 DOWNTO 0);
 			iret_in : IN STD_LOGIC;
 			proc_id_in : IN STD_LOGIC;
+			pred_taken_in : IN STD_LOGIC;
 			mem_we_out : OUT STD_LOGIC;
 			mem_read_out : OUT STD_LOGIC;
 			mem_atomic_out : OUT STD_LOGIC;
@@ -325,7 +344,8 @@ ARCHITECTURE structure OF inkel_pentiun IS
 			reg_data2_out : OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
 			mem_data_out : OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
 			iret_out : OUT STD_LOGIC;
-			proc_id_out : OUT STD_LOGIC
+			proc_id_out : OUT STD_LOGIC;
+			pred_taken_out : OUT STD_LOGIC
 		);
 	END COMPONENT;
 
@@ -520,6 +540,8 @@ ARCHITECTURE structure OF inkel_pentiun IS
 	SIGNAL mem_data_F : STD_LOGIC_VECTOR(127 DOWNTO 0);
 	SIGNAL arb_req_F : STD_LOGIC;
 	SIGNAL arb_ack_F : STD_LOGIC;
+	SIGNAL pred_pc_F : STD_LOGIC_VECTOR(31 DOWNTO 0);
+	SIGNAL pred_taken_F : STD_LOGIC;
 
 	-- Decode stage signals
 	SIGNAL inst_v_D : STD_LOGIC;
@@ -553,6 +575,7 @@ ARCHITECTURE structure OF inkel_pentiun IS
 	SIGNAL mem_data_D_BP : STD_LOGIC_VECTOR(31 DOWNTO 0);
 	SIGNAL data1_BP_D : STD_LOGIC_VECTOR(31 DOWNTO 0);
 	SIGNAL data2_BP_D : STD_LOGIC_VECTOR(31 DOWNTO 0);
+	SIGNAL pred_taken_D : STD_LOGIC;
 
 	-- ALU stage signals
 	SIGNAL Z : STD_LOGIC;
@@ -589,6 +612,8 @@ ARCHITECTURE structure OF inkel_pentiun IS
 	SIGNAL mem_data_A : STD_LOGIC_VECTOR(31 DOWNTO 0);
 	SIGNAL mem_data_A_BP : STD_LOGIC_VECTOR(31 DOWNTO 0);
 	SIGNAL mem_data_A_atomic : STD_LOGIC_VECTOR(31 DOWNTO 0);
+	SIGNAL pred_taken_A : STD_LOGIC;
+	SIGNAL pred_error_A : STD_LOGIC;
 
 	-- Cache stage signals
 	SIGNAL cache_we_C : STD_LOGIC;
@@ -772,7 +797,7 @@ BEGIN
 		reg_src1_v_D => reg_src1_v_D,
 		reg_src2_v_D => reg_src2_v_D,
 		mem_we_D => mem_we_D,
-		branch_taken_A => branch_taken_A,
+		pred_error_A => pred_error_A,
 		mul_M1 => mul_M1,
 		mul_M2 => mul_M2,
 		reg_dest_M2 => reg_dest_M2,
@@ -834,11 +859,13 @@ BEGIN
 		clk => clk,
 		reset => reset_PC,
 		addr_jump => jump_addr_A,
-		branch_taken => branch_taken_A,
+		pred_error => pred_error_A,
 		exception_addr => pc_ROB,
 		exception => exc_ROB,
 		iret => iret_A,
 		load_PC => load_PC,
+		pred_pc => pred_pc_F,
+		pred_taken => pred_taken_F,
 		pc => pc_F
 	);
 
@@ -850,13 +877,25 @@ BEGIN
 		priv_status => priv_status_F
 	);
 
+	brp : branch_predictor PORT MAP(
+		clk => clk,
+		reset => reset,
+		pc_F => pc_F,
+		next_pc_F => pred_pc_F,
+		taken_F => pred_taken_F,
+		branch_A => jump_or_branch_A,
+		taken_A => branch_taken_A,
+		pc_A => pc_A,
+		next_pc_A => jump_addr_A
+	);
+
 	f: fetch PORT MAP (
 		clk => clk,
 		reset => reset,
 		priv_status_r => priv_status_F,
 		priv_status_w => priv_status_C,
 		pc => pc_F,
-		branch_taken => branch_taken_A,
+		pred_error => pred_error_A,
 		inst => inst_F,
 		inst_v => inst_v_F,
 		invalid_access => invalid_access_F,
@@ -876,8 +915,10 @@ BEGIN
 		we => reg_F_D_we,
 		inst_v_in => inst_v_F,
 		inst_in => inst_F,
+		pred_taken_in => pred_taken_F,
 		inst_v_out => inst_v_D,
-		inst_out => inst_D
+		inst_out => inst_D,
+		pred_taken_out => pred_taken_D
 	);
 
 	reg_status_F_D: reg_status PORT MAP(
@@ -1015,6 +1056,7 @@ BEGIN
 		mem_data_in => mem_data_D_BP,
 		iret_in => iret_D,
 		proc_id_in => proc_id_D,
+		pred_taken_in => pred_taken_D,
 		mem_we_out => mem_we_A,
 		mem_read_out => mem_read_A,
 		mem_atomic_out => mem_atomic_A,
@@ -1034,7 +1076,8 @@ BEGIN
 		reg_data2_out => reg_data2_A,
 		mem_data_out => mem_data_A,
 		iret_out => iret_A,
-		proc_id_out => proc_id_A
+		proc_id_out => proc_id_A,
+		pred_taken_out => pred_taken_A
 	);
 
 	reg_status_D_A: reg_status PORT MAP(
@@ -1081,6 +1124,7 @@ BEGIN
 	-- Z = '1' when operands equal
 	Z <= to_std_logic(reg_data1_A = reg_data2_A);
 	branch_taken_A <= (to_std_logic(Z = branch_if_eq_A) AND branch_A) OR jump_A OR iret_A;
+	pred_error_A <= branch_taken_A XOR pred_taken_A;
 
 	ALU_MIPs: ALU PORT MAP(
 		DA => ALU_data1_A,

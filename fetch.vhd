@@ -13,7 +13,7 @@ ENTITY fetch IS
 		priv_status_r  : IN    STD_LOGIC;
 		priv_status_w  : IN    STD_LOGIC;
 		pc             : IN    STD_LOGIC_VECTOR(31  DOWNTO 0);
-		branch_taken   : IN    STD_LOGIC;
+		pred_error   : IN    STD_LOGIC;
 		inst           : OUT   STD_LOGIC_VECTOR(31  DOWNTO 0);
 		inst_v         : OUT   STD_LOGIC;
 		invalid_access : OUT   STD_LOGIC;
@@ -53,17 +53,17 @@ ARCHITECTURE structure OF fetch IS
     SIGNAL cache_state_nx : inst_cache_state_t;
 
 	BEGIN
-		p : PROCESS(clk)
-		BEGIN
-			IF rising_edge(clk) THEN
-				IF reset = '1' THEN
-					cache_state <= READY;
-				ELSE
-					cache_state <= cache_state_nx;
-				END IF;
+	
+	p : PROCESS(clk)
+	BEGIN
+		IF rising_edge(clk) THEN
+			IF reset = '1' THEN
+				cache_state <= READY;
+			ELSE
+				cache_state <= cache_state_nx;
 			END IF;
-		END PROCESS p;
-
+		END IF;
+	END PROCESS p;
 
     ci : cache_inst PORT MAP(
         clk => clk,
@@ -77,7 +77,7 @@ ARCHITECTURE structure OF fetch IS
 		arb_req => arb_req,
 		arb_ack => arb_ack,
 		mem_cmd => mem_cmd,
-        mem_req_abort => branch_taken,
+        mem_req_abort => pred_error,
         mem_addr => mem_addr,
         mem_done => mem_done,
         mem_data => mem_data

@@ -25,6 +25,7 @@ ENTITY reg_DA IS
 		mem_data_in : IN STD_LOGIC_VECTOR(31 DOWNTO 0);
 		iret_in : IN STD_LOGIC;
 		proc_id_in : IN STD_LOGIC;
+		pred_taken_in : IN STD_LOGIC;
 		mem_we_out : OUT STD_LOGIC;
 		mem_read_out : OUT STD_LOGIC;
 		mem_atomic_out : OUT STD_LOGIC;
@@ -44,7 +45,8 @@ ENTITY reg_DA IS
 		reg_data2_out : OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
 		mem_data_out : OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
 		iret_out : OUT STD_LOGIC;
-		proc_id_out : OUT STD_LOGIC
+		proc_id_out : OUT STD_LOGIC;
+		pred_taken_out : OUT STD_LOGIC
 	);
 END reg_DA;
 
@@ -74,6 +76,7 @@ BEGIN
 				mem_data_out <= (OTHERS => '0');
 				iret_out <= '0';
 				proc_id_out <= '0';
+				pred_taken_out <= '0';
 			ELSE
 				IF we = '1' THEN
 					mem_we_out <= mem_we_in;
@@ -96,6 +99,7 @@ BEGIN
 					mem_data_out <= mem_data_in;
 					iret_out <= iret_in;
 					proc_id_out <= proc_id_in;
+					pred_taken_out <= pred_taken_in;
 				END IF;
 			END IF;
 		END IF;
