@@ -5,8 +5,8 @@ USE ieee.std_logic_unsigned.all;
 ENTITY pc IS
     PORT (clk : IN STD_LOGIC;
         reset : IN STD_LOGIC;
-        addr_jump : IN STD_LOGIC_VECTOR(31 DOWNTO 0);
         pred_error : IN STD_LOGIC;
+		pred_error_addr : IN STD_LOGIC_VECTOR(31 DOWNTO 0);
         exception_addr : IN STD_LOGIC_VECTOR(31 DOWNTO 0);
         exception : IN STD_LOGIC;
         iret : IN STD_LOGIC;
@@ -43,7 +43,7 @@ BEGIN
 
     pc_next <= addr_sys WHEN exception = '1'
                 ELSE pc_exc WHEN iret = '1'
-                ELSE addr_jump WHEN pred_error = '1'
+                ELSE pred_error_addr WHEN pred_error = '1'
 				ELSE pred_pc WHEN pred_taken = '1' AND load_PC = '1'
                 ELSE pc_int + 4 WHEN load_PC = '1'
                 ELSE pc_int;

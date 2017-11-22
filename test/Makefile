@@ -3,6 +3,7 @@ VHDL_SOURCES = $(PWD)/../utils.vhd \
                 $(PWD)/../ALU.vhd \
                 $(PWD)/../ALU_MUL_seg.vhd \
                 $(PWD)/../arbiter.vhd \
+				$(PWD)/../branch_predictor.vhd \
                 $(PWD)/../bypass_unit.vhd \
                 $(PWD)/../cache_data.vhd \
                 $(PWD)/../cache_inst.vhd \

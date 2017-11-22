@@ -1,6 +1,7 @@
 LIBRARY IEEE;
 USE IEEE.STD_LOGIC_1164.ALL;
 USE IEEE.NUMERIC_STD.ALL;
+USE IEEE.STD_LOGIC_UNSIGNED.ALL;
 USE WORK.UTILS.ALL;
 
 ENTITY inkel_pentiun IS
@@ -76,8 +77,8 @@ ARCHITECTURE structure OF inkel_pentiun IS
 		PORT(
 			clk : IN STD_LOGIC;
 			reset : IN STD_LOGIC;
-			addr_jump : IN STD_LOGIC_VECTOR(31 DOWNTO 0);
 			pred_error : IN STD_LOGIC;
+			pred_error_addr : IN STD_LOGIC_VECTOR(31 DOWNTO 0);
 			exception_addr : IN STD_LOGIC_VECTOR(31 DOWNTO 0);
 			exception : IN STD_LOGIC;
 			iret : IN STD_LOGIC;
@@ -614,6 +615,7 @@ ARCHITECTURE structure OF inkel_pentiun IS
 	SIGNAL mem_data_A_atomic : STD_LOGIC_VECTOR(31 DOWNTO 0);
 	SIGNAL pred_taken_A : STD_LOGIC;
 	SIGNAL pred_error_A : STD_LOGIC;
+	SIGNAL pred_error_addr_A : STD_LOGIC_VECTOR(31 DOWNTO 0);
 
 	-- Cache stage signals
 	SIGNAL cache_we_C : STD_LOGIC;
@@ -858,8 +860,8 @@ BEGIN
 	reg_pc: pc PORT MAP(
 		clk => clk,
 		reset => reset_PC,
-		addr_jump => jump_addr_A,
 		pred_error => pred_error_A,
+		pred_error_addr => pred_error_addr_A,
 		exception_addr => pc_ROB,
 		exception => exc_ROB,
 		iret => iret_A,
@@ -1134,6 +1136,7 @@ BEGIN
 	);
 
 	jump_addr_A <= ALU_out_A;
+	pred_error_addr_A <= pc_A + 4 WHEN branch_taken_A = '0' ELSE jump_addr_A;
 
 	mux_data_out_A : mux2_32bits PORT MAP(
 		Din0 => ALU_out_A,

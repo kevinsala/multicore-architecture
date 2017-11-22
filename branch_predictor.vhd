@@ -38,6 +38,7 @@ BEGIN
 		IF rising_edge(clk) AND reset = '1' THEN
 			FOR i IN 0 TO ENTRIES-1 LOOP
 				pc(i) <= (OTHERS => '0');
+				taken(i) <= (OTHERS => '0');
 			END LOOP;
 		ELSIF falling_edge(clk) AND reset = '0' THEN
 			IF (branch_A = '1') THEN
