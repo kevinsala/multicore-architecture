@@ -1,5 +1,6 @@
 LIBRARY ieee;
 USE ieee.std_logic_1164.all;
+USE work.utils.all;
 
 ENTITY reg_DA IS
 	PORT(clk : IN STD_LOGIC;
@@ -26,6 +27,7 @@ ENTITY reg_DA IS
 		iret_in : IN STD_LOGIC;
 		proc_id_in : IN STD_LOGIC;
 		pred_taken_in : IN STD_LOGIC;
+		pred_info_in : IN STD_LOGIC_VECTOR(BP_INFO_BITS-1 DOWNTO 0);
 		mem_we_out : OUT STD_LOGIC;
 		mem_read_out : OUT STD_LOGIC;
 		mem_atomic_out : OUT STD_LOGIC;
@@ -46,7 +48,8 @@ ENTITY reg_DA IS
 		mem_data_out : OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
 		iret_out : OUT STD_LOGIC;
 		proc_id_out : OUT STD_LOGIC;
-		pred_taken_out : OUT STD_LOGIC
+		pred_taken_out : OUT STD_LOGIC;
+		pred_info_out : OUT STD_LOGIC_VECTOR(BP_INFO_BITS-1 DOWNTO 0)
 	);
 END reg_DA;
 
@@ -77,6 +80,7 @@ BEGIN
 				iret_out <= '0';
 				proc_id_out <= '0';
 				pred_taken_out <= '0';
+				pred_info_out <= (OTHERS => '0');
 			ELSE
 				IF we = '1' THEN
 					mem_we_out <= mem_we_in;
@@ -100,6 +104,7 @@ BEGIN
 					iret_out <= iret_in;
 					proc_id_out <= proc_id_in;
 					pred_taken_out <= pred_taken_in;
+					pred_info_out <= pred_info_in;
 				END IF;
 			END IF;
 		END IF;

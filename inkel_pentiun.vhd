@@ -105,10 +105,12 @@ ARCHITECTURE structure OF inkel_pentiun IS
 			pc_F      : IN  STD_LOGIC_VECTOR(31 DOWNTO 0);
 			next_pc_F : OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
 			taken_F   : OUT STD_LOGIC;
+			info_F    : OUT STD_LOGIC_VECTOR(BP_INFO_BITS-1 DOWNTO 0);
 			branch_A  : IN  STD_LOGIC;
 			taken_A   : IN  STD_LOGIC;
 			pc_A      : IN  STD_LOGIC_VECTOR(31 DOWNTO 0);
-			next_pc_A : IN  STD_LOGIC_VECTOR(31 DOWNTO 0)
+			next_pc_A : IN  STD_LOGIC_VECTOR(31 DOWNTO 0);
+			info_A    : IN  STD_LOGIC_VECTOR(BP_INFO_BITS-1 DOWNTO 0)
 		);
 	END COMPONENT;
 
@@ -166,9 +168,11 @@ ARCHITECTURE structure OF inkel_pentiun IS
 			inst_v_in : IN STD_LOGIC;
 			inst_in : IN STD_LOGIC_VECTOR(31 DOWNTO 0);
 			pred_taken_in : IN STD_LOGIC;
+			pred_info_in : IN STD_LOGIC_VECTOR(BP_INFO_BITS-1 DOWNTO 0);
 			inst_v_out : OUT STD_LOGIC;
 			inst_out : OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
-			pred_taken_out : OUT STD_LOGIC
+			pred_taken_out : OUT STD_LOGIC;
+			pred_info_out : OUT STD_LOGIC_VECTOR(BP_INFO_BITS-1 DOWNTO 0)
 		);
 	END COMPONENT;
 
@@ -326,6 +330,7 @@ ARCHITECTURE structure OF inkel_pentiun IS
 			iret_in : IN STD_LOGIC;
 			proc_id_in : IN STD_LOGIC;
 			pred_taken_in : IN STD_LOGIC;
+			pred_info_in : IN STD_LOGIC_VECTOR(BP_INFO_BITS-1 DOWNTO 0);
 			mem_we_out : OUT STD_LOGIC;
 			mem_read_out : OUT STD_LOGIC;
 			mem_atomic_out : OUT STD_LOGIC;
@@ -346,7 +351,8 @@ ARCHITECTURE structure OF inkel_pentiun IS
 			mem_data_out : OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
 			iret_out : OUT STD_LOGIC;
 			proc_id_out : OUT STD_LOGIC;
-			pred_taken_out : OUT STD_LOGIC
+			pred_taken_out : OUT STD_LOGIC;
+			pred_info_out : OUT STD_LOGIC_VECTOR(BP_INFO_BITS-1 DOWNTO 0)
 		);
 	END COMPONENT;
 
@@ -543,6 +549,7 @@ ARCHITECTURE structure OF inkel_pentiun IS
 	SIGNAL arb_ack_F : STD_LOGIC;
 	SIGNAL pred_pc_F : STD_LOGIC_VECTOR(31 DOWNTO 0);
 	SIGNAL pred_taken_F : STD_LOGIC;
+	SIGNAL pred_info_F : STD_LOGIC_VECTOR(BP_INFO_BITS-1 DOWNTO 0);
 
 	-- Decode stage signals
 	SIGNAL inst_v_D : STD_LOGIC;
@@ -577,6 +584,7 @@ ARCHITECTURE structure OF inkel_pentiun IS
 	SIGNAL data1_BP_D : STD_LOGIC_VECTOR(31 DOWNTO 0);
 	SIGNAL data2_BP_D : STD_LOGIC_VECTOR(31 DOWNTO 0);
 	SIGNAL pred_taken_D : STD_LOGIC;
+	SIGNAL pred_info_D : STD_LOGIC_VECTOR(BP_INFO_BITS-1 DOWNTO 0);
 
 	-- ALU stage signals
 	SIGNAL Z : STD_LOGIC;
@@ -616,6 +624,7 @@ ARCHITECTURE structure OF inkel_pentiun IS
 	SIGNAL pred_taken_A : STD_LOGIC;
 	SIGNAL pred_error_A : STD_LOGIC;
 	SIGNAL pred_error_addr_A : STD_LOGIC_VECTOR(31 DOWNTO 0);
+	SIGNAL pred_info_A : STD_LOGIC_VECTOR(BP_INFO_BITS-1 DOWNTO 0);
 
 	-- Cache stage signals
 	SIGNAL cache_we_C : STD_LOGIC;
@@ -885,10 +894,12 @@ BEGIN
 		pc_F => pc_F,
 		next_pc_F => pred_pc_F,
 		taken_F => pred_taken_F,
+		info_F => pred_info_F,
 		branch_A => jump_or_branch_A,
 		taken_A => branch_taken_A,
 		pc_A => pc_A,
-		next_pc_A => jump_addr_A
+		next_pc_A => jump_addr_A,
+		info_A => pred_info_A
 	);
 
 	f: fetch PORT MAP (
@@ -918,9 +929,11 @@ BEGIN
 		inst_v_in => inst_v_F,
 		inst_in => inst_F,
 		pred_taken_in => pred_taken_F,
+		pred_info_in => pred_info_F,
 		inst_v_out => inst_v_D,
 		inst_out => inst_D,
-		pred_taken_out => pred_taken_D
+		pred_taken_out => pred_taken_D,
+		pred_info_out => pred_info_D
 	);
 
 	reg_status_F_D: reg_status PORT MAP(
@@ -1059,6 +1072,7 @@ BEGIN
 		iret_in => iret_D,
 		proc_id_in => proc_id_D,
 		pred_taken_in => pred_taken_D,
+		pred_info_in => pred_info_D,
 		mem_we_out => mem_we_A,
 		mem_read_out => mem_read_A,
 		mem_atomic_out => mem_atomic_A,
@@ -1079,7 +1093,8 @@ BEGIN
 		mem_data_out => mem_data_A,
 		iret_out => iret_A,
 		proc_id_out => proc_id_A,
-		pred_taken_out => pred_taken_A
+		pred_taken_out => pred_taken_A,
+		pred_info_out => pred_info_A
 	);
 
 	reg_status_D_A: reg_status PORT MAP(
