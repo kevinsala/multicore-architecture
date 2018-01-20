@@ -29,10 +29,31 @@ PACKAGE utils IS
 	CONSTANT CMD_GET    : STD_LOGIC_VECTOR(2 DOWNTO 0) := "001";
 	CONSTANT CMD_PUT    : STD_LOGIC_VECTOR(2 DOWNTO 0) := "010";
 	CONSTANT CMD_GET_RO : STD_LOGIC_VECTOR(2 DOWNTO 0) := "011";
-	
-	CONSTANT BP_ADDR_BITS : INTEGER := 6;
-	CONSTANT BP_HIST_BITS : INTEGER := 5;
-	CONSTANT BP_INFO_BITS : INTEGER := BP_ADDR_BITS + BP_HIST_BITS;
+
+	-- Global Branch Predictor
+	-- GBP_ADDR_BITS: Bits of the PC which are used to index the global predictor table
+	-- GBP_HIST_BITS: Bits of local history which are used to index the global predictor table
+	-- GBP_INFO_BITS: Bits to be transmitted along the pipeline needed by the global predictor
+	CONSTANT GBP_ADDR_BITS : INTEGER := 6;
+	CONSTANT GBP_HIST_BITS : INTEGER := 5;
+	CONSTANT GBP_INFO_BITS : INTEGER := GBP_ADDR_BITS + GBP_HIST_BITS;
+
+	-- Local Branch Predictor
+	-- LBP_ADDR_BITS: Bits of the PC which are used to index the local history table
+	-- LBP_HIST_BITS: Bits of local history which are used to index the local predictor table
+	-- LBP_INFO_BITS: Bits to be transmitted along the pipeline needed by the local predictor
+	CONSTANT LBP_ADDR_BITS : INTEGER := 6;
+	CONSTANT LBP_HIST_BITS : INTEGER := 5;
+	CONSTANT LBP_INFO_BITS : INTEGER := LBP_HIST_BITS;
+
+	-- Branch Predictor's Selector
+	-- SBP_ADDR_BITS: Bits of the PC which are used to index the selector table
+	-- SBP_SLCT_BITS: Bits of the selector counters
+	CONSTANT SBP_ADDR_BITS : INTEGER := 6;
+	CONSTANT SBP_SLCT_BITS : INTEGER := 2;
+
+	-- BP_INFO_BITS: Bits to be transmitted along the pipeline (1 + MAX(GBP_INFO_BITS, LBP_INFO_BITS))
+	CONSTANT BP_INFO_BITS : INTEGER := 1 + (GBP_INFO_BITS + LBP_INFO_BITS + ABS(GBP_INFO_BITS - LBP_INFO_BITS)) / 2;
 END utils;
 
 PACKAGE BODY utils IS
@@ -64,4 +85,13 @@ PACKAGE BODY utils IS
         END LOOP;
         RETURN TRUE;
     END;
+
+	FUNCTION max(left, right : INTEGER) RETURN INTEGER IS
+	BEGIN
+		IF left > right THEN
+			RETURN left;
+		ELSE
+			RETURN right;
+		END IF;
+	END;
 END utils;

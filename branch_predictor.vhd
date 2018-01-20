@@ -21,60 +21,66 @@ ENTITY branch_predictor IS
 END branch_predictor;
 
 ARCHITECTURE branch_predictor_behaviour OF branch_predictor IS
-	CONSTANT BP_INDEX_BITS : INTEGER := BP_ADDR_BITS + BP_HIST_BITS;
-	CONSTANT BP_ENTRIES    : INTEGER := 2 ** BP_INDEX_BITS;
+	CONSTANT SBP_INDEX_BITS : INTEGER := SBP_ADDR_BITS;
+	CONSTANT SBP_ENTRIES    : INTEGER := 2 ** SBP_INDEX_BITS;
 
-	CONSTANT BP_ADDR_LSB   : INTEGER := 2;
-	CONSTANT BP_ADDR_MSB   : INTEGER := BP_ADDR_LSB + BP_ADDR_BITS - 1;
+	CONSTANT SBP_ADDR_LSB : INTEGER := 2;
+	CONSTANT SBP_ADDR_MSB : INTEGER := SBP_ADDR_LSB + SBP_ADDR_BITS - 1;
 
-	TYPE pc_fields_t      IS ARRAY(BP_ENTRIES-1 DOWNTO 0) OF STD_LOGIC_VECTOR(31 DOWNTO 0);
-	TYPE taken_fields_t   IS ARRAY(BP_ENTRIES-1 DOWNTO 0) OF STD_LOGIC_VECTOR( 1 DOWNTO 0);
-	TYPE next_pc_fields_t IS ARRAY(BP_ENTRIES-1 DOWNTO 0) OF STD_LOGIC_VECTOR(31 DOWNTO 0);
+	TYPE selector_fields_t IS ARRAY(SBP_ENTRIES-1 DOWNTO 0) OF STD_LOGIC_VECTOR(SBP_SLCT_BITS-1 DOWNTO 0);
 
-	SIGNAL history : STD_LOGIC_VECTOR(BP_HIST_BITS-1 DOWNTO 0) := (OTHERS => '0');
-	SIGNAL pc      : pc_fields_t;
-	SIGNAL taken   : taken_fields_t;
-	SIGNAL next_pc : next_pc_fields_t;
+	COMPONENT global_branch_predictor IS
+		PORT(
+			clk	      : IN  STD_LOGIC;
+			reset     : IN  STD_LOGIC;
+			pc_F      : IN  STD_LOGIC_VECTOR(31 DOWNTO 0);
+			next_pc_F : OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
+			taken_F   : OUT STD_LOGIC;
+			info_F    : OUT STD_LOGIC_VECTOR(BP_INFO_BITS-1 DOWNTO 0);
+			branch_A  : IN  STD_LOGIC;
+			taken_A   : IN  STD_LOGIC;
+			pc_A      : IN  STD_LOGIC_VECTOR(31 DOWNTO 0);
+			next_pc_A : IN  STD_LOGIC_VECTOR(31 DOWNTO 0);
+			info_A    : IN  STD_LOGIC_VECTOR(BP_INFO_BITS-1 DOWNTO 0)
+		);
+	END COMPONENT;
 
-	SIGNAL entry_F   : INTEGER RANGE 0 TO BP_ENTRIES-1 := 0;
-	SIGNAL entry_A   : INTEGER RANGE 0 TO BP_ENTRIES-1 := 0;
-	SIGNAL entry_F_v : STD_LOGIC_VECTOR(BP_INDEX_BITS-1 DOWNTO 0);
-	SIGNAL entry_A_v : STD_LOGIC_VECTOR(BP_INDEX_BITS-1 DOWNTO 0);
+	SIGNAL selector : selector_fields_t;
+
+	SIGNAL entry_F : INTEGER RANGE 0 TO SBP_ENTRIES-1 := 0;
+	SIGNAL entry_A : INTEGER RANGE 0 TO SBP_ENTRIES-1 := 0;
+
+	SIGNAL selection_F : STD_LOGIC := '0';
+	SIGNAL selection_A : STD_LOGIC := '0';
 BEGIN
 	execution_process : PROCESS(clk, reset)
 	BEGIN
 		IF rising_edge(clk) AND reset = '1' THEN
-			FOR i IN 0 TO BP_ENTRIES-1 LOOP
-				pc(i) <= (OTHERS => '0');
-				taken(i) <= (OTHERS => '0');
+			FOR i IN 0 TO SBP_ENTRIES-1 LOOP
+				selector(i) <= (OTHERS => '0');
 			END LOOP;
-			history <= (OTHERS => '0');
-		ELSIF falling_edge(clk) AND reset = '0' THEN
-			IF (branch_A = '1') THEN
-				IF (pc(entry_A) = pc_A) THEN
-					IF (taken_A = '1' AND taken(entry_A) /= "11") THEN
-						taken(entry_A) <= taken(entry_A) + "01";
-					ELSIF (taken_A = '0' AND taken(entry_A) /= "00") THEN
-						taken(entry_A) <= taken(entry_A) - "01";
-					END IF;
-				ELSE
-					pc(entry_A) <= pc_A;
-					next_pc(entry_A) <= next_pc_A;
-					taken(entry_A) <= (OTHERS => '0');
-					taken(entry_A)(0) <= taken_A;
-				END IF;
-
-				history <= to_stdlogicvector(to_bitvector(history) SLL 1);
-				history(0) <= taken_A;
-			END IF;
+		ELSE
+			-- TODO: Implement selection update
 		END IF;
 	END PROCESS execution_process;
 
-	entry_F_v <= history(BP_HIST_BITS-1 DOWNTO 0) & pc_F(BP_ADDR_MSB DOWNTO BP_ADDR_LSB);
-	entry_F <= to_integer(unsigned(entry_F_v));
-	entry_A <= to_integer(unsigned(info_A));
+	gbp : global_branch_predictor PORT MAP(
+		clk => clk,
+		reset => reset,
+		pc_F => pc_F,
+		next_pc_F => next_pc_F,
+		taken_F => taken_F,
+		info_F => info_F,
+		branch_A => branch_A,
+		taken_A => taken_A,
+		pc_A => pc_A,
+		next_pc_A => next_pc_A,
+		info_A => info_A
+	);
 
-	info_F <= std_logic_vector(to_unsigned(entry_F, info_F'length));
-	taken_F <= '1' WHEN (taken(entry_F) = "10" OR taken(entry_F) = "11") AND pc(entry_F) = pc_F ELSE '0';
-	next_pc_F <= next_pc(entry_F);
+	entry_F <= to_integer(unsigned(pc_F(SBP_ADDR_MSB DOWNTO SBP_ADDR_LSB)));
+	entry_A <= to_integer(unsigned(pc_A(SBP_ADDR_MSB DOWNTO SBP_ADDR_LSB)));
+
+	selection_F <= '1' WHEN (selector(entry_F) = "10" OR selector(entry_F) = "11") ELSE '0';
+	selection_A <= info_A(BP_INFO_BITS-1);
 END branch_predictor_behaviour;
