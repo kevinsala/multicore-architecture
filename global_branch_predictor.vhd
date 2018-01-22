@@ -16,7 +16,8 @@ ENTITY global_branch_predictor IS
 		taken_A   : IN  STD_LOGIC;
 		pc_A      : IN  STD_LOGIC_VECTOR(31 DOWNTO 0);
 		next_pc_A : IN  STD_LOGIC_VECTOR(31 DOWNTO 0);
-		info_A    : IN  STD_LOGIC_VECTOR(BP_INFO_BITS-1 DOWNTO 0)
+		info_A    : IN  STD_LOGIC_VECTOR(BP_INFO_BITS-1 DOWNTO 0);
+		enable_A  : IN  STD_LOGIC
 	);
 END global_branch_predictor;
 
@@ -50,18 +51,20 @@ BEGIN
 			END LOOP;
 			history <= (OTHERS => '0');
 		ELSIF falling_edge(clk) AND reset = '0' THEN
-			IF (branch_A = '1') THEN
-				IF (pc(entry_A) = pc_A) THEN
-					IF (taken_A = '1' AND taken(entry_A) /= "11") THEN
-						taken(entry_A) <= taken(entry_A) + "01";
-					ELSIF (taken_A = '0' AND taken(entry_A) /= "00") THEN
-						taken(entry_A) <= taken(entry_A) - "01";
+			IF branch_A = '1' THEN
+				IF enable_A = '1' THEN
+					IF pc(entry_A) = pc_A THEN
+						IF taken_A = '1' AND taken(entry_A) /= "11" THEN
+							taken(entry_A) <= taken(entry_A) + "01";
+						ELSIF taken_A = '0' AND taken(entry_A) /= "00" THEN
+							taken(entry_A) <= taken(entry_A) - "01";
+						END IF;
+					ELSE
+						pc(entry_A) <= pc_A;
+						next_pc(entry_A) <= next_pc_A;
+						taken(entry_A) <= (OTHERS => '0');
+						taken(entry_A)(0) <= taken_A;
 					END IF;
-				ELSE
-					pc(entry_A) <= pc_A;
-					next_pc(entry_A) <= next_pc_A;
-					taken(entry_A) <= (OTHERS => '0');
-					taken(entry_A)(0) <= taken_A;
 				END IF;
 
 				history <= to_stdlogicvector(to_bitvector(history) SLL 1);

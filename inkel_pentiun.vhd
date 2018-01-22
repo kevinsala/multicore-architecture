@@ -110,7 +110,8 @@ ARCHITECTURE structure OF inkel_pentiun IS
 			taken_A   : IN  STD_LOGIC;
 			pc_A      : IN  STD_LOGIC_VECTOR(31 DOWNTO 0);
 			next_pc_A : IN  STD_LOGIC_VECTOR(31 DOWNTO 0);
-			info_A    : IN  STD_LOGIC_VECTOR(BP_INFO_BITS-1 DOWNTO 0)
+			info_A    : IN  STD_LOGIC_VECTOR(BP_INFO_BITS-1 DOWNTO 0);
+			error_A   : IN  STD_LOGIC
 		);
 	END COMPONENT;
 
@@ -899,7 +900,8 @@ BEGIN
 		taken_A => branch_taken_A,
 		pc_A => pc_A,
 		next_pc_A => jump_addr_A,
-		info_A => pred_info_A
+		info_A => pred_info_A,
+		error_A => pred_error_A
 	);
 
 	f: fetch PORT MAP (
