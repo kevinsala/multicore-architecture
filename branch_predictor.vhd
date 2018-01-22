@@ -29,7 +29,7 @@ ARCHITECTURE branch_predictor_behaviour OF branch_predictor IS
 
 	TYPE selector_fields_t IS ARRAY(SBP_ENTRIES-1 DOWNTO 0) OF STD_LOGIC_VECTOR(SBP_SLCT_BITS-1 DOWNTO 0);
 
-	COMPONENT global_branch_predictor IS
+	COMPONENT local_branch_predictor IS
 		PORT(
 			clk	      : IN  STD_LOGIC;
 			reset     : IN  STD_LOGIC;
@@ -64,7 +64,7 @@ BEGIN
 		END IF;
 	END PROCESS execution_process;
 
-	gbp : global_branch_predictor PORT MAP(
+	lbp : local_branch_predictor PORT MAP(
 		clk => clk,
 		reset => reset,
 		pc_F => pc_F,
