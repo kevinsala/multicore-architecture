@@ -53,6 +53,7 @@ BEGIN
 		IF rising_edge(clk) AND reset = '1' THEN
 			FOR i IN 0 TO LBP_ENTRIES1-1 LOOP
 				pc(i) <= (OTHERS => '0');
+				history(i) <= (OTHERS => '0');
 			END LOOP;
 			FOR i IN 0 TO LBP_ENTRIES2-1 LOOP
 				taken(i) <= (OTHERS => '0');
@@ -86,6 +87,7 @@ BEGIN
 	history_F <= to_integer(unsigned(history(entry_F)));
 	history_A <= to_integer(unsigned(info_A(LBP_HIST_BITS-1 DOWNTO 0)));
 
+	info_F(BP_INFO_BITS-2 DOWNTO LBP_INFO_BITS) <= (OTHERS => '0');
 	info_F(LBP_HIST_BITS-1 DOWNTO 0) <= std_logic_vector(to_unsigned(history_F, LBP_HIST_BITS));
 	taken_F <= '1' WHEN taken(history_F) = "10" OR taken(history_F) = "11" ELSE '0';
 	next_pc_F <= next_pc(entry_F);

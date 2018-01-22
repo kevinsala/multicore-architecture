@@ -88,7 +88,7 @@ BEGIN
 			FOR i IN 0 TO SBP_ENTRIES-1 LOOP
 				selector(i) <= (OTHERS => '0');
 			END LOOP;
-		ELSE
+		ELSIF falling_edge(clk) AND reset = '0' THEN
 			IF branch_A = '1' THEN
 				IF (selection_A XOR error_A) = '0' AND selector(entry_A) /= "00" THEN
 					selector(entry_A) <= selector(entry_A) - "01";
@@ -143,10 +143,12 @@ BEGIN
 		taken_F_0 WHEN '0',
 		taken_F_1 WHEN OTHERS;
 
-	WITH selection_F SELECT info_F <=
-		info_F_0 WHEN '0',
-		info_F_1 WHEN OTHERS;
+	WITH selection_F SELECT info_F(BP_INFO_BITS-2 DOWNTO 0) <=
+		info_F_0(BP_INFO_BITS-2 DOWNTO 0) WHEN '0',
+		info_F_1(BP_INFO_BITS-2 DOWNTO 0) WHEN OTHERS;
 
-	enable_A_0 <= '1' WHEN selection_A = '0' ELSE '0';
-	enable_A_1 <= '1' WHEN selection_A = '1' ELSE '0';
+	enable_A_0 <= '1' WHEN selection_A = '0' AND branch_A = '1' ELSE '0';
+	enable_A_1 <= '1' WHEN selection_A = '1' AND branch_A = '1' ELSE '0';
+
+	info_F(BP_INFO_BITS-1) <= selection_F;
 END branch_predictor_behaviour;

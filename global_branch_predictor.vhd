@@ -77,6 +77,7 @@ BEGIN
 	entry_F <= to_integer(unsigned(entry_F_v));
 	entry_A <= to_integer(unsigned(info_A(GBP_INFO_BITS-1 DOWNTO 0)));
 
+	info_F(BP_INFO_BITS-2 DOWNTO GBP_INFO_BITS) <= (OTHERS => '0');
 	info_F(GBP_INFO_BITS-1 DOWNTO 0) <= std_logic_vector(to_unsigned(entry_F, GBP_INFO_BITS));
 	taken_F <= '1' WHEN (taken(entry_F) = "10" OR taken(entry_F) = "11") AND pc(entry_F) = pc_F ELSE '0';
 	next_pc_F <= next_pc(entry_F);
